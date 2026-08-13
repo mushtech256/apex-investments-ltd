@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUT 9</title>
+  <style>
+    body { background: #0f172a; color: #fff; font-family: sans-serif; padding: 20px; }
+    .card { background: #1e293b; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
+    .brand { color: #f59e0b; text-align: center; }
+    .bonus { background: #064e3b; color: #34d399; padding: 10px; text-align: center; border-radius: 6px; margin: 10px 0; }
+    input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; }
+    input { background: #0f172a; color: #fff; border: 1px solid #334155; box-sizing: border-box; }
+    button { background: #f59e0b; color: #000; font-weight: bold; cursor: pointer; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="auth-box" class="card">
+    <h1 class="brand">HUT 9</h1>
+    <div class="bonus">🎁 Bonus: 5,000 UGX on Registration</div>
+    <form onsubmit="register(event)">
+      <input type="text" id="phone" value="+2567" required />
+      <input type="password" id="pass" placeholder="Password" required />
+      <button type="submit">Register & Get Bonus</button>
+    </form>
+    <p id="err" style="color: #ef4444; margin-top: 10px;"></p>
+  </div>
+
+  <div id="dash-box" class="card hidden">
+    <h2 class="brand">HUT 9 Dashboard</h2>
+    <p>User: <span id="user-phone"></span></p>
+    <h1 style="color: #10b981; margin: 10px 0;" id="user-bal">0 UGX</h1>
+    <h3>Available Machines</h3>
+    <div id="machines"></div>
+  </div>
+
+  <script>
+    async function register(e) {
+      e.preventDefault();
+      const phone = document.getElementById('phone').value;
+      const pass = document.getElementById('pass').value;
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone_number: phone, password: pass })
+      });
+      const data = await res.json();
+      if (!res.ok) return document.getElementById('err').innerText = data.error;
+
+      document.getElementById('auth-box').classList.add('hidden');
+      document.getElementById('dash-box').classList.remove('hidden');
+      document.getElementById('user-phone').innerText = data.user.phone_number;
+      document.getElementById('user-bal').innerText = data.user.balance + ' UGX';
+      
+      const mRes = await fetch('/api/machines');
+      const machines = await mRes.json();
+      document.getElementById('machines').innerHTML = machines.map(m => 
+        `<div style="background:#0f172a; padding:10px; margin-top:10px; border-radius:6px;">
+          <b>${m.name}</b><br>
+          <span style="color:#f59e0b">Price: ${m.price} UGX</span> | 
+          <span style="color:#10b981">Daily: +${m.daily_return} UGX</span>
+        </div>`
+      ).join('');
+    }
+  </script>
+</body>
+</html>
