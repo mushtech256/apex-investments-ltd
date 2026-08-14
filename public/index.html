@@ -15,7 +15,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 20px;
+      padding: 20px 20px 80px 20px; /* Padding bottom leaves space for nav bar */
     }
     .auth-card { width: 100%; max-width: 380px; text-align: center; }
     h1 { font-size: 36px; font-weight: bold; margin-bottom: 35px; letter-spacing: 1px; color: #ffffff; }
@@ -93,6 +93,39 @@
     /* Hidden Utility Class */
     .hidden { display: none !important; }
 
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #080f26;
+      border-top: 1px solid #1c2541;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      z-index: 99;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #8d99ae;
+      font-size: 11px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.3s;
+      flex: 1;
+    }
+    .nav-item .icon {
+      font-size: 20px;
+      margin-bottom: 3px;
+    }
+    .nav-item.active, .nav-item:hover {
+      color: #0077b6;
+    }
+
     /* Modal Styling */
     .modal {
       position: fixed;
@@ -158,20 +191,84 @@
 
   <!-- DASHBOARD SECTION -->
   <div id="dashboard" class="dashboard-container hidden">
-    <h2 style="color:#0077b6; text-align:center;">HUT 9 Dashboard</h2>
-    <p style="text-align:center; margin-top:5px;">User: <span id="user-phone"></span></p>
-    <div class="balance"><span id="user-balance">0</span> UGX</div>
+    <!-- TAB 1: HOME -->
+    <div id="tab-home">
+      <h2 style="color:#0077b6; text-align:center;">HUT 9 Dashboard</h2>
+      <p style="text-align:center; margin-top:5px;">User: <span id="user-phone"></span></p>
+      <div class="balance"><span id="user-balance">0</span> UGX</div>
 
-    <div class="action-grid">
-      <button class="btn-action" onclick="openDepositModal()">📥 Deposit</button>
-      <button class="btn-action" onclick="alert('Withdrawals open daily 8 AM - 6 PM')">📤 Withdraw</button>
+      <div class="action-grid">
+        <button class="btn-action" onclick="openDepositModal()">📥 Deposit</button>
+        <button class="btn-action" onclick="alert('Withdrawals open daily 8 AM - 6 PM')">📤 Withdraw</button>
+      </div>
+
+      <h3 style="margin-bottom:10px;">Available Mining Rigs</h3>
+      <div id="machines-list"></div>
     </div>
 
-    <h3 style="margin-bottom:10px;">Available Mining Rigs</h3>
-    <div id="machines-list"></div>
+    <!-- TAB 2: RAFFLE -->
+    <div id="tab-raffle" class="hidden">
+      <h2 style="color:#0077b6; text-align:center;">🎁 Raffle Draws</h2>
+      <div class="card" style="margin-top:15px; text-align:center;">
+        <p>Participate in daily lucky draws and win bonus mining power!</p>
+        <button class="btn-buy" style="margin-top:15px;" onclick="alert('Daily Raffle opens at 8:00 PM!')">Spin Lucky Wheel</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI -->
+    <div id="tab-ai" class="hidden">
+      <h2 style="color:#0077b6; text-align:center;">🤖 AI Mining Assistant</h2>
+      <div class="card" style="margin-top:15px; text-align:center;">
+        <p>Optimize your yield returns using automated AI trading strategies.</p>
+        <button class="btn-buy" style="margin-top:15px;" onclick="alert('AI Auto-Mining is active!')">Activate Auto-Trader</button>
+      </div>
+    </div>
+
+    <!-- TAB 4: CHATS -->
+    <div id="tab-chats" class="hidden">
+      <h2 style="color:#0077b6; text-align:center;">💬 Community Chats</h2>
+      <div class="card" style="margin-top:15px; text-align:center;">
+        <p>Connect with other miners and share strategies.</p>
+        <button class="btn-buy" style="margin-top:15px;" onclick="alert('Joining Uganda Telegram Group...')">Join Telegram Chat</button>
+      </div>
+    </div>
+
+    <!-- TAB 5: ME -->
+    <div id="tab-me" class="hidden">
+      <h2 style="color:#0077b6; text-align:center;">👤 Profile & Settings</h2>
+      <div class="card" style="margin-top:15px;">
+        <p><strong>Account Status:</strong> Verified</p>
+        <p style="margin-top:10px;"><strong>VIP Level:</strong> Tier 1</p>
+        <button class="btn-action" style="width:100%; margin-top:15px; background:#ff4d4d;" onclick="location.reload()">Logout</button>
+      </div>
+    </div>
   </div>
 
-  <!-- DEPOSIT MODAL (HIDDEN BY DEFAULT) -->
+  <!-- BOTTOM NAVIGATION BAR -->
+  <div id="bottom-nav" class="bottom-nav hidden">
+    <div class="nav-item active" onclick="switchTab('home', this)">
+      <span class="icon">🏠</span>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('raffle', this)">
+      <span class="icon">🎟️</span>
+      <span>Raffle</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('ai', this)">
+      <span class="icon">🤖</span>
+      <span>AI</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('chats', this)">
+      <span class="icon">💬</span>
+      <span>Chats</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('me', this)">
+      <span class="icon">👤</span>
+      <span>Me</span>
+    </div>
+  </div>
+
+  <!-- DEPOSIT MODAL -->
   <div id="deposit-modal" class="modal hidden">
     <div class="modal-content">
       <h3 style="color: #48cae4; text-align: center; margin-bottom: 10px;">Deposit Funds</h3>
@@ -254,9 +351,21 @@
   function loadDashboard() {
     document.getElementById('auth-section').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('bottom-nav').classList.remove('hidden');
     document.getElementById('user-phone').innerText = currentUser.phone_number;
     document.getElementById('user-balance').innerText = currentUser.balance.toLocaleString();
     fetchMachines();
+  }
+
+  function switchTab(tabName, el) {
+    const tabs = ['home', 'raffle', 'ai', 'chats', 'me'];
+    tabs.forEach(t => {
+      document.getElementById(`tab-${t}`).classList.add('hidden');
+    });
+    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+    el.classList.add('active');
   }
 
   async function fetchMachines() {
