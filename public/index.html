@@ -3,66 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HUT 9</title>
+  <title>HUT 9 Investment Platform</title>
   <style>
-    body { background: #0f172a; color: #fff; font-family: sans-serif; padding: 20px; }
-    .card { background: #1e293b; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
-    .brand { color: #f59e0b; text-align: center; }
-    .bonus { background: #064e3b; color: #34d399; padding: 10px; text-align: center; border-radius: 6px; margin: 10px 0; }
-    input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 6px; border: none; }
-    input { background: #0f172a; color: #fff; border: 1px solid #334155; box-sizing: border-box; }
-    button { background: #f59e0b; color: #000; font-weight: bold; cursor: pointer; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+    body { background-color: #0d1b2a; color: #ffffff; padding: 20px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 450px; background: #1b263b; border-radius: 12px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+    h1, h2 { text-align: center; color: #f2a900; margin-bottom: 15px; }
+    .card { background: #0d1b2a; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #415a77; }
+    input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; font-size: 16px; }
+    button { width: 100%; padding: 12px; background: #f2a900; border: none; color: #0d1b2a; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 5px; }
+    button:hover { background: #e09f00; }
+    .btn-secondary { background: #415a77; color: #fff; margin-top: 8px; }
+    .btn-claim { background: #2ec4b6; color: #0d1b2a; }
+    .balance { font-size: 28px; font-weight: bold; color: #2ec4b6; text-align: center; margin: 10px 0; }
     .hidden { display: none; }
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
-  <div id="auth-box" class="card">
-    <h1 class="brand">HUT 9</h1>
-    <div class="bonus">🎁 Bonus: 5,000 UGX on Registration</div>
-    <form onsubmit="register(event)">
-      <input type="text" id="phone" value="+2567" required />
-      <input type="password" id="pass" placeholder="Password" required />
-      <button type="submit">Register & Get Bonus</button>
-    </form>
-    <p id="err" style="color: #ef4444; margin-top: 10px;"></p>
+
+<div class="container">
+  <h1>HUT 9</h1>
+
+  <!-- AUTH FORM -->
+  <div id="auth-section">
+    <div class="card" style="border-left: 4px solid #2ec4b6;">
+      <p style="text-align: center;">🎁 <strong>Bonus: 5,000 UGX on Registration</strong></p>
+    </div>
+    <input type="text" id="phone" placeholder="Phone (+256759537511)">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="register()">Register & Get Bonus</button>
+    <p id="auth-msg" style="color: #ff6b6b; margin-top: 10px; text-align: center; font-size: 14px;"></p>
   </div>
 
-  <div id="dash-box" class="card hidden">
-    <h2 class="brand">HUT 9 Dashboard</h2>
-    <p>User: <span id="user-phone"></span></p>
-    <h1 style="color: #10b981; margin: 10px 0;" id="user-bal">0 UGX</h1>
-    <h3>Available Machines</h3>
-    <div id="machines"></div>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hidden">
+    <p style="text-align:center;">User: <span id="user-phone"></span></p>
+    <div class="balance"><span id="user-balance">0</span> UGX</div>
+
+    <div class="action-grid">
+      <button class="btn-secondary" onclick="alert('Send funds via Mobile Money to 0759537511 / 0773136149 with reference HUT9')">📥 Deposit</button>
+      <button class="btn-secondary" onclick="alert('Withdrawal requests processed daily between 8 AM - 6 PM.')">📤 Withdraw</button>
+    </div>
+
+    <div id="claim-box" class="card hidden" style="border: 1px solid #2ec4b6;">
+      <h3>💰 Daily Earnings Ready</h3>
+      <p style="font-size: 14px; color: #e0e1dd; margin: 5px 0;">Claim today's profit from your active machines!</p>
+      <button class="btn-claim" onclick="claimEarnings()">Claim Daily Profit</button>
+    </div>
+
+    <h2>Available Mining Rigs</h2>
+    <div id="machines-list"></div>
   </div>
+</div>
 
-  <script>
-    async function register(e) {
-      e.preventDefault();
-      const phone = document.getElementById('phone').value;
-      const pass = document.getElementById('pass').value;
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone_number: phone, password: pass })
-      });
-      const data = await res.json();
-      if (!res.ok) return document.getElementById('err').innerText = data.error;
+<script>
+  let currentUser = null;
 
-      document.getElementById('auth-box').classList.add('hidden');
-      document.getElementById('dash-box').classList.remove('hidden');
-      document.getElementById('user-phone').innerText = data.user.phone_number;
-      document.getElementById('user-bal').innerText = data.user.balance + ' UGX';
-      
-      const mRes = await fetch('/api/machines');
-      const machines = await mRes.json();
-      document.getElementById('machines').innerHTML = machines.map(m => 
-        `<div style="background:#0f172a; padding:10px; margin-top:10px; border-radius:6px;">
-          <b>${m.name}</b><br>
-          <span style="color:#f59e0b">Price: ${m.price} UGX</span> | 
-          <span style="color:#10b981">Daily: +${m.daily_return} UGX</span>
-        </div>`
-      ).join('');
+  async function register() {
+    const phone_number = document.getElementById('phone').value;
+    const password = document.getElementById('password').value;
+    
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number, password })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      currentUser = data.user;
+      loadDashboard();
+    } else {
+      document.getElementById('auth-msg').innerText = data.error;
     }
-  </script>
+  }
+
+  function loadDashboard() {
+    document.getElementById('auth-section').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    document.getElementById('user-phone').innerText = currentUser.phone_number;
+    document.getElementById('user-balance').innerText = currentUser.balance.toLocaleString();
+
+    if (currentUser.daily_earning > 0) {
+      document.getElementById('claim-box').classList.remove('hidden');
+    }
+
+    fetchMachines();
+  }
+
+  async function fetchMachines() {
+    const res = await fetch('/api/machines');
+    const machines = await res.json();
+    const list = document.getElementById('machines-list');
+    list.innerHTML = '';
+
+    machines.forEach(m => {
+      list.innerHTML += `
+        <div class="card">
+          <h3>${m.name}</h3>
+          <p style="color: #f2a900; margin: 5px 0;">Price: <strong>${m.price.toLocaleString()} UGX</strong></p>
+          <p style="color: #2ec4b6; margin-bottom: 10px;">Daily Return: <strong>+${m.daily_return.toLocaleString()} UGX</strong></p>
+          <button onclick="buyMachine(${m.id})">Buy Machine</button>
+        </div>
+      `;
+    });
+  }
+
+  async function buyMachine(machineId) {
+    const res = await fetch('/api/buy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number: currentUser.phone_number, machineId })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      currentUser = data.user;
+      loadDashboard();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  }
+
+  async function claimEarnings() {
+    const res = await fetch('/api/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number: currentUser.phone_number })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert(data.message);
+      currentUser = data.user;
+      loadDashboard();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  }
+</script>
+
 </body>
 </html>
