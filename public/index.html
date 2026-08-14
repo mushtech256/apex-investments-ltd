@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HUT 9 - Future AI Hub</title>
+  <title>Future AI Hub</title>
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body {
@@ -111,7 +111,7 @@
     }
     .grid-label { font-size: 12px; color: #e0e0e0; }
 
-    /* Share Card */
+    /* Info Card */
     .info-card {
       background: rgba(11, 19, 43, 0.6);
       border: 1px solid #1c2541;
@@ -193,7 +193,7 @@
   <!-- DASHBOARD SECTION -->
   <div id="dashboard" class="dashboard-container hidden">
 
-    <!-- TAB 1: HOME (INTERFACE WITHOUT MACHINES) -->
+    <!-- TAB 1: HOME -->
     <div id="tab-home">
       <p style="color:#0077b6; font-size:14px; margin-bottom:10px;">Welcome to Future Ai hub</p>
       
@@ -210,7 +210,7 @@
 
       <div class="info-card">
         <p style="color: #8d99ae; font-size: 13px;">Platform Announcements</p>
-        <p style="font-size: 15px; margin-top: 5px;">🔥 Welcome to HUT 9 Mining Hub! Earn daily profits by joining mining rigs.</p>
+        <p style="font-size: 15px; margin-top: 5px;">🔥 Welcome to AI Hub! Earn daily profits by joining mining rigs.</p>
       </div>
     </div>
 
@@ -223,7 +223,7 @@
       </div>
     </div>
 
-    <!-- TAB 3: AI (MACHINES DISPLAYED HERE) -->
+    <!-- TAB 3: AI -->
     <div id="tab-ai" class="hidden">
       <h2 style="color:#0077b6; text-align:center; margin-bottom: 15px;">🤖 AI Mining Machines</h2>
       <div id="machines-list"></div>
@@ -234,22 +234,22 @@
       <h2 style="color:#0077b6; text-align:center;">💬 Community Chats</h2>
       <div class="card" style="margin-top:15px; text-align:center;">
         <p>Connect with other miners and share strategies.</p>
-        <button class="btn-buy" onclick="alert('Joining Uganda Telegram Group...')">Join Telegram Chat</button>
+        <button class="btn-buy" onclick="alert('Joining Telegram Group...')">Join Telegram Chat</button>
       </div>
     </div>
 
-    <!-- TAB 5: MY (COMPLETE ICON DASHBOARD) -->
+    <!-- TAB 5: MY -->
     <div id="tab-me" class="hidden">
       <p style="color:#0077b6; font-size:14px; margin-bottom:8px;">Welcome to Future Ai hub</p>
       
       <!-- User Profile Row -->
       <div class="profile-header">
         <div class="user-info">
-          <div class="user-phone"><span id="user-phone">0759537511</span></div>
-          <div class="vip-tag">VIP - 3</div>
+          <div class="user-phone"><span id="user-phone">Account</span></div>
+          <div class="vip-tag">VIP - 0</div>
         </div>
         <div class="avatar-box">
-          <img src="https://ui-avatars.com/api/?name=Kenny+Rodgers&background=0077b6&color=fff" alt="Profile">
+          <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=0077b6&color=fff" alt="Profile">
         </div>
       </div>
 
@@ -261,7 +261,7 @@
         </div>
         <div>
           <div class="balance-title">Balance</div>
-          <div class="balance-value"><span id="me-balance">3,456,000.00</span></div>
+          <div class="balance-value"><span id="me-balance">0.00</span></div>
         </div>
       </div>
 
@@ -279,7 +279,7 @@
           <div class="grid-icon-box">💳</div>
           <span class="grid-label">Bill</span>
         </div>
-        <div class="grid-btn" onclick="alert('Your Invite Link: https://hut9-app.onrender.com/ref/102')">
+        <div class="grid-btn" onclick="alert('Invite link ready in settings.')">
           <div class="grid-icon-box">🤝</div>
           <span class="grid-label">Invite</span>
         </div>
@@ -287,7 +287,7 @@
           <div class="grid-icon-box">👥</div>
           <span class="grid-label">My team</span>
         </div>
-        <div class="grid-btn" onclick="alert('VIP Tasks unlocked at VIP-3!')">
+        <div class="grid-btn" onclick="alert('VIP Tasks unlocked at higher VIP levels!')">
           <div class="grid-icon-box">⭐</div>
           <span class="grid-label">VIP Task</span>
         </div>
@@ -303,7 +303,7 @@
           <div class="grid-icon-box">📥</div>
           <span class="grid-label">Download App</span>
         </div>
-        <div class="grid-btn" onclick="alert('Contact Manager on Telegram: @HUT9_Support')">
+        <div class="grid-btn" onclick="alert('Contact Manager on Telegram')">
           <div class="grid-icon-box">🎧</div>
           <span class="grid-label">Manager</span>
         </div>
@@ -313,25 +313,19 @@
         </div>
       </div>
 
-      <!-- HUT Cryptocurrency Purchase Share -->
-      <div class="info-card">
-        <p style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">HUT8 Cryptocurrency Purchase Share</p>
-        <p style="font-size: 22px; font-weight: bold;">45,250.00</p>
-      </div>
-
       <!-- Salary Section -->
       <div class="salary-box">
         <div class="salary-flex">
           <div>
             <div style="font-size:12px; color:#8d99ae;">Last month's salary</div>
-            <div style="font-size:18px; font-weight:bold; margin-top:2px;">56,000.00</div>
+            <div style="font-size:18px; font-weight:bold; margin-top:2px;">0.00</div>
           </div>
           <div>
             <div style="font-size:12px; color:#8d99ae;">This month's salary</div>
             <div style="font-size:18px; font-weight:bold; margin-top:2px;">0.00</div>
           </div>
         </div>
-        <button class="btn-salary" onclick="alert('Salary claimed successfully!')">Get last month's salary</button>
+        <button class="btn-salary" onclick="alert('No pending salary to claim.')">Get last month's salary</button>
       </div>
     </div>
 
@@ -447,6 +441,7 @@
     document.getElementById('bottom-nav').classList.remove('hidden');
     
     document.getElementById('user-phone').innerText = currentUser.phone_number;
+    document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${currentUser.phone_number}&background=0077b6&color=fff`;
     document.getElementById('home-balance').innerText = currentUser.balance.toLocaleString() + '.00';
     document.getElementById('me-balance').innerText = currentUser.balance.toLocaleString() + '.00';
     
