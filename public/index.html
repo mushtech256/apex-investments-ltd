@@ -18,6 +18,7 @@
     .balance { font-size: 28px; font-weight: bold; color: #2ec4b6; text-align: center; margin: 10px 0; }
     .hidden { display: none; }
     .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .toggle-link { color: #f2a900; text-align: center; margin-top: 15px; cursor: pointer; font-size: 14px; text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -25,14 +26,23 @@
 <div class="container">
   <h1>HUT 9</h1>
 
-  <!-- AUTH FORM -->
+  <!-- AUTH SECTION -->
   <div id="auth-section">
     <div class="card" style="border-left: 4px solid #2ec4b6;">
       <p style="text-align: center;">🎁 <strong>Bonus: 5,000 UGX on Registration</strong></p>
     </div>
+    
     <input type="text" id="phone" placeholder="Phone (+256759537511)">
     <input type="password" id="password" placeholder="Password">
-    <button onclick="register()">Register & Get Bonus</button>
+    
+    <!-- REGISTER BUTTON -->
+    <button id="btn-register" onclick="register()">Register & Get Bonus</button>
+    
+    <!-- LOGIN BUTTON -->
+    <button id="btn-login" class="btn-claim hidden" onclick="login()">Login to Account</button>
+    
+    <p id="toggle-auth" class="toggle-link" onclick="toggleAuthMode()">Already have an account? Login here</p>
+    
     <p id="auth-msg" style="color: #ff6b6b; margin-top: 10px; text-align: center; font-size: 14px;"></p>
   </div>
 
@@ -59,12 +69,52 @@
 
 <script>
   let currentUser = null;
+  let isLoginMode = false;
+
+  function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    const btnRegister = document.getElementById('btn-register');
+    const btnLogin = document.getElementById('btn-login');
+    const toggleLink = document.getElementById('toggle-auth');
+    const authMsg = document.getElementById('auth-msg');
+
+    authMsg.innerText = '';
+
+    if (isLoginMode) {
+      btnRegister.classList.add('hidden');
+      btnLogin.classList.remove('hidden');
+      toggleLink.innerText = "Don't have an account? Register here";
+    } else {
+      btnRegister.classList.remove('hidden');
+      btnLogin.classList.add('hidden');
+      toggleLink.innerText = "Already have an account? Login here";
+    }
+  }
 
   async function register() {
     const phone_number = document.getElementById('phone').value;
     const password = document.getElementById('password').value;
     
     const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number, password })
+    });
+    
+    const data = await res.json();
+    if (res.ok) {
+      currentUser = data.user;
+      loadDashboard();
+    } else {
+      document.getElementById('auth-msg').innerText = data.error;
+    }
+  }
+
+  async function login() {
+    const phone_number = document.getElementById('phone').value;
+    const password = document.getElementById('password').value;
+    
+    const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone_number, password })

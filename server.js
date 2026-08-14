@@ -15,6 +15,7 @@ const MACHINES = [
   { id: 3, name: 'HUT 9 Pro Rig', price: 150000, daily_return: 18000 }
 ];
 
+// REGISTER ROUTE
 app.post('/api/auth/register', (req, res) => {
   const { phone_number, password } = req.body;
   const ugandaPhoneRegex = /^\+256\d{9}$/;
@@ -23,13 +24,27 @@ app.post('/api/auth/register', (req, res) => {
     return res.status(400).json({ error: 'Invalid format! Use +256 followed by 9 digits.' });
   }
 
-  let user = users.find(u => u.phone_number === phone_number);
-  if (!user) {
-    user = { id: users.length + 1, phone_number, password, balance: 5000, daily_earning: 0 };
-    users.push(user);
+  let existingUser = users.find(u => u.phone_number === phone_number);
+  if (existingUser) {
+    return res.status(400).json({ error: 'Phone number already registered. Please login instead.' });
   }
 
-  res.status(200).json({ message: 'Success!', user });
+  const newUser = { id: users.length + 1, phone_number, password, balance: 5000, daily_earning: 0 };
+  users.push(newUser);
+
+  res.status(201).json({ message: 'Success!', user: newUser });
+});
+
+// LOGIN ROUTE
+app.post('/api/auth/login', (req, res) => {
+  const { phone_number, password } = req.body;
+  
+  const user = users.find(u => u.phone_number === phone_number && u.password === password);
+  if (!user) {
+    return res.status(400).json({ error: 'Invalid phone number or password!' });
+  }
+
+  res.status(200).json({ message: 'Login successful!', user });
 });
 
 app.get('/api/machines', (req, res) => res.json(MACHINES));
