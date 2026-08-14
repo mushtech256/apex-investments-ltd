@@ -90,6 +90,35 @@
     .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
     .btn-action { padding: 12px; background: #3a506b; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
     .btn-buy { width: 100%; padding: 10px; background: #0077b6; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+    /* Modal Styling */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      z-index: 100;
+    }
+    .modal-content {
+      background: #0b132b;
+      border: 1px solid #0077b6;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .payment-box {
+      background: #1c2541;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 12px 0;
+      border-left: 4px solid #48cae4;
+      text-align: left;
+    }
   </style>
 </head>
 <body>
@@ -132,12 +161,43 @@
     <div class="balance"><span id="user-balance">0</span> UGX</div>
 
     <div class="action-grid">
-      <button class="btn-action" onclick="alert('Deposit via MoMo to 0759537511')">📥 Deposit</button>
+      <button class="btn-action" onclick="openDepositModal()">📥 Deposit</button>
       <button class="btn-action" onclick="alert('Withdrawals open daily 8 AM - 6 PM')">📤 Withdraw</button>
     </div>
 
     <h3 style="margin-bottom:10px;">Available Mining Rigs</h3>
     <div id="machines-list"></div>
+  </div>
+
+  <!-- DEPOSIT MODAL -->
+  <div id="deposit-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 style="color: #48cae4; text-align: center; margin-bottom: 10px;">Deposit Funds</h3>
+      <p style="font-size: 13px; color: #e0e0e0; text-align: center;">Send payment to any of the numbers below:</p>
+
+      <div class="payment-box">
+        <p style="font-size: 14px; color: #f2a900; font-weight: bold;">MTN Mobile Money</p>
+        <p style="font-size: 16px;">Number: <strong>0773539696</strong></p>
+        <p style="font-size: 14px; color: #48cae4;">Name: <strong>NEMA KISA</strong></p>
+      </div>
+
+      <div class="payment-box">
+        <p style="font-size: 14px; color: #ff4d4d; font-weight: bold;">Airtel Money</p>
+        <p style="font-size: 16px;">Number: <strong>0795160094</strong></p>
+        <p style="font-size: 14px; color: #48cae4;">Name: <strong>Joseph Byabasaija</strong></p>
+      </div>
+
+      <div style="margin-top: 15px;">
+        <p style="font-size: 13px; margin-bottom: 5px;">Your Sending Number:</p>
+        <input type="text" id="deposit-sender" class="input-field" placeholder="e.g. 0771234567" style="margin-bottom: 10px; padding: 10px;">
+
+        <p style="font-size: 13px; margin-bottom: 5px;">Amount Sent (UGX):</p>
+        <input type="number" id="deposit-amount" class="input-field" placeholder="e.g. 15000" style="margin-bottom: 15px; padding: 10px;">
+
+        <button class="btn-buy" onclick="submitDeposit()">Submit Deposit Notification</button>
+        <button class="btn-action" onclick="closeDepositModal()" style="width: 100%; margin-top: 8px; background: #2a3447;">Cancel</button>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -230,6 +290,27 @@
     } else {
       alert('Error: ' + data.error);
     }
+  }
+
+  function openDepositModal() {
+    document.getElementById('deposit-modal').classList.remove('hidden');
+  }
+
+  function closeDepositModal() {
+    document.getElementById('deposit-modal').classList.add('hidden');
+  }
+
+  function submitDeposit() {
+    const sender = document.getElementById('deposit-sender').value;
+    const amount = document.getElementById('deposit-amount').value;
+
+    if (!sender || !amount) {
+      alert('Please fill in both your sending phone number and the amount.');
+      return;
+    }
+
+    alert(`Deposit Request Received!\n\nSending Phone: ${sender}\nAmount: ${parseInt(amount).toLocaleString()} UGX\n\nYour balance will be credited as soon as payment is confirmed on NEMA KISA or Joseph Byabasaija!`);
+    closeDepositModal();
   }
 </script>
 
