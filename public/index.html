@@ -3,157 +3,168 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HUT 9 - Welcome</title>
+  <title>HUT 9 - Future AI Hub</title>
   <style>
-    * { box-sizing: border-box; font-family: 'Times New Roman', Times, serif; margin: 0; padding: 0; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
     body {
       background-color: #030712;
-      background-image: radial-gradient(circle at 50% 80%, #003566 0%, #030712 70%);
+      background-image: radial-gradient(circle at 50% 80%, #002855 0%, #030712 75%);
       color: #ffffff;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      padding: 20px 20px 80px 20px; /* Padding bottom leaves space for nav bar */
+      padding: 15px 15px 85px 15px;
     }
-    .auth-card { width: 100%; max-width: 380px; text-align: center; }
-    h1 { font-size: 36px; font-weight: bold; margin-bottom: 35px; letter-spacing: 1px; color: #ffffff; }
+
+    .auth-card { width: 100%; max-width: 380px; text-align: center; margin-top: 40px; }
+    h1 { font-size: 36px; font-weight: bold; margin-bottom: 35px; color: #ffffff; }
     
-    .input-group {
-      position: relative;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-    }
-    .input-icon {
-      position: absolute;
-      left: 15px;
-      font-size: 18px;
-      color: #e0e0e0;
-    }
-    .input-toggle {
-      position: absolute;
-      right: 15px;
-      font-size: 18px;
-      cursor: pointer;
-      color: #e0e0e0;
-    }
+    .input-group { position: relative; margin-bottom: 20px; display: flex; align-items: center; }
+    .input-icon { position: absolute; left: 15px; font-size: 18px; color: #e0e0e0; }
+    .input-toggle { position: absolute; right: 15px; font-size: 18px; cursor: pointer; color: #e0e0e0; }
     .input-field {
-      width: 100%;
-      padding: 14px 45px;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid #2a3447;
-      border-radius: 10px;
-      color: #ffffff;
-      font-size: 16px;
-      outline: none;
-      transition: border 0.3s;
+      width: 100%; padding: 14px 45px; background: rgba(255, 255, 255, 0.03);
+      border: 1px solid #2a3447; border-radius: 10px; color: #ffffff; font-size: 16px; outline: none;
     }
     .input-field:focus { border-color: #0077b6; }
     
-    .lang-select {
-      text-align: right;
-      color: #0077b6;
-      font-size: 14px;
-      margin-bottom: 25px;
-      cursor: pointer;
-    }
-
+    .lang-select { text-align: right; color: #0077b6; font-size: 14px; margin-bottom: 25px; cursor: pointer; }
     .btn-login {
-      width: 100%;
-      padding: 14px;
-      background: transparent;
-      border: 1px solid #0077b6;
-      color: #0077b6;
-      font-size: 20px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-      margin-bottom: 20px;
+      width: 100%; padding: 14px; background: transparent; border: 1px solid #0077b6;
+      color: #0077b6; font-size: 20px; border-radius: 10px; cursor: pointer; margin-bottom: 20px;
     }
-    .btn-login:hover { background: rgba(0, 119, 182, 0.1); }
+    .bottom-links { display: flex; justify-content: space-between; font-size: 14px; color: #e0e0e0; }
+    .bottom-links span { cursor: pointer; }
 
-    .bottom-links {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      color: #e0e0e0;
-    }
-    .bottom-links span { cursor: pointer; text-decoration: none; }
-
-    /* Dashboard Styles */
-    .dashboard-container { width: 100%; max-width: 450px; background: #0b132b; border-radius: 12px; padding: 20px; border: 1px solid #1c2541; }
-    .card { background: #1c2541; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #3a506b; }
-    .balance { font-size: 28px; font-weight: bold; color: #48cae4; text-align: center; margin: 10px 0; }
-    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .btn-action { padding: 12px; background: #3a506b; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .btn-buy { width: 100%; padding: 10px; background: #0077b6; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-
-    /* Hidden Utility Class */
+    /* Main Container */
+    .dashboard-container { width: 100%; max-width: 440px; }
     .hidden { display: none !important; }
 
-    /* Bottom Navigation Bar */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: #080f26;
-      border-top: 1px solid #1c2541;
+    /* Top Header Profile */
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .user-info { display: flex; flex-direction: column; gap: 4px; }
+    .user-phone { font-size: 18px; font-weight: bold; letter-spacing: 0.5px; }
+    .vip-tag {
+      background: rgba(0, 119, 182, 0.2);
+      border: 1px solid #0077b6;
+      color: #48cae4;
+      padding: 4px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      width: fit-content;
+      margin-top: 4px;
+    }
+    .avatar-box img {
+      width: 55px; height: 55px; border-radius: 50%; border: 2px solid #0077b6; object-fit: cover;
+    }
+
+    /* Balance Box */
+    .balance-card {
+      background: rgba(11, 19, 43, 0.7);
+      border: 1px solid #0077b6;
+      border-radius: 16px;
+      padding: 18px;
       display: flex;
       justify-content: space-around;
-      align-items: center;
-      padding: 10px 0;
-      z-index: 99;
+      text-align: center;
+      margin-bottom: 15px;
     }
-    .nav-item {
+    .balance-title { font-size: 13px; color: #8d99ae; margin-bottom: 4px; }
+    .balance-value { font-size: 22px; font-weight: bold; color: #ffffff; }
+
+    /* Icon Grid */
+    .icon-grid {
+      background: rgba(11, 19, 43, 0.6);
+      border: 1px solid #1c2541;
+      border-radius: 16px;
+      padding: 15px 10px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px 10px;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .grid-btn {
       display: flex;
       flex-direction: column;
       align-items: center;
-      color: #8d99ae;
-      font-size: 11px;
       cursor: pointer;
-      text-decoration: none;
-      transition: color 0.3s;
-      flex: 1;
     }
-    .nav-item .icon {
-      font-size: 20px;
-      margin-bottom: 3px;
-    }
-    .nav-item.active, .nav-item:hover {
-      color: #0077b6;
-    }
-
-    /* Modal Styling */
-    .modal {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
+    .grid-icon-box {
+      width: 48px;
+      height: 48px;
+      background: #0077b6;
+      border-radius: 12px;
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 20px;
-      z-index: 100;
+      font-size: 22px;
+      margin-bottom: 6px;
+      box-shadow: 0 4px 10px rgba(0, 119, 182, 0.3);
     }
-    .modal-content {
-      background: #0b132b;
-      border: 1px solid #0077b6;
+    .grid-label { font-size: 12px; color: #e0e0e0; }
+
+    /* Share Card */
+    .info-card {
+      background: rgba(11, 19, 43, 0.6);
+      border: 1px solid #1c2541;
       border-radius: 12px;
-      padding: 20px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    /* Salary Section */
+    .salary-box {
+      background: rgba(11, 19, 43, 0.6);
+      border: 1px solid #1c2541;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .salary-flex { display: flex; justify-content: space-around; text-align: center; margin-bottom: 12px; }
+    .btn-salary {
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-    }
-    .payment-box {
-      background: #1c2541;
-      border-radius: 8px;
       padding: 12px;
-      margin: 12px 0;
-      border-left: 4px solid #48cae4;
-      text-align: left;
+      background: #0077b6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
     }
+
+    /* Rigs & Cards */
+    .card { background: #1c2541; padding: 15px; border-radius: 12px; margin-bottom: 12px; border: 1px solid #3a506b; }
+    .btn-buy { width: 100%; padding: 12px; background: #0077b6; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: #080f26; border-top: 1px solid #1c2541;
+      display: flex; justify-content: space-around; padding: 10px 0; z-index: 99;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      color: #8d99ae; font-size: 11px; cursor: pointer; flex: 1;
+    }
+    .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
+    .nav-item.active { color: #0077b6; font-weight: bold; }
+
+    /* Modal */
+    .modal {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85); display: flex; justify-content: center; align-items: center; padding: 20px; z-index: 100;
+    }
+    .modal-content { background: #0b132b; border: 1px solid #0077b6; border-radius: 12px; padding: 20px; width: 100%; max-width: 400px; }
+    .payment-box { background: #1c2541; border-radius: 8px; padding: 12px; margin: 10px 0; border-left: 4px solid #48cae4; }
   </style>
 </head>
 <body>
@@ -161,49 +172,46 @@
   <!-- AUTH SECTION -->
   <div id="auth-section" class="auth-card">
     <h1 id="auth-title">Welcome</h1>
-
-    <!-- PHONE FIELD -->
     <div class="input-group">
       <span class="input-icon">📱</span>
       <input type="text" id="phone" class="input-field" placeholder="Phone Number">
     </div>
-
-    <!-- PASSWORD FIELD -->
     <div class="input-group">
       <span class="input-icon">🔑</span>
       <input type="password" id="password" class="input-field" placeholder="Login Password">
       <span class="input-toggle" onclick="togglePasswordVisibility()">👁️</span>
     </div>
-
     <div class="lang-select">English ▾</div>
-
-    <!-- SUBMIT BUTTON -->
     <button id="auth-btn" class="btn-login" onclick="handleAuth()">Login</button>
-
-    <!-- BOTTOM LINKS -->
     <div class="bottom-links">
       <span id="toggle-link" onclick="toggleMode()">❮ Register</span>
       <span onclick="alert('Please contact support to reset your password.')">Forgot your password?</span>
     </div>
-
     <p id="auth-msg" style="color: #ff4d4d; margin-top: 15px; font-size: 14px;"></p>
   </div>
 
   <!-- DASHBOARD SECTION -->
   <div id="dashboard" class="dashboard-container hidden">
-    <!-- TAB 1: HOME -->
-    <div id="tab-home">
-      <h2 style="color:#0077b6; text-align:center;">HUT 9 Dashboard</h2>
-      <p style="text-align:center; margin-top:5px;">User: <span id="user-phone"></span></p>
-      <div class="balance"><span id="user-balance">0</span> UGX</div>
 
-      <div class="action-grid">
-        <button class="btn-action" onclick="openDepositModal()">📥 Deposit</button>
-        <button class="btn-action" onclick="alert('Withdrawals open daily 8 AM - 6 PM')">📤 Withdraw</button>
+    <!-- TAB 1: HOME (INTERFACE WITHOUT MACHINES) -->
+    <div id="tab-home">
+      <p style="color:#0077b6; font-size:14px; margin-bottom:10px;">Welcome to Future Ai hub</p>
+      
+      <div class="balance-card">
+        <div>
+          <div class="balance-title">Wallet</div>
+          <div class="balance-value">0.00</div>
+        </div>
+        <div>
+          <div class="balance-title">Balance</div>
+          <div class="balance-value"><span id="home-balance">0.00</span></div>
+        </div>
       </div>
 
-      <h3 style="margin-bottom:10px;">Available Mining Rigs</h3>
-      <div id="machines-list"></div>
+      <div class="info-card">
+        <p style="color: #8d99ae; font-size: 13px;">Platform Announcements</p>
+        <p style="font-size: 15px; margin-top: 5px;">🔥 Welcome to HUT 9 Mining Hub! Earn daily profits by joining mining rigs.</p>
+      </div>
     </div>
 
     <!-- TAB 2: RAFFLE -->
@@ -211,17 +219,14 @@
       <h2 style="color:#0077b6; text-align:center;">🎁 Raffle Draws</h2>
       <div class="card" style="margin-top:15px; text-align:center;">
         <p>Participate in daily lucky draws and win bonus mining power!</p>
-        <button class="btn-buy" style="margin-top:15px;" onclick="alert('Daily Raffle opens at 8:00 PM!')">Spin Lucky Wheel</button>
+        <button class="btn-buy" onclick="alert('Daily Raffle opens at 8:00 PM!')">Spin Lucky Wheel</button>
       </div>
     </div>
 
-    <!-- TAB 3: AI -->
+    <!-- TAB 3: AI (MACHINES DISPLAYED HERE) -->
     <div id="tab-ai" class="hidden">
-      <h2 style="color:#0077b6; text-align:center;">🤖 AI Mining Assistant</h2>
-      <div class="card" style="margin-top:15px; text-align:center;">
-        <p>Optimize your yield returns using automated AI trading strategies.</p>
-        <button class="btn-buy" style="margin-top:15px;" onclick="alert('AI Auto-Mining is active!')">Activate Auto-Trader</button>
-      </div>
+      <h2 style="color:#0077b6; text-align:center; margin-bottom: 15px;">🤖 AI Mining Machines</h2>
+      <div id="machines-list"></div>
     </div>
 
     <!-- TAB 4: CHATS -->
@@ -229,19 +234,107 @@
       <h2 style="color:#0077b6; text-align:center;">💬 Community Chats</h2>
       <div class="card" style="margin-top:15px; text-align:center;">
         <p>Connect with other miners and share strategies.</p>
-        <button class="btn-buy" style="margin-top:15px;" onclick="alert('Joining Uganda Telegram Group...')">Join Telegram Chat</button>
+        <button class="btn-buy" onclick="alert('Joining Uganda Telegram Group...')">Join Telegram Chat</button>
       </div>
     </div>
 
-    <!-- TAB 5: ME -->
+    <!-- TAB 5: MY (COMPLETE ICON DASHBOARD) -->
     <div id="tab-me" class="hidden">
-      <h2 style="color:#0077b6; text-align:center;">👤 Profile & Settings</h2>
-      <div class="card" style="margin-top:15px;">
-        <p><strong>Account Status:</strong> Verified</p>
-        <p style="margin-top:10px;"><strong>VIP Level:</strong> Tier 1</p>
-        <button class="btn-action" style="width:100%; margin-top:15px; background:#ff4d4d;" onclick="location.reload()">Logout</button>
+      <p style="color:#0077b6; font-size:14px; margin-bottom:8px;">Welcome to Future Ai hub</p>
+      
+      <!-- User Profile Row -->
+      <div class="profile-header">
+        <div class="user-info">
+          <div class="user-phone"><span id="user-phone">0759537511</span></div>
+          <div class="vip-tag">VIP - 3</div>
+        </div>
+        <div class="avatar-box">
+          <img src="https://ui-avatars.com/api/?name=Kenny+Rodgers&background=0077b6&color=fff" alt="Profile">
+        </div>
+      </div>
+
+      <!-- Wallet & Balance Box -->
+      <div class="balance-card">
+        <div>
+          <div class="balance-title">Wallet</div>
+          <div class="balance-value">0.00</div>
+        </div>
+        <div>
+          <div class="balance-title">Balance</div>
+          <div class="balance-value"><span id="me-balance">3,456,000.00</span></div>
+        </div>
+      </div>
+
+      <!-- 11 Action Grid Icons -->
+      <div class="icon-grid">
+        <div class="grid-btn" onclick="openDepositModal()">
+          <div class="grid-icon-box">👛</div>
+          <span class="grid-label">Deposit</span>
+        </div>
+        <div class="grid-btn" onclick="alert('Withdrawals open daily 8 AM - 6 PM')">
+          <div class="grid-icon-box">💸</div>
+          <span class="grid-label">Withdraw</span>
+        </div>
+        <div class="grid-btn" onclick="alert('No pending bills.')">
+          <div class="grid-icon-box">💳</div>
+          <span class="grid-label">Bill</span>
+        </div>
+        <div class="grid-btn" onclick="alert('Your Invite Link: https://hut9-app.onrender.com/ref/102')">
+          <div class="grid-icon-box">🤝</div>
+          <span class="grid-label">Invite</span>
+        </div>
+        <div class="grid-btn" onclick="alert('Team Members: 0')">
+          <div class="grid-icon-box">👥</div>
+          <span class="grid-label">My team</span>
+        </div>
+        <div class="grid-btn" onclick="alert('VIP Tasks unlocked at VIP-3!')">
+          <div class="grid-icon-box">⭐</div>
+          <span class="grid-label">VIP Task</span>
+        </div>
+        <div class="grid-btn" onclick="alert('No pending rewards.')">
+          <div class="grid-icon-box">🎁</div>
+          <span class="grid-label">Reward</span>
+        </div>
+        <div class="grid-btn" onclick="switchTab('raffle', document.querySelectorAll('.nav-item')[1])">
+          <div class="grid-icon-box">🎟️</div>
+          <span class="grid-label">Raffle</span>
+        </div>
+        <div class="grid-btn" onclick="alert('Downloading Mobile App...')">
+          <div class="grid-icon-box">📥</div>
+          <span class="grid-label">Download App</span>
+        </div>
+        <div class="grid-btn" onclick="alert('Contact Manager on Telegram: @HUT9_Support')">
+          <div class="grid-icon-box">🎧</div>
+          <span class="grid-label">Manager</span>
+        </div>
+        <div class="grid-btn" onclick="alert('Settings menu')">
+          <div class="grid-icon-box">⚙️</div>
+          <span class="grid-label">Settings</span>
+        </div>
+      </div>
+
+      <!-- HUT Cryptocurrency Purchase Share -->
+      <div class="info-card">
+        <p style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">HUT8 Cryptocurrency Purchase Share</p>
+        <p style="font-size: 22px; font-weight: bold;">45,250.00</p>
+      </div>
+
+      <!-- Salary Section -->
+      <div class="salary-box">
+        <div class="salary-flex">
+          <div>
+            <div style="font-size:12px; color:#8d99ae;">Last month's salary</div>
+            <div style="font-size:18px; font-weight:bold; margin-top:2px;">56,000.00</div>
+          </div>
+          <div>
+            <div style="font-size:12px; color:#8d99ae;">This month's salary</div>
+            <div style="font-size:18px; font-weight:bold; margin-top:2px;">0.00</div>
+          </div>
+        </div>
+        <button class="btn-salary" onclick="alert('Salary claimed successfully!')">Get last month's salary</button>
       </div>
     </div>
+
   </div>
 
   <!-- BOTTOM NAVIGATION BAR -->
@@ -254,17 +347,17 @@
       <span class="icon">🎟️</span>
       <span>Raffle</span>
     </div>
+    <div class="nav-item" onclick="switchTab('chats', this)">
+      <span class="icon">💬</span>
+      <span>chats</span>
+    </div>
     <div class="nav-item" onclick="switchTab('ai', this)">
       <span class="icon">🤖</span>
       <span>AI</span>
     </div>
-    <div class="nav-item" onclick="switchTab('chats', this)">
-      <span class="icon">💬</span>
-      <span>Chats</span>
-    </div>
     <div class="nav-item" onclick="switchTab('me', this)">
       <span class="icon">👤</span>
-      <span>Me</span>
+      <span>My</span>
     </div>
   </div>
 
@@ -294,7 +387,7 @@
         <input type="number" id="deposit-amount" class="input-field" placeholder="e.g. 15000" style="margin-bottom: 15px; padding: 10px;">
 
         <button class="btn-buy" onclick="submitDeposit()">Submit Deposit Notification</button>
-        <button class="btn-action" onclick="closeDepositModal()" style="width: 100%; margin-top: 8px; background: #2a3447;">Cancel</button>
+        <button class="btn-salary" onclick="closeDepositModal()" style="width: 100%; margin-top: 8px; background: #2a3447;">Cancel</button>
       </div>
     </div>
   </div>
@@ -352,8 +445,11 @@
     document.getElementById('auth-section').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     document.getElementById('bottom-nav').classList.remove('hidden');
+    
     document.getElementById('user-phone').innerText = currentUser.phone_number;
-    document.getElementById('user-balance').innerText = currentUser.balance.toLocaleString();
+    document.getElementById('home-balance').innerText = currentUser.balance.toLocaleString() + '.00';
+    document.getElementById('me-balance').innerText = currentUser.balance.toLocaleString() + '.00';
+    
     fetchMachines();
   }
 
@@ -365,7 +461,7 @@
     document.getElementById(`tab-${tabName}`).classList.remove('hidden');
 
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-    el.classList.add('active');
+    if (el) el.classList.add('active');
   }
 
   async function fetchMachines() {
@@ -377,9 +473,9 @@
     machines.forEach(m => {
       list.innerHTML += `
         <div class="card">
-          <h4>${m.name}</h4>
+          <h4 style="font-size: 17px; color: #ffffff;">${m.name}</h4>
           <p style="color: #f2a900; margin: 5px 0;">Price: <strong>${m.price.toLocaleString()} UGX</strong></p>
-          <p style="color: #48cae4; margin-bottom: 10px;">Daily: <strong>+${m.daily_return.toLocaleString()} UGX</strong></p>
+          <p style="color: #48cae4; margin-bottom: 8px;">Daily Return: <strong>+${m.daily_return.toLocaleString()} UGX</strong></p>
           <button class="btn-buy" onclick="buyMachine(${m.id})">Buy Machine</button>
         </div>
       `;
