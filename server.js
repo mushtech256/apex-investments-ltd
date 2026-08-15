@@ -79,14 +79,15 @@ app.post('/api/deposit', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Phone and amount are required' });
     }
 
-    let formattedPhone = phone.toString().replace(/\+/g, '').trim();
-    if (formattedPhone.startsWith('0')) {
-      formattedPhone = '256' + formattedPhone.slice(1);
+    let cleanPhone = phone.toString().replace(/\+/g, '').trim();
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '256' + cleanPhone.slice(1);
     }
+    const formattedPhone = '+' + cleanPhone;
 
     const payload = {
       account_no: process.env.RELWORX_ACCOUNT_NO,
-      reference: `DEP-${Date.now()}`,
+      reference: `DEP${Date.now()}`,
       msisdn: formattedPhone,
       amount: Number(amount),
       currency: 'UGX',
@@ -95,12 +96,11 @@ app.post('/api/deposit', async (req, res) => {
 
     console.log("Sending payload to Relworx:", payload);
 
-    const response = await fetch('https://api.relworx.com/v1/mobile-money/request-payment', {
+    const response = await fetch('https://payments.relworx.com/api/mobile-money/request-payment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Accept': 'application/vnd.relworx.v2',
         'Authorization': `Bearer ${process.env.RELWORX_API_KEY}`
       },
       body: JSON.stringify(payload)
