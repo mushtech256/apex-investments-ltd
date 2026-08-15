@@ -73,6 +73,60 @@ app.post('/api/claim', (req, res) => {
   res.json({ message: `Claimed +${user.daily_earning} UGX daily earnings!`, user });
 });
 
+// DEPOSIT ROUTE (Triggers Relworx PIN prompt)
+app.post('/api/deposit', async (req, res) => {
+  try {
+    const { phone, amount } = req.body;
+
+    if (!phone || !amount) {
+      return res.status(400).json({ success: false, message: 'Phone and amount are required' });
+    }
+
+    const response = await fetch('https://api.relworx.com/v1/mobile-money/request-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.RELWORX_API_KEY}`
+      },
+      body: JSON.stringify({
+        account_no: process.env.RELWORX_ACCOUNT_NO,
+        reference: `DEP-${Date.now()}`,
+        msisdn: phone,
+        amount: Number(amount),
+        currency: 'UGX',
+        description: 'Account Deposit'
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === 'success') {
+      return res.json({ success: true, message: 'PIN prompt sent successfully' });
+    } else {
+      return res.status(400).json({ success: false, message: data.message || 'Payment failed' });
+    }
+
+  } catch (error) {
+    console.error('Deposit Error:', error);
+    return res.status(500).json({ success: false, message: 'Server error processing deposit' });
+  }
+});
+
+// RELWORX WEBHOOK (Updates user balance when user enters PIN)
+app.post('/api/relworx-callback', (req, res) => {
+  const { status, amount, msisdn } = req.body;
+
+  if (status === 'SUCCESS' || status === 'COMPLETED') {
+    const user = users.find(u => u.phone_number === msisdn);
+    if (user) {
+      user.balance = (user.balance || 0) + Number(amount);
+      console.log(`Credited ${amount} to ${msisdn}`);
+    }
+  }
+
+  res.status(200).json({ status: 'ok' });
+});
+
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const PORT = process.env.PORT || 5000;
