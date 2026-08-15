@@ -70,7 +70,7 @@ app.post('/api/claim', (req, res) => {
   res.json({ message: `Claimed +${user.daily_earning} UGX daily earnings!`, balance: user.balance });
 });
 
-// DEPOSIT ROUTE
+// MOCK DEPOSIT ROUTE (For Testing UI Flow)
 app.post('/api/deposit', async (req, res) => {
   try {
     const { phone, amount } = req.body;
@@ -85,46 +85,22 @@ app.post('/api/deposit', async (req, res) => {
     }
     const formattedPhone = '+' + cleanPhone;
 
-    const payload = {
-      account_no: process.env.RELWORX_ACCOUNT_NO,
-      reference: `DEP${Date.now()}`,
-      msisdn: formattedPhone,
-      amount: Number(amount),
-      currency: 'UGX',
-      description: 'Account Deposit'
-    };
+    // Simulate crediting the user balance directly for development
+    let user = users.find(u => u.phone_number === formattedPhone);
+    if (user) {
+      user.balance = (user.balance || 0) + Number(amount);
+    }
 
-    console.log("Sending payload to Relworx:", payload);
+    console.log(`[MOCK DEPOSIT] Successfully credited ${amount} UGX to ${formattedPhone}`);
 
-    const response = await fetch('https://payments.relworx.com/api/mobile-money/request-payment', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.relworx.v2',
-        'Authorization': `Bearer ${process.env.RELWORX_API_KEY}`
-      },
-      body: JSON.stringify(payload)
+    return res.json({
+      success: true,
+      message: 'Deposit simulated successfully! (Mock Mode)'
     });
-
-    const responseText = await response.text();
-    console.log("Relworx raw response:", responseText);
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
-      return res.status(500).json({ success: false, message: 'Relworx returned non-JSON response. Check API credentials or endpoint.' });
-    }
-
-    if (response.ok && (data.status === 'success' || data.success)) {
-      return res.json({ success: true, message: 'PIN prompt sent successfully' });
-    } else {
-      return res.status(400).json({ success: false, message: data.message || data.error || 'Relworx payment initiation failed' });
-    }
 
   } catch (error) {
     console.error('Deposit Error Details:', error);
-    return res.status(500).json({ success: false, message: error.message || 'Server error processing deposit' });
+    return res.status(500).json({ success: false, message: 'Server error processing mock deposit' });
   }
 });
 
