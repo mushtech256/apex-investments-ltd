@@ -70,7 +70,7 @@ app.post('/api/claim', (req, res) => {
   res.json({ message: `Claimed +${user.daily_earning} UGX daily earnings!`, balance: user.balance });
 });
 
-// DEPOSIT ROUTE (With phone formatting and detailed error logging)
+// DEPOSIT ROUTE
 app.post('/api/deposit', async (req, res) => {
   try {
     const { phone, amount } = req.body;
@@ -95,7 +95,7 @@ app.post('/api/deposit', async (req, res) => {
 
     console.log("Sending payload to Relworx:", payload);
 
-    const response = await fetch('https://api.relworx.com/v1/mobile-money/request-payment', {
+    const response = await fetch('https://relworx.com/api/v1/mobile-money/request-payment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
