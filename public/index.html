@@ -367,17 +367,9 @@
       <h3 style="color: #48cae4; text-align: center; margin-bottom: 10px;">Deposit Funds</h3>
       <p style="font-size: 13px; color: #e0e0e0; text-align: center;">Send payment to any of the numbers below:</p>
 
-      <div class="payment-box">
-        <p style="font-size: 14px; color: #f2a900; font-weight: bold;">MTN Mobile Money</p>
-        <p style="font-size: 16px;">Number: <strong>0773539696</strong></p>
-        <p style="font-size: 14px; color: #48cae4;">Name: <strong>NEMA KISA</strong></p>
-      </div>
+      
 
-      <div class="payment-box">
-        <p style="font-size: 14px; color: #ff4d4d; font-weight: bold;">Airtel Money</p>
-        <p style="font-size: 16px;">Number: <strong>0795160094</strong></p>
-        <p style="font-size: 14px; color: #48cae4;">Name: <strong>Joseph Byabasaija</strong></p>
-      </div>
+      
 
       <div style="margin-top: 15px;">
         <p style="font-size: 13px; margin-bottom: 5px;">Your Sending Number:</p>
@@ -507,19 +499,45 @@
     document.getElementById('deposit-modal').classList.add('hidden');
   }
 
-  function submitDeposit() {
+  async function submitDeposit(event) {
+    if (event) event.preventDefault();
+
     const sender = document.getElementById('deposit-sender').value;
     const amount = document.getElementById('deposit-amount').value;
 
     if (!sender || !amount) {
-      alert('Please fill in both your sending phone number and the amount.');
+      alert("Please enter both phone number and amount.");
       return;
     }
 
-    alert(`Deposit Request Received!\n\nSending Phone: ${sender}\nAmount: ${parseInt(amount).toLocaleString()} UGX\n\nYour balance will be credited as soon as payment is confirmed on NEMA KISA or Joseph Byabasaija!`);
-    closeDepositModal();
+    alert("Sending Mobile Money prompt to your phone...");
+
+    try {
+      const response = await fetch('/api/deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: sender,
+          amount: amount
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("PIN Prompt Sent! Please enter your MTN/Airtel PIN on your phone.");
+        closeDepositModal();
+      } else {
+        alert("Failed: " + (data.message || "Please try again."));
+      }
+    } catch (err) {
+      console.error("Deposit Error:", err);
+      alert("Network error. Please try again.");
+    }
   }
-</script>
+
+    
+ </script>
 
 </body>
 </html>
