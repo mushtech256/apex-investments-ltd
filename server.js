@@ -95,17 +95,26 @@ app.post('/api/deposit', async (req, res) => {
 
     console.log("Sending payload to Relworx:", payload);
 
-    const response = await fetch('https://relworx.com/api/v1/mobile-money/request-payment', {
+    const response = await fetch('https://api.relworx.com/v1/mobile-money/request-payment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         'Authorization': `Bearer ${process.env.RELWORX_API_KEY}`
       },
       body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
-    console.log("Relworx response data:", data);
+    const responseText = await response.text();
+    console.log("Relworx raw response:", responseText);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      return res.status(500).json({ success: false, message: 'Relworx returned non-JSON response. Check API credentials or endpoint.' });
+    }
 
     if (response.ok && (data.status === 'success' || data.success)) {
       return res.json({ success: true, message: 'PIN prompt sent successfully' });
