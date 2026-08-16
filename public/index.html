@@ -5,35 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HUT 9 - Future AI Hub</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
       background-color: #0b132b;
       color: #ffffff;
       font-family: Arial, sans-serif;
       margin: 0;
+      padding-bottom: 70px;
+    }
+    
+    .tab-content {
+      display: none;
       padding: 15px;
     }
+    .tab-content.active {
+      display: block;
+    }
+
     h2 {
       text-align: center;
       color: #00b4d8;
+      margin-top: 10px;
     }
-    
+
     /* Horizontal Series Tabs */
     .series-nav {
       display: flex;
       gap: 10px;
       overflow-x: auto;
       padding: 10px 0;
-      margin-bottom: 20px;
-      scrollbar-width: none; /* Firefox */
+      margin-bottom: 15px;
+      scrollbar-width: none;
     }
     .series-nav::-webkit-scrollbar {
-      display: none; /* Chrome/Safari */
+      display: none;
     }
     .series-btn {
       background: #1c2541;
       color: #90e0ef;
       border: 1px solid #00b4d8;
-      padding: 10px 18px;
+      padding: 8px 16px;
       border-radius: 20px;
       white-space: nowrap;
       font-weight: bold;
@@ -44,7 +57,7 @@
       color: #0b132b;
     }
 
-    /* Vertical Machine Cards Layout */
+    /* Vertical Cards */
     .machine-list {
       display: flex;
       flex-direction: column;
@@ -62,7 +75,7 @@
       color: #ffffff;
     }
     .card p {
-      margin: 5px 0;
+      margin: 6px 0;
       font-size: 14px;
     }
     .highlight {
@@ -84,24 +97,115 @@
       margin-top: 10px;
       cursor: pointer;
     }
-    .buy-btn:hover {
-      background: #0096c7;
+
+    /* Bottom Navigation Bar */
+    .navbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background-color: #070d1f;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      border-top: 1px solid #1c2541;
+      z-index: 1000;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #6c757d;
+      font-size: 11px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .nav-item.active {
+      color: #00b4d8;
+    }
+    .nav-icon {
+      font-size: 18px;
+      margin-bottom: 2px;
     }
   </style>
 </head>
 <body>
 
-  <h2>🤖 AI Mining Machines</h2>
+  <!-- Home Section -->
+  <div id="tab-home" class="tab-content">
+    <h2>🏠 Home</h2>
+    <p style="text-align: center;">Welcome to Future AI Hub</p>
+  </div>
 
-  <!-- Horizontal Scrollable Tabs -->
-  <div class="series-nav" id="seriesNav"></div>
+  <!-- Raffle Section -->
+  <div id="tab-raffle" class="tab-content">
+    <h2>🎟️ Raffle</h2>
+    <p style="text-align: center;">Raffle events coming soon!</p>
+  </div>
 
-  <!-- Vertical Machines Container -->
-  <div class="machine-list" id="machineList"></div>
+  <!-- Chats Section -->
+  <div id="tab-chats" class="tab-content">
+    <h2>💬 Chats</h2>
+    <p style="text-align: center;">Community support and chat room.</p>
+  </div>
+
+  <!-- AI Mining Section -->
+  <div id="tab-ai" class="tab-content active">
+    <h2>🤖 AI Mining Machines</h2>
+    
+    <!-- Horizontal Series Sub-Tabs -->
+    <div class="series-nav" id="seriesNav"></div>
+
+    <!-- Vertical Machines Container -->
+    <div class="machine-list" id="machineList"></div>
+  </div>
+
+  <!-- My Section -->
+  <div id="tab-my" class="tab-content">
+    <h2>👤 My Account</h2>
+    <p style="text-align: center;">Profile, Deposits, and Withdrawals</p>
+  </div>
+
+  <!-- Main Bottom Navigation Bar -->
+  <div class="navbar">
+    <div class="nav-item" onclick="switchMainTab('home', this)">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="switchMainTab('raffle', this)">
+      <span class="nav-icon">🎟️</span>
+      <span>Raffle</span>
+    </div>
+    <div class="nav-item" onclick="switchMainTab('chats', this)">
+      <span class="nav-icon">💬</span>
+      <span>Chats</span>
+    </div>
+    <div class="nav-item active" id="nav-ai" onclick="switchMainTab('ai', this)">
+      <span class="nav-icon">🤖</span>
+      <span>AI</span>
+    </div>
+    <div class="nav-item" onclick="switchMainTab('my', this)">
+      <span class="nav-icon">👤</span>
+      <span>My</span>
+    </div>
+  </div>
 
   <script>
     let currentSeriesData = {};
     let selectedSeries = 'C-SERIES';
+
+    function switchMainTab(tabName, el) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+      if(el) el.classList.add('active');
+
+      if (tabName === 'ai') {
+        fetchMachines();
+      }
+    }
 
     async function fetchMachines() {
       try {
