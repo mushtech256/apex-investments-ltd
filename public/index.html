@@ -98,6 +98,73 @@
       cursor: pointer;
     }
 
+    /* User Profile & Account Styles */
+    .account-header {
+      background: #1c2541;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #3a506b;
+      margin-bottom: 20px;
+    }
+    .balance-title {
+      color: #90e0ef;
+      font-size: 14px;
+      margin: 0;
+    }
+    .balance-amount {
+      color: #ffb703;
+      font-size: 28px;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    /* Account Grid Actions */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .action-card {
+      background: #1c2541;
+      border: 1px solid #3a506b;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .action-icon {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .action-label {
+      font-size: 13px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    /* Menu List Options */
+    .menu-list {
+      background: #1c2541;
+      border-radius: 10px;
+      border: 1px solid #3a506b;
+      overflow: hidden;
+    }
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid #2a3b5c;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .menu-item:last-child {
+      border-bottom: none;
+    }
+
     /* Bottom Navigation Bar */
     .navbar {
       position: fixed;
@@ -163,8 +230,49 @@
 
   <!-- My Section -->
   <div id="tab-my" class="tab-content">
-    <h2>👤 My Account</h2>
-    <p style="text-align: center;">Profile, Deposits, and Withdrawals</p>
+    <h2>👤 My Dashboard</h2>
+
+    <div class="account-header">
+      <p class="balance-title">Account Balance</p>
+      <div class="balance-amount">0 UGX</div>
+      <p style="font-size: 12px; color: #8d99ae; margin: 0;">ID: 8940321</p>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="action-grid">
+      <div class="action-card" onclick="handleAction('Deposit')">
+        <span class="action-icon">💳</span>
+        <span class="action-label">Deposit</span>
+      </div>
+      <div class="action-card" onclick="handleAction('Withdraw')">
+        <span class="action-icon">🏧</span>
+        <span class="action-label">Withdraw</span>
+      </div>
+      <div class="action-card" onclick="handleAction('Download App')">
+        <span class="action-icon">📲</span>
+        <span class="action-label">Download App</span>
+      </div>
+      <div class="action-card" onclick="handleAction('Records')">
+        <span class="action-icon">📋</span>
+        <span class="action-label">Records</span>
+      </div>
+    </div>
+
+    <!-- Account Settings List -->
+    <div class="menu-list">
+      <div class="menu-item" onclick="handleAction('Personal Information')">
+        <span>👤 Personal Details</span>
+        <span>›</span>
+      </div>
+      <div class="menu-item" onclick="handleAction('Binding Mobile Money')">
+        <span>📱 Mobile Money Wallet</span>
+        <span>›</span>
+      </div>
+      <div class="menu-item" onclick="handleAction('Security Settings')">
+        <span>🔒 Security & Password</span>
+        <span>›</span>
+      </div>
+    </div>
   </div>
 
   <!-- Main Bottom Navigation Bar -->
@@ -266,6 +374,10 @@
       });
       const data = await res.json();
       alert(data.message || data.error);
+    }
+
+    function handleAction(name) {
+      alert(`${name} feature opened.`);
     }
 
     fetchMachines();
