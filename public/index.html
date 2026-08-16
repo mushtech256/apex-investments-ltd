@@ -86,7 +86,7 @@
       color: #90e0ef;
       margin-bottom: 5px;
     }
-    .form-group input {
+    .form-group input, .form-group select {
       width: 100%;
       padding: 12px;
       background: #0b132b;
@@ -95,7 +95,7 @@
       color: #ffffff;
       font-size: 14px;
     }
-    .form-group input:focus {
+    .form-group input:focus, .form-group select:focus {
       outline: none;
       border-color: #00b4d8;
     }
@@ -288,6 +288,46 @@
       font-size: 18px;
       margin-bottom: 2px;
     }
+
+    /* Deposit Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-card {
+      background: #1c2541;
+      border: 1px solid #3a506b;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      padding: 20px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #3a506b;
+      padding-bottom: 10px;
+    }
+    .modal-header h3 {
+      margin: 0;
+      color: #00b4d8;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #8d99ae;
+      font-size: 20px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -374,13 +414,13 @@
 
     <div class="account-header">
       <p class="balance-title">Account Balance</p>
-      <div class="balance-amount">0 UGX</div>
+      <div class="balance-amount" id="userBalanceDisplay">0 UGX</div>
       <p id="displayAccountPhone" style="font-size: 12px; color: #8d99ae; margin: 0;">Phone: Not Logged In</p>
     </div>
 
     <!-- Quick Action Buttons -->
     <div class="action-grid">
-      <div class="action-card" onclick="handleAction('Deposit')">
+      <div class="action-card" onclick="openDepositModal()">
         <span class="action-icon">💳</span>
         <span class="action-label">Deposit</span>
       </div>
@@ -415,6 +455,34 @@
     </div>
   </div>
 
+  <!-- Deposit Modal -->
+  <div class="modal-overlay" id="depositModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>💳 Mobile Money Deposit</h3>
+        <button class="close-btn" onclick="closeDepositModal()">&times;</button>
+      </div>
+      <form onsubmit="submitDeposit(event)">
+        <div class="form-group">
+          <label>Select Mobile Network</label>
+          <select id="depositNetwork" required>
+            <option value="MTN Mobile Money">MTN Mobile Money</option>
+            <option value="Airtel Money">Airtel Money</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phone Number (+256...)</label>
+          <input type="text" id="depositPhone" placeholder="07xxxxxxxx" required>
+        </div>
+        <div class="form-group">
+          <label>Deposit Amount (UGX)</label>
+          <input type="number" id="depositAmount" placeholder="e.g. 10000" min="5000" step="1000" required>
+        </div>
+        <button type="submit" class="auth-submit-btn">Confirm Payment Prompt</button>
+      </form>
+    </div>
+  </div>
+
   <!-- Main Bottom Navigation Bar -->
   <div class="navbar">
     <div class="nav-item active" id="nav-home" onclick="switchMainTab('home', this)">
@@ -443,6 +511,7 @@
     let currentSeriesData = {};
     let selectedSeries = 'C-SERIES';
     let currentUser = null;
+    let userBalance = 0;
 
     function switchMainTab(tabName, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -484,9 +553,33 @@
       document.getElementById('userStatusBox').style.display = 'block';
       document.getElementById('loggedInUserPhone').innerText = `Logged in as: ${currentUser}`;
       document.getElementById('displayAccountPhone').innerText = `Phone: ${currentUser}`;
+      document.getElementById('depositPhone').value = currentUser;
 
-      // Automatically jump to AI Mining tab after login
       switchMainTab('ai', document.getElementById('nav-ai'));
+    }
+
+    function openDepositModal() {
+      if (currentUser) {
+        document.getElementById('depositPhone').value = currentUser;
+      }
+      document.getElementById('depositModal').style.display = 'flex';
+    }
+
+    function closeDepositModal() {
+      document.getElementById('depositModal').style.display = 'none';
+    }
+
+    function submitDeposit(e) {
+      e.preventDefault();
+      const amount = parseInt(document.getElementById('depositAmount').value);
+      const network = document.getElementById('depositNetwork').value;
+      const phone = document.getElementById('depositPhone').value;
+
+      userBalance += amount;
+      document.getElementById('userBalanceDisplay').innerText = `${userBalance.toLocaleString()} UGX`;
+      closeDepositModal();
+
+      alert(`Payment prompt sent to ${phone} via ${network}. Balance updated to ${userBalance.toLocaleString()} UGX.`);
     }
 
     async function fetchMachines() {
