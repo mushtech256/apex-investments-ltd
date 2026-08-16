@@ -531,12 +531,8 @@
         fetchMachines();
       }
     }
+function toggleAuthForm(type) {
 
-    function toggleAuthForm(type) {
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
-      const loginBtn = document.getElementById('loginTabBtn');
-      const registerBtn = document.getElementById('registerTabBtn');
 
       if (type === 'login') {
         loginForm.style.display = 'block';
