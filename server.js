@@ -131,7 +131,36 @@ app.post('/api/deposit', async (req, res) => {
   }
 });
 
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+
+app.post('/api/auth/register', (req, res) => {
+  const { phone_number, password, confirm_password } = req.body;
+  const ugandaPhoneRegex = /^\+256\d{9}$/;
+
+  if (!ugandaPhoneRegex.test(phone_number)) {
+    return res.status(400).json({ error: 'Invalid format! Use +256...' });
+  }
+
+  if (password !== confirm_password) {
+    return res.status(400).json({ error: 'Passwords do not match!' });
+  }
+
+  let existingUser = users.find(u => u.phone_number === phone_number);
+  if (existingUser) {
+    return res.status(400).json({ error: 'Phone number already registered!' });
+  }
+
+  const newUser = { id: users.length + 1, phone_number, password };
+  users.push(newUser);
+
+  res.status(201).json({ message: 'Success!', user: newUser });
+});
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://127.0.0.1:${PORT}`);
+});
+
