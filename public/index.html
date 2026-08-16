@@ -551,8 +551,22 @@
       }
     }
 
-    function handleAuth(e, type) {
-      e.preventDefault();
+   
+      
+function handleAuth(e, type) {
+    e.preventDefault();
+
+    if (type === 'Register') {
+        const password = document.getElementById('regPassword').value;
+        const confirmPassword = document.getElementById('regConfirmPassword').value;
+        if (password !== confirmPassword) {
+            alert("Passwords do not match!");
+            return;
+        }
+    }
+
+   
+
       const phoneInput = type === 'Login' ? document.getElementById('loginPhone').value : document.getElementById('regPhone').value;
       currentUser = phoneInput;
 
