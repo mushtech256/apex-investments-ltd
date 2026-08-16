@@ -343,10 +343,12 @@
 
     <!-- Auth Forms (Shown when not logged in) -->
     <div class="auth-container" id="authBox">
-      <div class="auth-tabs">
-        <button class="auth-tab-btn active" id="loginTabBtn" onclick="toggleAuthForm('login')">Login</button>
-        <button class="auth-tab-btn" id="registerTabBtn" onclick="toggleAuthForm('register')">Register</button>
-      </div>
+     
+    <div class="auth-tabs">  
+<button id="loginTabBtn" onclick="toggleAuthForm('login')">Login</button>
+<button id="registerTabBtn" onclick="toggleAuthForm('register')">Register</button>
+
+</div>
 
       <form id="loginForm" onsubmit="handleAuth(event, 'Login')">
         <div class="form-group">
