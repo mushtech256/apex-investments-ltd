@@ -550,25 +550,50 @@
         loginBtn.classList.remove('active');
       }
     }
-
-   
-      
-function handleAuth(e, type) {
+async function handleAuth(e, type) {
     e.preventDefault();
 
+    const phone = type === 'Login' ? document.getElementById('loginPhone').value : document.getElementById('regPhone').value;
+    const password = document.getElementById('regPassword')?.value;
+    const confirmPassword = document.getElementById('regConfirmPassword')?.value;
+
     if (type === 'Register') {
-        const password = document.getElementById('regPassword').value;
-        const confirmPassword = document.getElementById('regConfirmPassword').value;
         if (password !== confirmPassword) {
             alert("Passwords do not match!");
             return;
         }
+
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone_number: phone, password: password, confirm_password: confirmPassword })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || "Registration failed");
+                return;
+            }
+
+            alert("Account created successfully!");
+        } catch (err) {
+            alert("Server error. Please try again.");
+            return;
+        }
     }
 
-   
+    currentUser = phone;
+    document.getElementById('authBox').style.display = 'none';
+    document.getElementById('userStatusBox').style.display = 'block';
+    document.getElementById('loggedInUserPhone').innerText = currentUser;
+    document.getElementById('displayAccountPhone').innerText = currentUser;
+    document.getElementById('depositPhone').value = currentUser;
 
-      const phoneInput = type === 'Login' ? document.getElementById('loginPhone').value : document.getElementById('regPhone').value;
-      currentUser = phoneInput;
+    switchMainTab('ai', document.getElementById('nav-ai'));
+}
+
 
       document.getElementById('authBox').style.display = 'none';
       document.getElementById('userStatusBox').style.display = 'block';
@@ -577,13 +602,6 @@ function handleAuth(e, type) {
       document.getElementById('depositPhone').value = currentUser;
 
       switchMainTab('ai', document.getElementById('nav-ai'));
-    }
-
-    function openDepositModal() {
-      if (currentUser) {
-        document.getElementById('depositPhone').value = currentUser;
-      }
-      document.getElementById('depositModal').style.display = 'flex';
     }
 
     function closeDepositModal() {
