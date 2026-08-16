@@ -30,13 +30,31 @@
       margin-top: 10px;
     }
 
-    /* Auth Buttons & Forms on Home */
+    /* Hero Banner */
+    .hero-card {
+      background: linear-gradient(135deg, #1c2541 0%, #0077b6 100%);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      margin-bottom: 20px;
+    }
+    .hero-card h3 {
+      margin: 0 0 10px 0;
+      color: #ffffff;
+    }
+    .hero-card p {
+      margin: 0;
+      font-size: 13px;
+      color: #caf0f8;
+    }
+
+    /* Auth Form */
     .auth-container {
       background: #1c2541;
       border: 1px solid #3a506b;
       border-radius: 12px;
       padding: 20px;
-      margin-top: 20px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     .auth-tabs {
@@ -92,6 +110,17 @@
       font-size: 15px;
       cursor: pointer;
       margin-top: 10px;
+    }
+
+    /* Logged In Status Banner */
+    .user-status-card {
+      display: none;
+      background: #1c2541;
+      border: 1px solid #3a506b;
+      border-radius: 12px;
+      padding: 15px;
+      text-align: center;
+      margin-top: 15px;
     }
 
     /* Horizontal Series Tabs */
@@ -263,35 +292,38 @@
 </head>
 <body>
 
-  <!-- Home Section with Login / Register -->
+  <!-- Home Section -->
   <div id="tab-home" class="tab-content active">
     <h2>🏠 Home</h2>
-    <p style="text-align: center; color: #90e0ef;">Welcome to Future AI Hub</p>
 
-    <div class="auth-container">
+    <div class="hero-card">
+      <h3>Future AI Computing Power</h3>
+      <p>Automated High-Performance AI Mining Hardware Platform</p>
+    </div>
+
+    <!-- Auth Forms (Shown when not logged in) -->
+    <div class="auth-container" id="authBox">
       <div class="auth-tabs">
         <button class="auth-tab-btn active" id="loginTabBtn" onclick="toggleAuthForm('login')">Login</button>
         <button class="auth-tab-btn" id="registerTabBtn" onclick="toggleAuthForm('register')">Register</button>
       </div>
 
-      <!-- Login Form -->
       <form id="loginForm" onsubmit="handleAuth(event, 'Login')">
         <div class="form-group">
           <label>Phone Number (+256...)</label>
-          <input type="text" placeholder="Enter phone number" required>
+          <input type="text" id="loginPhone" placeholder="07xxxxxxxx" required>
         </div>
         <div class="form-group">
           <label>Password</label>
           <input type="password" placeholder="Enter password" required>
         </div>
-        <button type="submit" class="auth-submit-btn">Login</button>
+        <button type="submit" class="auth-submit-btn">Login to Dashboard</button>
       </form>
 
-      <!-- Register Form -->
       <form id="registerForm" onsubmit="handleAuth(event, 'Register')" style="display: none;">
         <div class="form-group">
           <label>Phone Number (+256...)</label>
-          <input type="text" placeholder="Enter phone number" required>
+          <input type="text" id="regPhone" placeholder="07xxxxxxxx" required>
         </div>
         <div class="form-group">
           <label>Create Password</label>
@@ -299,23 +331,30 @@
         </div>
         <div class="form-group">
           <label>Invitation Code (Optional)</label>
-          <input type="text" placeholder="Enter referral code">
+          <input type="text" placeholder="Enter invitation code">
         </div>
-        <button type="submit" class="auth-submit-btn">Register Account</button>
+        <button type="submit" class="auth-submit-btn">Create Account</button>
       </form>
+    </div>
+
+    <!-- Active Session Card (Shown when logged in) -->
+    <div class="user-status-card" id="userStatusBox">
+      <p style="color: #38b000; font-weight: bold; margin: 0 0 5px 0;">✓ Account Active</p>
+      <p id="loggedInUserPhone" style="margin: 0 0 10px 0; color: #90e0ef;"></p>
+      <button class="buy-btn" onclick="switchMainTab('ai', document.getElementById('nav-ai'))">View AI Machines</button>
     </div>
   </div>
 
   <!-- Raffle Section -->
   <div id="tab-raffle" class="tab-content">
     <h2>🎟️ Raffle</h2>
-    <p style="text-align: center;">Raffle events coming soon!</p>
+    <p style="text-align: center; color: #8d99ae;">Lucky draw events and daily rewards platform.</p>
   </div>
 
   <!-- Chats Section -->
   <div id="tab-chats" class="tab-content">
     <h2>💬 Chats</h2>
-    <p style="text-align: center;">Community support and chat room.</p>
+    <p style="text-align: center; color: #8d99ae;">Official Support & Community Channel</p>
   </div>
 
   <!-- AI Mining Section -->
@@ -336,7 +375,7 @@
     <div class="account-header">
       <p class="balance-title">Account Balance</p>
       <div class="balance-amount">0 UGX</div>
-      <p style="font-size: 12px; color: #8d99ae; margin: 0;">ID: 8940321</p>
+      <p id="displayAccountPhone" style="font-size: 12px; color: #8d99ae; margin: 0;">Phone: Not Logged In</p>
     </div>
 
     <!-- Quick Action Buttons -->
@@ -378,7 +417,7 @@
 
   <!-- Main Bottom Navigation Bar -->
   <div class="navbar">
-    <div class="nav-item active" onclick="switchMainTab('home', this)">
+    <div class="nav-item active" id="nav-home" onclick="switchMainTab('home', this)">
       <span class="nav-icon">🏠</span>
       <span>Home</span>
     </div>
@@ -403,6 +442,7 @@
   <script>
     let currentSeriesData = {};
     let selectedSeries = 'C-SERIES';
+    let currentUser = null;
 
     function switchMainTab(tabName, el) {
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -437,7 +477,16 @@
 
     function handleAuth(e, type) {
       e.preventDefault();
-      alert(`${type} successful!`);
+      const phoneInput = type === 'Login' ? document.getElementById('loginPhone').value : document.getElementById('regPhone').value;
+      currentUser = phoneInput;
+
+      document.getElementById('authBox').style.display = 'none';
+      document.getElementById('userStatusBox').style.display = 'block';
+      document.getElementById('loggedInUserPhone').innerText = `Logged in as: ${currentUser}`;
+      document.getElementById('displayAccountPhone').innerText = `Phone: ${currentUser}`;
+
+      // Automatically jump to AI Mining tab after login
+      switchMainTab('ai', document.getElementById('nav-ai'));
     }
 
     async function fetchMachines() {
@@ -489,7 +538,7 @@
     }
 
     async function buyMachine(id) {
-      const userPhone = prompt("Enter your phone number to confirm purchase (+256...):");
+      const userPhone = currentUser || prompt("Enter your phone number to confirm purchase (+256...):");
       if (!userPhone) return;
 
       const res = await fetch('/api/buy', {
