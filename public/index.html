@@ -362,28 +362,38 @@
         <button type="submit" class="auth-submit-btn">Login to Dashboard</button>
       </form>
 
-      <form id="registerForm" onsubmit="handleAuth(event, 'Register')" style="display: none;">
-        <div class="form-group">
-          <label>Phone Number (+256...)</label>
-          <input type="text" id="regPhone" placeholder="07xxxxxxxx" required>
-        </div>
+      <form id="registerForm" style="display: none;" onsubmit="handleAuth(event, 'Register')">
+    <div class="form-group" style="position: relative;">
+        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">📱</span>
+        <input type="text" id="regPhone" placeholder="Phone Number" style="padding-left: 45px; border-radius: 30px;" required>
+    </div>
+    
+    <div class="form-group" style="position: relative;">
+        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">🔑</span>
+        <input type="password" id="regPassword" placeholder="Set Password" style="padding-left: 45px; border-radius: 30px;" required>
+    </div>
 
-<div class="form-group">
-  <label>Create Password</label>
-  <input type="password" id="regPassword" placeholder="Create password" required>
-</div>
+    <div class="form-group" style="position: relative;">
+        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">🔑</span>
+        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" style="padding-left: 45px; border-radius: 30px;" required>
+    </div>
 
-        <div class="form-group">
-          <label>Confirm Password</label>
-          <input type="password" id="regConfirmPassword" placeholder="Confirm password" required>
->
-        </div>
-        <div class="form-group">
-          <label>Invitation Code (Optional)</label>
-          <input type="text" placeholder="Enter invitation code">
-        </div>
-        <button type="submit" class="auth-submit-btn">Create Account</button>
-      </form>
+    <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" id="regCaptcha" placeholder="Captcha" style="border-radius: 30px; flex: 1;" required>
+        <div id="captchaBox" style="background: #fff; color: #d63384; font-weight: bold; font-style: italic; padding: 10px 20px; border-radius: 20px; letter-spacing: 3px; font-size: 18px;">31577</div>
+    </div>
+
+    <div class="form-group" style="position: relative;">
+        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">🔗</span>
+        <input type="text" id="regInvite" placeholder="Invitation Code (Optional)" style="padding-left: 45px; border-radius: 30px;">
+    </div>
+
+    <button type="submit" class="auth-submit-btn" style="border-radius: 30px;">Register</button>
+    
+    <div style="text-align: center; margin-top: 15px;">
+        <a href="#" onclick="toggleAuthForm('login'); return false;" style="color: #00b4d8; text-decoration: none;">&lt; Login</a>
+    </div>
+</form>
     </div>
 
     <!-- Active Session Card (Shown when logged in) -->
