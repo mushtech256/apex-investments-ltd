@@ -154,9 +154,9 @@ app.post('/api/auth/register', (req, res) => {
 
   res.status(201).json({ message: 'Success!', user: newUser });
 });
-
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'index.html'));
+
 });
 
 const PORT = process.env.PORT || 5000;
