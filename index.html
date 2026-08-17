@@ -258,20 +258,14 @@
       border-bottom: none;
     }
 
-    /* Bottom Navigation Bar */
-    .navbar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 60px;
-      background-color: #070d1f;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      border-top: 1px solid #1c2541;
-      z-index: 1000;
-    }
+    .bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Ensures it sits above other content */
+    pointer-events: auto; /* Ensures it can be clicked */
+
     .nav-item {
       display: flex;
       flex-direction: column;
@@ -508,36 +502,34 @@
     </div>
   </div>
 
-       <!-- Main Bottom Navigation Bar -->
+   <!-- Main Bottom Navigation Bar -->
 <div class="navbar">
-  <div class="nav-item active" id="nav-home" onclick="switchMainTab('home', this)">
-    <span class="nav-icon">🏠</span>
-    <span>Home</span>
-  </div>
-  <div class="nav-item" onclick="switchMainTab('raffle', this)">
-    <span class="nav-icon">🎟️</span>
-    <span>Raffle</span>
-  </div>
-  <div class="nav-item" onclick="switchMainTab('chats', this)">
-    <span class="nav-icon">💬</span>
-    <span>Chats</span>
-  </div>
-  <div class="nav-item" id="nav-ai" onclick="switchMainTab('ai', this)">
-    <span class="nav-icon">🤖</span>
-    <span>AI</span>
-  </div>
-  <div class="nav-item" onclick="switchMainTab('income', this)">
-    <span class="nav-icon">💰</span>
-    <span>Income</span>
-  </div>
-  <div class="nav-item" onclick="switchMainTab('my', this)">
-    <span class="nav-icon">👤</span>
-    <span>My</span>
-  </div>
+    <div class="class="nav-item active" id="nav-home" onclick="switchMainTab('home', this)">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
+    </div>
+    <div class="nav-item" onclick="switchMainTab('raffle', this)">
+        <span class="nav-icon">🎟️</span>
+        <span>Raffle</span>
+    </div>
+    <div class="nav-item" onclick="switchMainTab('chats', this)">
+        <span class="nav-icon">💬</span>
+        <span>Chats</span>
+    </div>
+    <div class="nav-item" id="nav-ai" onclick="switchMainTab('ai', this)">
+        <span class="nav-icon">🤖</span>
+        <span>AI</span>
+    </div>
+    <div class="nav-item" onclick="switchMainTab('income', this)">
+        <span class="nav-icon">💰</span>
+        <span>Income</span>
+    </div>
+    <div class="nav-item" onclick="switchMainTab('my', this)">
+        <span class="nav-icon">👤</span>
+        <span>My</span>
+    </div>
 </div>
 
-<div class="nav-item" 
-     onclick="switchMainTab('income', this)">
  
 
   <script>
