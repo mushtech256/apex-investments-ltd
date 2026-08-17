@@ -508,28 +508,37 @@
     </div>
   </div>
 
-  <!-- Main Bottom Navigation Bar -->
-  <div class="navbar">
-<div class="nav-item active" id="nav-home" 
-     onclick="switchMainTab('home', this)">
-  <span class="nav-icon">🏠</span>
-  <span>Home</span>
+       <!-- Main Bottom Navigation Bar -->
+<div class="navbar">
+  <div class="nav-item active" id="nav-home" onclick="switchMainTab('home', this)">
+    <span class="nav-icon">🏠</span>
+    <span>Home</span>
+  </div>
+  <div class="nav-item" onclick="switchMainTab('raffle', this)">
+    <span class="nav-icon">🎟️</span>
+    <span>Raffle</span>
+  </div>
+  <div class="nav-item" onclick="switchMainTab('chats', this)">
+    <span class="nav-icon">💬</span>
+    <span>Chats</span>
+  </div>
+  <div class="nav-item" id="nav-ai" onclick="switchMainTab('ai', this)">
+    <span class="nav-icon">🤖</span>
+    <span>AI</span>
+  </div>
+  <div class="nav-item" onclick="switchMainTab('income', this)">
+    <span class="nav-icon">💰</span>
+    <span>Income</span>
+  </div>
+  <div class="nav-item" onclick="switchMainTab('my', this)">
+    <span class="nav-icon">👤</span>
+    <span>My</span>
+  </div>
 </div>
-<div class="nav-item" 
-     onclick="switchMainTab('raffle', this)">
-  <span class="nav-icon">🎟️</span>
-  <span>Raffle</span>
-</div>
+
 <div class="nav-item" 
      onclick="switchMainTab('income', this)">
-  <span class="nav-icon">💰</span>
-  <span>Income</span>
-</div>
-<div class="nav-item" 
-     onclick="switchMainTab('my', this)">
-  <span class="nav-icon">👤</span>
-  <span>My</span>
-</div>
+ 
 
   <script>
     let currentSeriesData = {};
