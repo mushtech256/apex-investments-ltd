@@ -258,13 +258,18 @@
       border-bottom: none;
     }
 
-    .bottom-nav {
+   .navbar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    z-index: 1000; /* Ensures it sits above other content */
-    pointer-events: auto; /* Ensures it can be clicked */
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: #0b1329; /* Adjust to match your app's theme background */
+    padding: 10px 0;
+    z-index: 1000;
+    pointer-events: auto;
 
     .nav-item {
       display: flex;
@@ -502,7 +507,7 @@
     </div>
   </div>
 
- <!-- Main Bottom Navigation Bar -->
+<!-- Main Bottom Navigation Bar -->
 <div class="navbar">
     <div class="nav-item active" id="nav-home" onclick="switchMainTab('home', this)">
         <span class="nav-icon">🏠</span>
@@ -529,6 +534,7 @@
         <span>My</span>
     </div>
 </div>
+
 
   <script>
     let currentSeriesData = {};
