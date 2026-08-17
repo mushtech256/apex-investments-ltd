@@ -426,9 +426,15 @@
     <!-- Vertical Machines Container -->
     <div class="machine-list" id="machineList"></div>
   </div>
+<!-- Income Section -->
+<div id="tab-income" class="tab-content" style="display: none;">
+    <h2>💰 Income & Earnings</h2>
+    <p style="text-align: center; color: #8d99ae;">Track your automated earnings and commissions here.</p>
+</div>
 
-  <!-- My Section -->
-  <div id="tab-my" class="tab-content">
+<!-- My Section -->
+<div id="tab-my" class="tab-content" style="display: none;">
+
     <h2>👤 My Dashboard</h2>
 
     <div class="account-header">
@@ -520,6 +526,11 @@
       <span class="nav-icon">🤖</span>
       <span>AI</span>
     </div>
+    <div class="nav-item" onclick="switchMainTab('income', this)">
+        <span class="nav-icon">💰</span>
+        <span>Income</span>
+    </div>
+
     <div class="nav-item" onclick="switchMainTab('my', this)">
       <span class="nav-icon">👤</span>
       <span>My</span>
