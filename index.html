@@ -546,32 +546,53 @@
     let currentUser = null;
     let userBalance = 0;
 
-    function switchMainTab(tabName, el) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+   function switchMainTab(tabName, el) {
+  // Hide all tab content sections
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.style.display = 'none';
+  });
+  
+  // Remove active styling from all bottom nav items
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  
+  // Show the target tab if it exists
+  const targetTab = document.getElementById(`tab-${tabName}`);
+  if (targetTab) {
+    targetTab.style.display = 'block';
+  }
+  
+  // Highlight the clicked nav item
+  if (el) {
+    el.classList.add('active');
+  }
 
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-      if(el) el.classList.add('active');
+  // Special trigger for AI machines if applicable
+  if (tabName === 'ai') {
+    fetchMachines();
+  }
+}
 
-      if (tabName === 'ai') {
-        fetchMachines();
-      }
-    }
 function toggleAuthForm(type) {
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const loginBtn = document.getElementById('loginTabBtn');
+  const registerBtn = document.getElementById('registerTabBtn');
 
+  if (type === 'login') {
+    if (loginForm) loginForm.style.display = 'block';
+    if (registerForm) registerForm.style.display = 'none';
+    if (loginBtn) loginBtn.classList.add('active');
+    if (registerBtn) registerBtn.classList.remove('active');
+  } else {
+    if (loginForm) loginForm.style.display = 'none';
+    if (registerForm) registerForm.style.display = 'block';
+    if (loginBtn) loginBtn.classList.remove('active');
+    if (registerBtn) registerBtn.classList.add('active');
+  }
+}
 
-      if (type === 'login') {
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
-        loginBtn.classList.add('active');
-        registerBtn.classList.remove('active');
-      } else {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-        registerBtn.classList.add('active');
-        loginBtn.classList.remove('active');
-      }
-    }
 async function handleAuth(e, type) {
     e.preventDefault();
 
