@@ -704,10 +704,22 @@ async function handleAuth(e, type) {
     function handleAction(name) {
       alert(`${name} feature opened.`);
     }
-function switchTab(tabName) {
-    // Hide all main section views or handle navigation changes here
-    console.log("Switching to tab:", tabName);
-    // If you have specific view containers, toggle their display classes here
+function switchMainTab(tabName, el) {
+  // Hide all main section views or handle navigation changes
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const targetTab = document.getElementById(`tab-${tabName}`);
+  if (targetTab) targetTab.style.display = 'block';
+  if (el) el.classList.add('active');
+
+  console.log("Switching to tab:", tabName);
+  
+  if (tabName === 'ai') {
+    fetchMachines();
+  }
+}
+
 }
 
     fetchMachines();
