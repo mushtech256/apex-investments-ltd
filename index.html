@@ -25,18 +25,34 @@
         #main-app-content { padding: 20px; display: none; }
         
         #bottomNavbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: #1c2541;
-            display: none; /* Hidden by default until login */
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid #3a506b;
-            z-index: 1000;
-        }
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #1c2541;
+    display: none; /* Stays hidden until login */
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #3a506b;
+    z-index: 1000;
+}
+.nav-item {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    flex: 1;
+    padding: 8px 0;
+    transition: color 0.2s;
+}
+.nav-item.active {
+    color: #00b4d8;
+}
+
         .nav-item { color: #fff; text-decoration: none; font-size: 12px; text-align: center; cursor: pointer; }
     </style>
 </head>
@@ -87,12 +103,16 @@
         <p>Welcome to your AI computing platform!</p>
     </div>
 
-    <!-- Bottom Navigation Bar (Hidden by default) -->
-    <div id="bottomNavbar">
-        <a class="nav-item" onclick="switchMainTab('home')">Home</a>
-        <a class="nav-item" onclick="switchMainTab('ai')">AI Machines</a>
-        <a class="nav-item" onclick="switchMainTab('profile')">Profile</a>
-    </div>
+    <!-- Bottom Navigation Bar (Hidden by default until login) -->
+<div id="bottomNavbar">
+    <a class="nav-item active" onclick="switchMainTab('home', this)">Home</a>
+    <a class="nav-item" onclick="switchMainTab('raffle', this)">Raffle</a>
+    <a class="nav-item" onclick="switchMainTab('chats', this)">Chats</a>
+    <a class="nav-item" onclick="switchMainTab('ai', this)">AI</a>
+    <a class="nav-item" onclick="switchMainTab('income', this)">Income</a>
+    <a class="nav-item" onclick="switchMainTab('my', this)">My</a>
+</div>
+
 
     <script>
         function toggleAuthForm(type) {
@@ -167,9 +187,26 @@ const response = await fetch(endpoint, {
             }
         }
 
-        function switchMainTab(tabName) {
-            console.log("Switched to tab:", tabName);
-        }
+        function switchMainTab(tabName, element) {
+    // Remove 'active' class from all nav items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => item.classList.remove('active'));
+    
+    // Add 'active' class to the clicked button
+    if (element) {
+        element.classList.add('active');
+    }
+
+    // Handle what content displays based on the tab clicked
+    console.log("Switched to tab:", tabName);
+    
+    // Example: Update main content header dynamically
+    const mainContent = document.getElementById('main-app-content');
+    if (mainContent) {
+        mainContent.innerHTML = `<h2>${tabName.toUpperCase()} Dashboard</h2><p>Viewing your ${tabName} section.</p>`;
+    }
+}
+
     </script>
 </body>
 </html>
