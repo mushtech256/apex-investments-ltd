@@ -130,12 +130,18 @@
             }
 
             try {
-                const endpoint = isLogin ? '/api/login' : '/api/register';
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone_number: phone, password: password })
-                });
+                const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+
+const requestBody = isLogin 
+    ? { phone_number: phone, password: password } 
+    : { phone_number: phone, password: password, confirm_password: document.getElementById('regConfirmPassword').value };
+
+const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestBody)
+});
+
 
                 const data = await response.json();
 
