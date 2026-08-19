@@ -3,41 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HUT 9 - Future AI Investment Platform</title>
+    <title>HUT 9 - Platform</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background-color: #0b132b; color: #ffffff; padding-bottom: 70px; }
-        
         #auth-container { max-width: 400px; margin: 50px auto; padding: 20px; background: #1c2541; border-radius: 10px; }
         #auth-container h1 { text-align: center; margin-bottom: 20px; }
         .auth-tabs { display: flex; margin-bottom: 20px; }
         .auth-tabs button { flex: 1; padding: 10px; background: #3a506b; color: #fff; border: none; cursor: pointer; font-weight: bold; }
         .auth-tabs button.active { background: #00b4d8; }
-        
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 14px; }
         .form-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #475569; background: #0b132b; color: #fff; }
         .auth-submit-btn { width: 100%; padding: 12px; background: #00b4d8; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-
         #main-app-content { padding: 20px; display: none; }
-        
-        #bottomNavbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 60px;
-            background: #1c2541;
-            display: none;
-            flex-direction: row;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid #3a506b;
-            z-index: 1000;
-        }
+        #bottomNavbar { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #1c2541; display: none; flex-direction: row; justify-content: space-around; align-items: center; border-top: 1px solid #3a506b; z-index: 1000; }
         .nav-item { color: #94a3b8; text-decoration: none; font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; flex: 1; padding: 8px 0; }
         .nav-item.active { color: #00b4d8; }
-
         .card { background: #1c2541; padding: 15px; border-radius: 8px; border: 1px solid #3a506b; margin-bottom: 12px; }
         .btn-primary { width: 100%; padding: 10px; background: #00b4d8; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
     </style>
@@ -47,8 +29,8 @@
     <div id="auth-container">
         <h1>Welcome</h1>
         <div class="auth-tabs">
-            <button id="loginTabBtn" type="button" class="active" onclick="toggleAuthForm('login')">Login</button>
-            <button id="registerTabBtn" type="button" onclick="toggleAuthForm('register')">Register</button>
+            <button id="loginTabBtn" type="button" class="active" onclick="switchAuthTab('login')">Login</button>
+            <button id="registerTabBtn" type="button" onclick="switchAuthTab('register')">Register</button>
         </div>
 
         <form id="loginForm" onsubmit="handleAuth(event, 'Login')">
@@ -72,10 +54,6 @@
                 <label>Password</label>
                 <input type="password" id="regPassword" placeholder="Enter password" required>
             </div>
-            <div class="form-group">
-                <label>Confirm Password</label>
-                <input type="password" id="regConfirmPassword" placeholder="Confirm password" required>
-            </div>
             <button type="submit" class="auth-submit-btn">Create Account</button>
         </form>
     </div>
@@ -84,264 +62,50 @@
 
     <div id="bottomNavbar">
         <a class="nav-item active" onclick="switchMainTab('home', this)">Home</a>
-        <a class="nav-item" onclick="switchMainTab('raffle', this)">Raffle</a>
-        <a class="nav-item" onclick="switchMainTab('chats', this)">Chats</a>
         <a class="nav-item" onclick="switchMainTab('ai', this)">AI</a>
-        <a class="nav-item" onclick="switchMainTab('income', this)">Income</a>
-        <a class="nav-item" onclick="switchMainTab('my', this)">My</a>
+        <a class="nav-item" onclick="switchMainTab('my', this)">My Account</a>
     </div>
 
     <script>
-        let currentUser = {
-            phone: '',
-            password: '',
-            wallet: 0,
-            balance: 0,
-            depositTotal: 0,
-            withdrawTotal: 0,
-            aiIncomeTotal: 0,
-            dailyIncomeTotal: 0,
-            raffles: 0,
-            name: 'Mr. Rodgers',
-            inviteCode: ''
-        };
+        let currentUser = { phone: '', balance: 0, wallet: 0, name: 'Mr. Rodgers' };
 
-        let userPurchasedMachines = []; 
-        let userWithdrawRequests = []; 
-        let depositNumberToggle = false;
-
-        function toggleAuthForm(type) {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            const loginTabBtn = document.getElementById('loginTabBtn');
-            const registerTabBtn = document.getElementById('registerTabBtn');
-
+        function switchAuthTab(type) {
             if (type === 'login') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-                loginTabBtn.classList.add('active');
-                registerTabBtn.classList.remove('active');
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('loginTabBtn').classList.add('active');
+                document.getElementById('registerTabBtn').classList.remove('active');
             } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-                loginTabBtn.classList.remove('active');
-                registerTabBtn.classList.add('active');
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+                document.getElementById('loginTabBtn').classList.remove('active');
+                document.getElementById('registerTabBtn').classList.add('active');
             }
         }
 
         function handleAuth(e, type) {
             e.preventDefault();
-            const isLogin = type === 'Login';
-            const phone = document.getElementById(isLogin ? 'loginPhone' : 'regPhone').value;
-            const password = document.getElementById(isLogin ? 'loginPassword' : 'regPassword').value;
-
-            if (!isLogin) {
-                const confirmPassword = document.getElementById('regConfirmPassword').value;
-                if (password !== confirmPassword) {
-                    alert("Passwords do not match!");
-                    return;
-                }
-
-                const existingDeviceAccount = localStorage.getItem('hut9_device_registered');
-                if (existingDeviceAccount) {
-                    alert("Security Restriction: An account has already been created on this device. Multiple accounts on a single device are not allowed.");
-                    return;
-                }
-                localStorage.setItem('hut9_device_registered', phone);
-            }
-
-            currentUser.phone = phone;
-            currentUser.password = password;
-            currentUser.inviteCode = `https://hut9-platform.onrender.com/?ref=${phone}`;
-
-            alert(isLogin ? "Login successful!" : "Account created successfully!");
+            alert(type + " successful!");
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('main-app-content').style.display = 'block';
             document.getElementById('bottomNavbar').style.display = 'flex';
-            
             switchMainTab('home', document.querySelector('.nav-item'));
         }
 
-        const aiMachinesData = [
-            { id: 'H1', series: 'H', tier: 1, limit: 1, name: 'H1 Tractor Machine (1X)', price: 30000, daily: 3000, days: 30, total: 3000 * 30 },
-            { id: 'H2', series: 'H', tier: 2, limit: 2, name: 'H2 Tractor Machine (2X)', price: 100000, daily: 10000, days: 30, total: 10000 * 30 },
-            { id: 'H3', series: 'H', tier: 3, limit: 3, name: 'H3 Tractor Machine (3X)', price: 250000, daily: 21000, days: 30, total: 21000 * 30 },
-            { id: 'H4', series: 'H', tier: 4, limit: 4, name: 'H4 Tractor Machine (4X)', price: 300000, daily: 28000, days: 30, total: 28000 * 30 },
-            { id: 'H5', series: 'H', tier: 5, limit: 5, name: 'H5 Tractor Machine (5X)', price: 500000, daily: 35000, days: 30, total: 35000 * 30 },
-
-            { id: 'D1', series: 'D', tier: 1, limit: 1, name: 'D1 Mining Unit (1X)', price: 150000, daily: 50000, days: 15, total: 50000 * 15 },
-            { id: 'D2', series: 'D', tier: 2, limit: 2, name: 'D2 Mining Unit (2X)', price: 350000, daily: 75000, days: 15, total: 75000 * 15 },
-            { id: 'D3', series: 'D', tier: 3, limit: 3, name: 'D3 Mining Unit (3X)', price: 600000, daily: 100000, days: 15, total: 100000 * 15 },
-            { id: 'D4', series: 'D', tier: 4, limit: 4, name: 'D4 Mining Unit (4X)', price: 800000, daily: 150000, days: 15, total: 150000 * 15 },
-            { id: 'D5', series: 'D', tier: 5, limit: 5, name: 'D5 Mining Unit (5X)', price: 1000000, daily: 200000, days: 15, total: 200000 * 15 },
-
-            { id: 'G1', series: 'G', tier: 1, limit: 1, name: 'G1 Grid Unit (1X)', price: 200000, daily: 15000, days: 20, total: 15000 * 20 },
-            { id: 'G2', series: 'G', tier: 2, limit: 2, name: 'G2 Grid Unit (2X)', price: 400000, daily: 32000, days: 20, total: 32000 * 20 },
-            { id: 'G3', series: 'G', tier: 3, limit: 3, name: 'G3 Grid Unit (3X)', price: 700000, daily: 60000, days: 20, total: 60000 * 20 },
-            { id: 'G4', series: 'G', tier: 4, limit: 4, name: 'G4 Grid Unit (4X)', price: 950000, daily: 85000, days: 20, total: 85000 * 20 },
-            { id: 'G5', series: 'G', tier: 5, limit: 5, name: 'G5 Grid Unit (5X)', price: 1200000, daily: 110000, days: 20, total: 110000 * 20 },
-
-            { id: 'Z1', series: 'Z', tier: 1, limit: 1, name: 'Z1 Quantum Rig (1X)', price: 500000, daily: 50000, days: 7, total: 50000 * 7 },
-            { id: 'Z2', series: 'Z', tier: 2, limit: 2, name: 'Z2 Quantum Rig (2X)', price: 850000, daily: 150000, days: 7, total: 150000 * 7 },
-            { id: 'Z3', series: 'Z', tier: 3, limit: 3, name: 'Z3 Quantum Rig (3X)', price: 1000000, daily: 400000, days: 7, total: 400000 * 7 },
-            { id: 'Z4', series: 'Z', tier: 4, limit: 4, name: 'Z4 Quantum Rig (4X)', price: 1500000, daily: 450000, days: 7, total: 450000 * 7 },
-            { id: 'Z5', series: 'Z', tier: 5, limit: 5, name: 'Z5 Quantum Rig (5X)', price: 2000000, daily: 500000, days: 7, total: 500000 * 7 },
-
-            { id: 'V1', series: 'VIP', tier: 1, limit: 1, name: 'VIP 1 Elite Core (1X)', price: 2500000, daily: 25000, days: 100, total: 25000 * 100 },
-            { id: 'V2', series: 'VIP', tier: 2, limit: 2, name: 'VIP 2 Elite Core (2X)', price: 4000000, daily: 35000, days: 100, total: 35000 * 100 },
-            { id: 'V3', series: 'VIP', tier: 3, limit: 3, name: 'VIP 3 Elite Core (3X)', price: 6000000, daily: 100000, days: 100, total: 100000 * 100 },
-            { id: 'V4', series: 'VIP', tier: 4, limit: 4, name: 'VIP 4 Elite Core (4X)', price: 8000000, daily: 190000, days: 100, total: 190000 * 100 },
-            { id: 'V5', series: 'VIP', tier: 5, limit: 5, name: 'VIP 5 Elite Core (5X)', price: 10000000, daily: 250000, days: 100, total: 250000 * 100 }
-        ];
-
         function switchMainTab(tabName, element) {
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             if (element) element.classList.add('active');
+            const container = document.getElementById('main-app-content');
 
-            const mainContent = document.getElementById('main-app-content');
-            
             if (tabName === 'home') {
-                renderHomeTab(mainContent);
-            } else if (tabName === 'raffle') {
-                renderRaffleTab(mainContent);
-            } else if (tabName === 'chats') {
-                renderChatsTab(mainContent);
+                container.innerHTML = `<h2>Dashboard Home</h2><div class="card"><p>Welcome back, ${currentUser.name}!</p></div>`;
             } else if (tabName === 'ai') {
-                renderAiDashboard('All');
-            } else if (tabName === 'income') {
-                renderIncomeTab(mainContent);
+                container.innerHTML = `<h2>AI Computing</h2><div class="card"><p>Machines available for rent.</p></div>`;
             } else if (tabName === 'my') {
-                renderMyTab(mainContent);
+                container.innerHTML = `<h2>My Account</h2><div class="card"><p>Phone: ${currentUser.phone}</p></div>`;
             }
         }
+    </script>
+</body>
+</html>
 
-        function renderHomeTab(container) {
-            let withdrawListHtml = '';
-            if (userWithdrawRequests.length === 0) {
-                withdrawListHtml = '<p style="font-size: 13px; color: #94a3b8;">0 UGX (No active withdrawals)</p>';
-            } else {
-                userWithdrawRequests.forEach(w => {
-                    withdrawListHtml += `<p style="font-size: 13px; color: #38bdf8;">UGX ${w.amount.toLocaleString()} - Status: <strong>${w.status}</strong> (${w.phone})</p>`;
-                });
-            }
-
-            container.innerHTML = `
-                <h2 style="color: #00b4d8; margin-bottom: 5px;">Welcome to HUT 9 Investment</h2>
-                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 15px;">Your trusted platform for automated AI computing returns.</p>
-                
-                <div style="margin-bottom: 15px; text-align: center;">
-                    <img src="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=60" alt="Tractor AI" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; border: 1px solid #3a506b;">
-                </div>
-
-                <div class="card">
-                    <h3 style="font-size: 14px; color: #94a3b8;">Deposit Details</h3>
-                    <p style="font-size: 20px; font-weight: bold; color: #10b981; margin-top: 5px;">UGX ${currentUser.depositTotal.toLocaleString()}</p>
-                </div>
-
-                <div class="card" onclick="switchMainTab('income', document.querySelectorAll('.nav-item')[4])" style="cursor: pointer;">
-                    <h3 style="font-size: 14px; color: #94a3b8;">AI Income (Total Cumulative)</h3>
-                    <p style="font-size: 20px; font-weight: bold; color: #38bdf8; margin-top: 5px;">UGX ${currentUser.aiIncomeTotal.toLocaleString()}</p>
-                </div>
-
-                <div class="card">
-                    <h3 style="font-size: 14px; color: #94a3b8;">Withdrawal Details</h3>
-                    <div style="margin-top: 5px;">${withdrawListHtml}</div>
-                </div>
-
-                <div class="card">
-                    <h3 style="font-size: 14px; color: #94a3b8;">Daily Income</h3>
-                    <p style="font-size: 20px; font-weight: bold; color: #f59e0b; margin-top: 5px;">UGX ${currentUser.dailyIncomeTotal.toLocaleString()}</p>
-                </div>
-            `;
-        }
-
-        function renderRaffleTab(container) {
-            container.innerHTML = `
-                <h2>Raffle Rewards</h2>
-                <div class="card" style="margin-top: 15px; text-align: center;">
-                    <p style="font-size: 15px; line-height: 1.5; margin-bottom: 15px;">Purchase any machine to get a raffle! Every valid machine purchase awards you a <strong>UGX 3,000</strong> raffle bonus added straight to your Account Balance.</p>
-                    <p style="font-size: 16px; font-weight: bold; color: #10b981;">Total Raffles Won: ${currentUser.raffles}</p>
-                    <button class="btn-primary" style="margin-top: 15px;" onclick="switchMainTab('ai', document.querySelectorAll('.nav-item')[3])">Go to AI Machines</button>
-                </div>
-            `;
-        }
-
-        function renderChatsTab(container) {
-            container.innerHTML = `
-                <h2>Customer Support</h2>
-                <div class="card" style="margin-top: 15px; text-align: center;">
-                    <p style="font-size: 16px; font-weight: bold; color: #00b4d8; margin-bottom: 10px;">24/7 online Customer Service</p>
-                    <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 15px;">If you have any questions or assistance, please contact our official customer support on telegram.</p>
-                    <a href="https://t.me/hut9uganda" target="_blank" style="display: inline-block; background: #229ED9; color: #fff; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">Join Telegram Group</a>
-                </div>
-            `;
-        }
-
-        function renderAiDashboard(filterSeries) {
-            const mainContent = document.getElementById('main-app-content');
-            const seriesList = ['All', 'H', 'D', 'G', 'Z', 'VIP'];
-            
-            let buttonsHtml = '<div style="display: flex; gap: 5px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px;">';
-            seriesList.forEach(s => {
-                const activeStyle = filterSeries === s ? 'background: #00b4d8; color: #fff;' : 'background: #1c2541; color: #94a3b8;';
-                const label = s === 'All' ? 'All' : `${s}-SERIES`;
-                buttonsHtml += `<button onclick="renderAiDashboard('${s}')" style="padding: 8px 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; white-space: nowrap; ${activeStyle}">${label}</button>`;
-            });
-            buttonsHtml += '</div>';
-
-            const filteredMachines = filterSeries === 'All' ? aiMachinesData : aiMachinesData.filter(m => m.series === filterSeries);
-
-            let machinesHtml = '<div style="display: flex; flex-direction: column; gap: 12px;">';
-            filteredMachines.forEach(m => {
-                machinesHtml += `
-                    <div style="background: #1c2541; padding: 15px; border-radius: 8px; border: 1px solid #3a506b;">
-                        <h3 style="color: #00b4d8; margin-bottom: 5px;">${m.name}</h3>
-                        <p style="font-size: 13px; margin: 3px 0;">Price: <strong>UGX ${m.price.toLocaleString()}</strong></p>
-                        <p style="font-size: 13px; margin: 3px 0;">Daily Income: <strong style="color: #10b981;">UGX ${m.daily.toLocaleString()}</strong></p>
-                        <p style="font-size: 13px; margin: 3px 0;">Cycle Expiry: <strong>${m.days} Days</strong></p>
-                        <p style="font-size: 13px; margin: 3px 0;">Total Income: <strong style="color: #38bdf8;">UGX ${m.total.toLocaleString()}</strong></p>
-                        <button onclick="buyMachine('${m.id}')" style="width: 100%; margin-top: 10px; padding: 8px; background: #00b4d8; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Rent Machine</button>
-                    </div>
-                `;
-            });
-            machinesHtml += '</div>';
-
-            mainContent.innerHTML = `<h2>AI Computing Machines</h2><p style="margin-bottom: 15px; font-size: 13px; color: #94a3b8;">Select series and check tier limits.</p>` + buttonsHtml + machinesHtml;
-        }
-
-        function buyMachine(machineId) {
-            const machine = aiMachinesData.find(m => m.id === machineId);
-            if (!machine) return;
-
-            const existingCount = userPurchasedMachines.filter(item => item.id === machineId && item.status === 'Active').length;
-            if (existingCount >= machine.limit) {
-                alert(`Limit reached! You can only buy this ${machine.limit}X tier machine up to ${machine.limit} times consecutively until their cycles end.`);
-                return;
-            }
-
-            if (currentUser.wallet < machine.price) {
-                alert("Insufficient funds in Wallet! Please deposit funds first.");
-                return;
-            }
-
-            currentUser.wallet -= machine.price;
-            currentUser.balance += 3000; 
-            currentUser.raffles += 1;
-
-            userPurchasedMachines.push({
-                uniqueKey: Date.now(),
-                id: machine.id,
-                name: machine.name,
-                price: machine.price,
-                daily: machine.daily,
-                days: machine.days,
-                total: machine.total,
-                daysPassed: 0,
-                status: 'Active'
-            });
-
-            currentUser.balance += 3000; 
-
-            alert(`Successfully rented ${machine.name}! UGX 3,000 raffle added to balance.`);
-            switc
