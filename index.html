@@ -352,12 +352,10 @@
 </div>
 
      
-    <div class="auth-tabs">  
-<button id="loginTabBtn" onclick="toggleAuthForm('login')">Login</button>
-<button id="registerTabBtn" onclick="toggleAuthForm('register')">Register</button>
-
+    <div class="auth-tabs">
+    <button id="loginTabBtn" type="button" onclick="toggleAuthForm('login')">Login</button>
+    <button id="registerTabBtn" type="button" onclick="toggleAuthForm('register')">Register</button>
 </div>
-
       <form id="loginForm" onsubmit="handleAuth(event, 'Login')">
         <div class="form-group">
           <label>Phone Number (+256...)</label>
@@ -581,22 +579,24 @@
 }
 
 function toggleAuthForm(type) {
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const loginBtn = document.getElementById('loginTabBtn');
-  const registerBtn = document.getElementById('registerTabBtn');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm'); // or whatever your register form id is
+    const loginTabBtn = document.getElementById('loginTabBtn');
+    const registerTabBtn = document.getElementById('registerTabBtn');
 
-  if (type === 'login') {
-    if (loginForm) loginForm.style.display = 'block';
-    if (registerForm) registerForm.style.display = 'none';
-    if (loginBtn) loginBtn.classList.add('active');
-    if (registerBtn) registerBtn.classList.remove('active');
-  } else {
-    if (loginForm) loginForm.style.display = 'none';
-    if (registerForm) registerForm.style.display = 'block';
-    if (loginBtn) loginBtn.classList.remove('active');
-    if (registerBtn) registerBtn.classList.add('active');
-  }
+    if (type === 'login') {
+        if (loginForm) loginForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
+        if (loginTabBtn) loginTabBtn.classList.add('active');
+        if (registerTabBtn) registerTabBtn.classList.remove('active');
+    } else {
+        if (loginForm) loginForm.style.display = 'none';
+        if (registerForm) registerForm.style.display = 'block';
+        if (loginTabBtn) loginTabBtn.classList.remove('active');
+        if (registerTabBtn) registerTabBtn.classList.add('active');
+    }
+}
+
 }
 
 async function handleAuth(e, type) {
