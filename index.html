@@ -187,24 +187,92 @@ const response = await fetch(endpoint, {
             }
         }
 
-        function switchMainTab(tabName, element) {
-    // Remove 'active' class from all nav items
+        const aiMachinesData = [
+    // H-SERIES
+    { id: 'H1', series: 'H', name: 'H1 Tractor Machine', price: 30000, daily: 3000, days: 30, total: 3000 * 30 },
+    { id: 'H2', series: 'H', name: 'H2 Tractor Machine', price: 100000, daily: 10000, days: 30, total: 10000 * 30 },
+    { id: 'H3', series: 'H', name: 'H3 Tractor Machine', price: 250000, daily: 21000, days: 30, total: 21000 * 30 },
+    { id: 'H4', series: 'H', name: 'H4 Tractor Machine', price: 300000, daily: 28000, days: 30, total: 28000 * 30 },
+    { id: 'H5', series: 'H', name: 'H5 Tractor Machine', price: 500000, daily: 35000, days: 30, total: 35000 * 30 },
+
+    // D-SERIES
+    { id: 'D1', series: 'D', name: 'D1 Mining Unit', price: 150000, daily: 50000, days: 15, total: 50000 * 15 },
+    { id: 'D2', series: 'D', name: 'D2 Mining Unit', price: 350000, daily: 75000, days: 15, total: 75000 * 15 },
+    { id: 'D3', series: 'D', name: 'D3 Mining Unit', price: 600000, daily: 100000, days: 15, total: 100000 * 15 },
+    { id: 'D4', series: 'D', name: 'D4 Mining Unit', price: 800000, daily: 150000, days: 15, total: 150000 * 15 },
+    { id: 'D5', series: 'D', name: 'D5 Mining Unit', price: 1000000, daily: 200000, days: 15, total: 200000 * 15 },
+
+    // G-SERIES (Standard High-Performance)
+    { id: 'G1', series: 'G', name: 'G1 Grid Unit', price: 200000, daily: 15000, days: 20, total: 15000 * 20 },
+    { id: 'G2', series: 'G', name: 'G2 Grid Unit', price: 400000, daily: 32000, days: 20, total: 32000 * 20 },
+    { id: 'G3', series: 'G', name: 'G3 Grid Unit', price: 700000, daily: 60000, days: 20, total: 60000 * 20 },
+    { id: 'G4', series: 'G', name: 'G4 Grid Unit', price: 950000, daily: 85000, days: 20, total: 85000 * 20 },
+    { id: 'G5', series: 'G', name: 'G5 Grid Unit', price: 1200000, daily: 110000, days: 20, total: 110000 * 20 },
+
+    // Z-SERIES
+    { id: 'Z1', series: 'Z', name: 'Z1 Quantum Rig', price: 500000, daily: 50000, days: 7, total: 50000 * 7 },
+    { id: 'Z2', series: 'Z', name: 'Z2 Quantum Rig', price: 850000, daily: 150000, days: 7, total: 150000 * 7 },
+    { id: 'Z3', series: 'Z', name: 'Z3 Quantum Rig', price: 1000000, daily: 400000, days: 7, total: 400000 * 7 },
+    { id: 'Z4', series: 'Z', name: 'Z4 Quantum Rig', price: 1500000, daily: 450000, days: 7, total: 450000 * 7 },
+    { id: 'Z5', series: 'Z', name: 'Z5 Quantum Rig', price: 2000000, daily: 500000, days: 7, total: 500000 * 7 },
+
+    // VIP SERIES
+    { id: 'V1', series: 'VIP', name: 'VIP 1 Elite Core', price: 2500000, daily: 25000, days: 100, total: 25000 * 100 },
+    { id: 'V2', series: 'VIP', name: 'VIP 2 Elite Core', price: 4000000, daily: 35000, days: 100, total: 35000 * 100 },
+    { id: 'V3', series: 'VIP', name: 'VIP 3 Elite Core', price: 6000000, daily: 100000, days: 100, total: 100000 * 100 },
+    { id: 'V4', series: 'VIP', name: 'VIP 4 Elite Core', price: 8000000, daily: 190000, days: 100, total: 190000 * 100 },
+    { id: 'V5', series: 'VIP', name: 'VIP 5 Elite Core', price: 10000000, daily: 250000, days: 100, total: 250000 * 100 }
+];
+
+function switchMainTab(tabName, element) {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => item.classList.remove('active'));
-    
-    // Add 'active' class to the clicked button
-    if (element) {
-        element.classList.add('active');
-    }
+    if (element) element.classList.add('active');
 
-    // Handle what content displays based on the tab clicked
-    console.log("Switched to tab:", tabName);
-    
-    // Example: Update main content header dynamically
     const mainContent = document.getElementById('main-app-content');
-    if (mainContent) {
-        mainContent.innerHTML = `<h2>${tabName.toUpperCase()} Dashboard</h2><p>Viewing your ${tabName} section.</p>`;
+    
+    if (tabName === 'ai') {
+        renderAiDashboard('All');
+    } else {
+        mainContent.innerHTML = `<h2>${tabName.toUpperCase()} Dashboard</h2><p>Welcome to your ${tabName} section.</p>`;
     }
+}
+
+function renderAiDashboard(filterSeries) {
+    const mainContent = document.getElementById('main-app-content');
+    
+    const seriesList = ['All', 'H', 'D', 'G', 'Z', 'VIP'];
+    
+    let buttonsHtml = '<div style="display: flex; gap: 5px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px;">';
+    seriesList.forEach(s => {
+        const activeStyle = filterSeries === s ? 'background: #00b4d8; color: #fff;' : 'background: #1c2541; color: #94a3b8;';
+        const label = s === 'All' ? 'All' : `${s}-SERIES`;
+        buttonsHtml += `<button onclick="renderAiDashboard('${s}')" style="padding: 8px 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; white-space: nowrap; ${activeStyle}">${label}</button>`;
+    });
+    buttonsHtml += '</div>';
+
+    const filteredMachines = filterSeries === 'All' 
+        ? aiMachinesData 
+        : aiMachinesData.filter(m => m.series === filterSeries);
+
+    let machinesHtml = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+    filteredMachines.forEach(m => {
+        machinesHtml += `
+            <div style="background: #1c2541; padding: 15px; border-radius: 8px; border: 1px solid #3a506b;">
+                <h3 style="color: #00b4d8; margin-bottom: 5px;">${m.name}</h3>
+                <p style="font-size: 13px; margin: 3px 0;">Price: <strong>UGX ${m.price.toLocaleString()}</strong></p>
+                <p style="font-size: 13px; margin: 3px 0;">Daily Income: <strong style="color: #10b981;">UGX ${m.daily.toLocaleString()}</strong></p>
+                <p style="font-size: 13px; margin: 3px 0;">Cycle Expiry: <strong>${m.days} Days</strong></p>
+                <p style="font-size: 13px; margin: 3px 0;">Total Income: <strong style="color: #38bdf8;">UGX ${m.total.toLocaleString()}</strong></p>
+                <button onclick="alert('Purchased ${m.name} successfully!')" style="width: 100%; margin-top: 10px; padding: 8px; background: #00b4d8; color: #white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Rent Machine</button>
+            </div>
+        `;
+    });
+    machinesHtml += '</div>';
+
+    mainContent.innerHTML = `<h2>AI Computing Machines</h2><p style="margin-bottom: 15px; font-size: 13px; color: #94a3b8;">Select a series to view available equipment.</p>` + buttonsHtml + machinesHtml;
+}
+
 }
 
     </script>
