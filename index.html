@@ -1,765 +1,170 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HUT 9 - Future AI Hub</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      background-color: #0b132b;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding-bottom: 70px;
-    }
-    
-    .tab-content {
-      display: none;
-      padding: 15px;
-    }
-    .tab-content.active {
-      display: block;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUT 9 - Future AI Hardware</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background-color: #0b132b; color: #ffffff; padding-bottom: 70px; }
+        
+        /* Auth Screen */
+        #auth-container { max-width: 400px; margin: 50px auto; padding: 20px; background: #1c2541; border-radius: 10px; }
+        #auth-container h1 { text-align: center; margin-bottom: 20px; }
+        .auth-tabs { display: flex; margin-bottom: 20px; }
+        .auth-tabs button { flex: 1; padding: 10px; background: #3a506b; color: #fff; border: none; cursor: pointer; font-weight: bold; }
+        .auth-tabs button.active { background: #00b4d8; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; }
+        .form-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #475569; background: #0b132b; color: #fff; }
+        
+        .auth-submit-btn { width: 100%; padding: 12px; background: #00b4d8; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
 
-    h2 {
-      text-align: center;
-      color: #00b4d8;
-      margin-top: 10px;
-    }
-
-    /* Hero Banner */
-    .hero-card {
-      background: linear-gradient(135deg, #1c2541 0%, #0077b6 100%);
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      margin-bottom: 20px;
-    }
-    .hero-card h3 {
-      margin: 0 0 10px 0;
-      color: #ffffff;
-    }
-    .hero-card p {
-      margin: 0;
-      font-size: 13px;
-      color: #caf0f8;
-    }
-
-    /* Auth Form */
-    .auth-container {
-      background: #1c2541;
-      border: 1px solid #3a506b;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .auth-tabs {
-      display: flex;
-      justify-content: space-around;
-      margin-bottom: 20px;
-      border-bottom: 1px solid #3a506b;
-    }
-    .auth-tab-btn {
-      background: none;
-      border: none;
-      color: #8d99ae;
-      font-size: 16px;
-      font-weight: bold;
-      padding: 10px;
-      cursor: pointer;
-      width: 50%;
-    }
-    .auth-tab-btn.active {
-      color: #00b4d8;
-      border-bottom: 2px solid #00b4d8;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 12px;
-      color: #90e0ef;
-      margin-bottom: 5px;
-    }
-    .form-group input, .form-group select {
-      width: 100%;
-      padding: 12px;
-      background: #0b132b;
-      border: 1px solid #3a506b;
-      border-radius: 8px;
-      color: #ffffff;
-      font-size: 14px;
-    }
-    .form-group input:focus, .form-group select:focus {
-      outline: none;
-      border-color: #00b4d8;
-    }
-    .auth-submit-btn {
-      width: 100%;
-      background: #00b4d8;
-      color: #0b132b;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 15px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    /* Logged In Status Banner */
-    .user-status-card {
-      display: none;
-      background: #1c2541;
-      border: 1px solid #3a506b;
-      border-radius: 12px;
-      padding: 15px;
-      text-align: center;
-      margin-top: 15px;
-    }
-
-    /* Horizontal Series Tabs */
-    .series-nav {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding: 10px 0;
-      margin-bottom: 15px;
-      scrollbar-width: none;
-    }
-    .series-nav::-webkit-scrollbar {
-      display: none;
-    }
-    .series-btn {
-      background: #1c2541;
-      color: #90e0ef;
-      border: 1px solid #00b4d8;
-      padding: 8px 16px;
-      border-radius: 20px;
-      white-space: nowrap;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .series-btn.active {
-      background: #00b4d8;
-      color: #0b132b;
-    }
-
-    /* Vertical Cards */
-    .machine-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .card {
-      background: #1c2541;
-      border-radius: 12px;
-      padding: 15px;
-      border: 1px solid #3a506b;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .card h3 {
-      margin-top: 0;
-      color: #ffffff;
-    }
-    .card p {
-      margin: 6px 0;
-      font-size: 14px;
-    }
-    .highlight {
-      color: #ffb703;
-      font-weight: bold;
-    }
-    .green {
-      color: #38b000;
-      font-weight: bold;
-    }
-    .buy-btn {
-      width: 100%;
-      background: #0077b6;
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: bold;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    /* User Profile & Account Styles */
-    .account-header {
-      background: #1c2541;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      border: 1px solid #3a506b;
-      margin-bottom: 20px;
-    }
-    .balance-title {
-      color: #90e0ef;
-      font-size: 14px;
-      margin: 0;
-    }
-    .balance-amount {
-      color: #ffb703;
-      font-size: 28px;
-      font-weight: bold;
-      margin: 8px 0;
-    }
-
-    /* Account Grid Actions */
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .action-card {
-      background: #1c2541;
-      border: 1px solid #3a506b;
-      border-radius: 10px;
-      padding: 15px;
-      text-align: center;
-      cursor: pointer;
-    }
-    .action-icon {
-      font-size: 24px;
-      display: block;
-      margin-bottom: 5px;
-    }
-    .action-label {
-      font-size: 13px;
-      font-weight: bold;
-      color: #ffffff;
-    }
-
-    /* Menu List Options */
-    .menu-list {
-      background: #1c2541;
-      border-radius: 10px;
-      border: 1px solid #3a506b;
-      overflow: hidden;
-    }
-    .menu-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 16px;
-      border-bottom: 1px solid #2a3b5c;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .menu-item:last-child {
-      border-bottom: none;
-    }
-.navbar {
-    display: none; /* Hidden until login */
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    justify-content: space-around;
-    align-items: center;
-    background-color: #0b1329;
-    padding: 10px 0;
-    z-index: 1000;
-}
-
-.navbar.visible {
-    display: flex !important;
-}
-
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #6c757d;
-      font-size: 11px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .nav-item.active {
-      color: #00b4d8;
-    }
-    .nav-icon {
-      font-size: 18px;
-      margin-bottom: 2px;
-    }
-
-    /* Deposit Modal */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
-      z-index: 2000;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-    .modal-card {
-      background: #1c2541;
-      border: 1px solid #3a506b;
-      border-radius: 12px;
-      width: 100%;
-      max-width: 400px;
-      padding: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-      border-bottom: 1px solid #3a506b;
-      padding-bottom: 10px;
-    }
-    .modal-header h3 {
-      margin: 0;
-      color: #00b4d8;
-    }
-    .close-btn {
-      background: none;
-      border: none;
-      color: #8d99ae;
-      font-size: 20px;
-      cursor: pointer;
-    }
-  </style>
+        /* Main App & Navbar */
+        #main-app-content { padding: 20px; display: none; }
+        
+        #bottomNavbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: #1c2541;
+            display: none; /* Hidden by default until login */
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #3a506b;
+            z-index: 1000;
+        }
+        .nav-item { color: #fff; text-decoration: none; font-size: 12px; text-align: center; cursor: pointer; }
+    </style>
 </head>
 <body>
 
-  <!-- Home Section -->
-  <div id="tab-home" class="tab-content active">
-    <h2>🏠 Home</h2>
-
-    <div class="hero-card">
-      <h3>Future AI Computing Power</h3>
-      <p>Automated High-Performance AI Mining Hardware Platform</p>
-    </div>
-
-    <!-- Auth Forms (Shown when not logged in) -->
-    <div id="auth-container" class="auth-screen">
-    <h1>Welcome</h1>
-    <!-- Your phone/password inputs and login button -->
-</div>
-
-     
-    <div class="auth-tabs">
-    <button id="loginTabBtn" type="button" onclick="toggleAuthForm('login')">Login</button>
-    <button id="registerTabBtn" type="button" onclick="toggleAuthForm('register')">Register</button>
-</div>
-      <form id="loginForm" onsubmit="handleAuth(event, 'Login')">
-        <div class="form-group">
-          <label>Phone Number (+256...)</label>
-          <input type="text" id="loginPhone" placeholder="07xxxxxxxx" required>
+    <!-- Authentication / Welcome Screen -->
+    <div id="auth-container">
+        <h1>Welcome</h1>
+        <div class="auth-tabs">
+            <button id="loginTabBtn" type="button" class="active" onclick="toggleAuthForm('login')">Login</button>
+            <button id="registerTabBtn" type="button" onclick="toggleAuthForm('register')">Register</button>
         </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" placeholder="Enter password" required>
-        </div>
-        <button type="submit" class="auth-submit-btn">Login to Dashboard</button>
-      </form>
 
-      <form id="registerForm" style="display: none;" onsubmit="handleAuth(event, 'Register')">
-    <div class="form-group" style="position: relative;">
-        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">📱</span>
-        <input type="text" id="regPhone" placeholder="Phone Number" style="padding-left: 45px; border-radius: 30px;" required>
-    </div>
-    
-    <div class="form-group" style="position: relative;">
-        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">🔑</span>
-        <input type="password" id="regPassword" placeholder="Set Password" style="padding-left: 45px; border-radius: 30px;" required>
-    </div>
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleAuth(event, 'Login')">
+            <div class="form-group">
+                <label>Phone Number (+256...)</label>
+                <input type="text" id="loginPhone" placeholder="07xxxxxxxx" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="auth-submit-btn">Login to Dashboard</button>
+        </form>
 
-    <div class="form-group" style="position: relative;">
-        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">🔑</span>
-        <input type="password" id="regConfirmPassword" placeholder="Confirm Password" style="padding-left: 45px; border-radius: 30px;" required>
-    </div>
-
-    <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
-        <input type="text" id="regCaptcha" placeholder="Captcha" style="border-radius: 30px; flex: 1;" required>
-        <div id="captchaBox" style="background: #fff; color: #d63384; font-weight: bold; font-style: italic; padding: 10px 20px; border-radius: 20px; letter-spacing: 3px; font-size: 18px;">31577</div>
-    </div>
-
-    <div class="form-group" style="position: relative;">
-        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.7;">🔗</span>
-        <input type="text" id="regInvite" placeholder="Invitation Code (Optional)" style="padding-left: 45px; border-radius: 30px;">
-    </div>
-
-    <button type="submit" class="auth-submit-btn" style="border-radius: 30px;">Register</button>
-    
-    <div style="text-align: center; margin-top: 15px;">
-        <a href="#" onclick="toggleAuthForm('login'); return false;" style="color: #00b4d8; text-decoration: none;">&lt; Login</a>
-    </div>
-</form>
+        <!-- Register Form -->
+        <form id="registerForm" style="display: none;" onsubmit="handleAuth(event, 'Register')">
+            <div class="form-group">
+                <label>Phone Number (+256...)</label>
+                <input type="text" id="regPhone" placeholder="07xxxxxxxx" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="Enter password" required>
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="regConfirmPassword" placeholder="Confirm password" required>
+            </div>
+            <button type="submit" class="auth-submit-btn">Create Account</button>
+        </form>
     </div>
 
-    <!-- Active Session Card (Shown when logged in) -->
-    <div class="user-status-card" id="userStatusBox">
-      <p style="color: #38b000; font-weight: bold; margin: 0 0 5px 0;">✓ Account Active</p>
-      <p id="loggedInUserPhone" style="margin: 0 0 10px 0; color: #90e0ef;"></p>
-      <button class="buy-btn" onclick="switchMainTab('ai', document.getElementById('nav-ai'))">View AI Machines</button>
-    </div>
-  </div>
-
-  <!-- Raffle Section -->
-  <div id="tab-raffle" class="tab-content">
-    <h2>🎟️ Raffle</h2>
-    <p style="text-align: center; color: #8d99ae;">Lucky draw events and daily rewards platform.</p>
-  </div>
-
-  <!-- Chats Section -->
-  <div id="tab-chats" class="tab-content">
-    <h2>💬 Chats</h2>
-    <p style="text-align: center; color: #8d99ae;">Official Support & Community Channel</p>
-  </div>
-
-  <!-- AI Mining Section -->
-  <div id="tab-ai" class="tab-content">
-    <h2>🤖 AI Mining Machines</h2>
-    
-    <!-- Horizontal Series Sub-Tabs -->
-    <div class="series-nav" id="seriesNav"></div>
-
-    <!-- Vertical Machines Container -->
-    <div class="machine-list" id="machineList"></div>
-  </div>
-<!-- Income Section -->
-<div id="tab-income" class="tab-content" style="display: none;">
-    <h2>💰 Income & Earnings</h2>
-    <p style="text-align: center; color: #8d99ae;">Track your automated earnings and commissions here.</p>
-</div>
-
-<!-- My Section -->
-<div id="tab-my" class="tab-content" style="display: none;">
-
-    <h2>👤 My Dashboard</h2>
-
-    <div class="account-header">
-      <p class="balance-title">Account Balance</p>
-      <div class="balance-amount" id="userBalanceDisplay">0 UGX</div>
-      <p id="displayAccountPhone" style="font-size: 12px; color: #8d99ae; margin: 0;">Phone: Not Logged In</p>
+    <!-- Main App Dashboard Content (Hidden by default) -->
+    <div id="main-app-content">
+        <h2>Dashboard</h2>
+        <p>Welcome to your AI computing platform!</p>
     </div>
 
-    <!-- Quick Action Buttons -->
-    <div class="action-grid">
-      <div class="action-card" onclick="openDepositModal()">
-        <span class="action-icon">💳</span>
-        <span class="action-label">Deposit</span>
-      </div>
-      <div class="action-card" onclick="handleAction('Withdraw')">
-        <span class="action-icon">🏧</span>
-        <span class="action-label">Withdraw</span>
-      </div>
-      <div class="action-card" onclick="handleAction('Download App')">
-        <span class="action-icon">📲</span>
-        <span class="action-label">Download App</span>
-      </div>
-      <div class="action-card" onclick="handleAction('Records')">
-        <span class="action-icon">📋</span>
-        <span class="action-label">Records</span>
-      </div>
+    <!-- Bottom Navigation Bar (Hidden by default) -->
+    <div id="bottomNavbar">
+        <a class="nav-item" onclick="switchMainTab('home')">Home</a>
+        <a class="nav-item" onclick="switchMainTab('ai')">AI Machines</a>
+        <a class="nav-item" onclick="switchMainTab('profile')">Profile</a>
     </div>
 
-    <!-- Account Settings List -->
-    <div class="menu-list">
-      <div class="menu-item" onclick="handleAction('Personal Information')">
-        <span>👤 Personal Details</span>
-        <span>›</span>
-      </div>
-      <div class="menu-item" onclick="handleAction('Binding Mobile Money')">
-        <span>📱 Mobile Money Wallet</span>
-        <span>›</span>
-      </div>
-      <div class="menu-item" onclick="handleAction('Security Settings')">
-        <span>🔒 Security & Password</span>
-        <span>›</span>
-      </div>
-    </div>
-  </div>
+    <script>
+        function toggleAuthForm(type) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const loginTabBtn = document.getElementById('loginTabBtn');
+            const registerTabBtn = document.getElementById('registerTabBtn');
 
-  <!-- Deposit Modal -->
-  <div class="modal-overlay" id="depositModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>💳 Mobile Money Deposit</h3>
-        <button class="close-btn" onclick="closeDepositModal()">&times;</button>
-      </div>
-      <form onsubmit="submitDeposit(event)">
-        <div class="form-group">
-          <label>Select Mobile Network</label>
-          <select id="depositNetwork" required>
-            <option value="MTN Mobile Money">MTN Mobile Money</option>
-            <option value="Airtel Money">Airtel Money</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Phone Number (+256...)</label>
-          <input type="text" id="depositPhone" placeholder="07xxxxxxxx" required>
-        </div>
-        <div class="form-group">
-          <label>Deposit Amount (UGX)</label>
-          <input type="number" id="depositAmount" placeholder="e.g. 10000" min="5000" step="1000" required>
-        </div>
-        <button type="submit" class="auth-submit-btn">Confirm Payment Prompt</button>
-      </form>
-    </div>
-  </div>
-
-<!-- Main Bottom Navigation Bar -->
-<div class="navbar" id="bottomNavbar" style="display: none;">
-
-    <div class="nav-item active" id="nav-home" onclick="switchMainTab('home', this)">
-        <span class="nav-icon">🏠</span>
-        <span>Home</span>
-    </div>
-    <div class="nav-item" onclick="switchMainTab('raffle', this)">
-        <span class="nav-icon">🎟️</span>
-        <span>Raffle</span>
-    </div>
-    <div class="nav-item" onclick="switchMainTab('chats', this)">
-        <span class="nav-icon">💬</span>
-        <span>Chats</span>
-    </div>
-    <div class="nav-item" id="nav-ai" onclick="switchMainTab('ai', this)">
-        <span class="nav-icon">🤖</span>
-        <span>AI</span>
-    </div>
-    <div class="nav-item" onclick="switchMainTab('income', this)">
-        <span class="nav-icon">💰</span>
-        <span>Income</span>
-    </div>
-    <div class="nav-item" onclick="switchMainTab('my', this)">
-        <span class="nav-icon">👤</span>
-        <span>My</span>
-    </div>
-</div>
-
-
-  <script>
-    let currentSeriesData = {};
-    let selectedSeries = 'C-SERIES';
-    let currentUser = null;
-    let userBalance = 0;
-
-   function switchMainTab(tabName, el) {
-  // Hide all tab content sections
-  document.querySelectorAll('.tab-content').forEach(tab => {
-    tab.style.display = 'none';
-  });
-  
-  // Remove active styling from all bottom nav items
-  document.querySelectorAll('.nav-item').forEach(item => {
-    item.classList.remove('active');
-  });
-  
-  // Show the target tab if it exists
-  const targetTab = document.getElementById(`tab-${tabName}`);
-  if (targetTab) {
-    targetTab.style.display = 'block';
-  }
-  
-  // Highlight the clicked nav item
-  if (el) {
-    el.classList.add('active');
-  }
-
-  // Special trigger for AI machines if applicable
-  if (tabName === 'ai') {
-    fetchMachines();
-  }
-}
-
-function toggleAuthForm(type) {
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm'); // or whatever your register form id is
-    const loginTabBtn = document.getElementById('loginTabBtn');
-    const registerTabBtn = document.getElementById('registerTabBtn');
-
-    if (type === 'login') {
-        if (loginForm) loginForm.style.display = 'block';
-        if (registerForm) registerForm.style.display = 'none';
-        if (loginTabBtn) loginTabBtn.classList.add('active');
-        if (registerTabBtn) registerTabBtn.classList.remove('active');
-    } else {
-        if (loginForm) loginForm.style.display = 'none';
-        if (registerForm) registerForm.style.display = 'block';
-        if (loginTabBtn) loginTabBtn.classList.remove('active');
-        if (registerTabBtn) registerTabBtn.classList.add('active');
-    }
-}
-
-}
-
-async function handleAuth(e, type) {
-    e.preventDefault();
-
-    const phone = type === 'Login' ? document.getElementById('loginPhone').value : document.getElementById('regPhone').value;
-    const password = document.getElementById('regPassword')?.value;
-    const confirmPassword = document.getElementById('regConfirmPassword')?.value;
-
-    if (type === 'Register') {
-        if (password !== confirmPassword) {
-            alert("Passwords do not match!");
-            return;
+            if (type === 'login') {
+                if (loginForm) loginForm.style.display = 'block';
+                if (registerForm) registerForm.style.display = 'none';
+                if (loginTabBtn) loginTabBtn.classList.add('active');
+                if (registerTabBtn) registerTabBtn.classList.remove('active');
+            } else {
+                if (loginForm) loginForm.style.display = 'none';
+                if (registerForm) registerForm.style.display = 'block';
+                if (loginTabBtn) loginTabBtn.classList.remove('active');
+                if (registerTabBtn) registerTabBtn.classList.add('active');
+            }
         }
 
-        try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone_number: phone, password: password, confirm_password: confirmPassword })
-            });
+        async function handleAuth(e, type) {
+            e.preventDefault();
 
-            const data = await response.json();
+            const isLogin = type === 'Login';
+            const phone = document.getElementById(isLogin ? 'loginPhone' : 'regPhone').value;
+            const password = document.getElementById(isLogin ? 'loginPassword' : 'regPassword').value;
 
-            if (!response.ok) {// Hide the welcome/auth box and show the navigation bar
-document.getElementById('authBox').style.display = 'none';
-
-const navbar = document.getElementById('bottomNavbar');
-if (navbar) {
-    navbar.style.display = 'flex';
-}
-
-                alert(data.error || "Registration failed");
-                return;
+            if (!isLogin) {
+                const confirmPassword = document.getElementById('regConfirmPassword').value;
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match!");
+                    return;
+                }
             }
 
-            alert("Account created successfully!");
-        } catch (err) {
-            alert("Server error. Please try again.");
-            return;
+            try {
+                const endpoint = isLogin ? '/api/login' : '/api/register';
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: phone, password: password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error || "Authentication failed!");
+                    return;
+                }
+
+                alert(isLogin ? "Login successful!" : "Account created successfully!");
+
+                // Hide Auth Screen & Unlock App + Navbar
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('main-app-content').style.display = 'block';
+                
+                const navbar = document.getElementById('bottomNavbar');
+                if (navbar) {
+                    navbar.style.display = 'flex';
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Server error. Please try again.");
+            }
         }
-    }
 
-    currentUser = phone;
-    document.getElementById('authBox').style.display = 'none';
-    document.getElementById('userStatusBox').style.display = 'block';
-    document.getElementById('loggedInUserPhone').innerText = currentUser;
-    document.getElementById('displayAccountPhone').innerText = currentUser;
-    document.getElementById('depositPhone').value = currentUser;
-
-    switchMainTab('ai', document.getElementById('nav-ai'));
-}
-
-
-      document.getElementById('authBox').style.display = 'none';
-      document.getElementById('userStatusBox').style.display = 'block';
-      document.getElementById('loggedInUserPhone').innerText = `Logged in as: ${currentUser}`;
-      document.getElementById('displayAccountPhone').innerText = `Phone: ${currentUser}`;
-      document.getElementById('depositPhone').value = currentUser;
-
-      switchMainTab('ai', document.getElementById('nav-ai'));
-    }
-
-    function closeDepositModal() {
-      document.getElementById('depositModal').style.display = 'none';
-    }
-
-    function submitDeposit(e) {
-      e.preventDefault();
-      const amount = parseInt(document.getElementById('depositAmount').value);
-      const network = document.getElementById('depositNetwork').value;
-      const phone = document.getElementById('depositPhone').value;
-
-      userBalance += amount;
-      document.getElementById('userBalanceDisplay').innerText = `${userBalance.toLocaleString()} UGX`;
-      closeDepositModal();
-
-      alert(`Payment prompt sent to ${phone} via ${network}. Balance updated to ${userBalance.toLocaleString()} UGX.`);
-    }
-
-    async function fetchMachines() {
-      try {
-        const res = await fetch('/api/machines');
-        currentSeriesData = await res.json();
-        renderSeriesTabs();
-        renderMachines(selectedSeries);
-      } catch (err) {
-        console.error("Failed to load machines", err);
-      }
-    }
-
-    function renderSeriesTabs() {
-      const nav = document.getElementById('seriesNav');
-      nav.innerHTML = '';
-
-      Object.keys(currentSeriesData).forEach(series => {
-        const btn = document.createElement('button');
-        btn.className = `series-btn ${series === selectedSeries ? 'active' : ''}`;
-        btn.innerText = series;
-        btn.onclick = () => {
-          selectedSeries = series;
-          renderSeriesTabs();
-          renderMachines(series);
-        };
-        nav.appendChild(btn);
-      });
-    }
-
-    function renderMachines(series) {
-      const list = document.getElementById('machineList');
-      list.innerHTML = '';
-
-      const machines = currentSeriesData[series] || [];
-      machines.forEach(m => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <h3>${m.name}</h3>
-          <p>Price: <span class="highlight">${m.price.toLocaleString()} UGX</span></p>
-          <p>Daily Return: <span class="green">+${m.daily_return.toLocaleString()} UGX</span></p>
-          <p>Expiration: <span class="highlight">${m.days} Days</span></p>
-          <p>Total Revenue: <span class="green">${m.total_return.toLocaleString()} UGX</span></p>
-          <button class="buy-btn" onclick="buyMachine(${m.id})">Buy Machine</button>
-        `;
-        list.appendChild(card);
-      });
-    }
-
-    async function buyMachine(id) {
-      const userPhone = currentUser || prompt("Enter your phone number to confirm purchase (+256...):");
-      if (!userPhone) return;
-
-      const res = await fetch('/api/buy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone_number: userPhone, machineId: id })
-      });
-      const data = await res.json();
-      alert(data.message || data.error);
-    }
-
-    function handleAction(name) {
-      alert(`${name} feature opened.`);
-    }
-function switchMainTab(tabName, el) {
-  // Hide all main section views or handle navigation changes
-  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-  const targetTab = document.getElementById(`tab-${tabName}`);
-  if (targetTab) targetTab.style.display = 'block';
-  if (el) el.classList.add('active');
-
-  console.log("Switching to tab:", tabName);
-  
-  if (tabName === 'ai') {
-    fetchMachines();
-  }
-}
-
-}
-
-    fetchMachines();
-  </script>
+        function switchMainTab(tabName) {
+            console.log("Switched to tab:", tabName);
+        }
+    </script>
 </body>
 </html>
+
