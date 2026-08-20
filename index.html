@@ -101,7 +101,6 @@
             const phone = document.getElementById(isLogin ? 'loginPhone' : 'regPhone').value.trim();
             const password = document.getElementById(isLogin ? 'loginPassword' : 'regPassword').value;
 
-            // Load saved accounts database from localStorage
             let accountsDB = JSON.parse(localStorage.getItem('hut9_accounts_db')) || [];
 
             if (!isLogin) {
@@ -111,26 +110,27 @@
                     return;
                 }
 
-                // Check if account with this phone already exists
+                // 1. Check if this exact phone number is already registered
                 let existingAccount = accountsDB.find(acc => acc.phone === phone);
                 if (existingAccount) {
                     alert("An account with this phone number already exists!");
                     return;
                 }
 
-                // Device ID check to prevent multiple accounts per device
+                // 2. Check device limit only if another account was already registered on this device
                 let deviceId = localStorage.getItem('hut9_device_id');
                 if (deviceId && localStorage.getItem('hut9_account_registered') === 'true') {
                     alert("Multiple accounts are not allowed on this device.");
                     return;
                 }
+
                 if (!deviceId) {
                     deviceId = 'dev_' + Math.random().toString(36).substring(2);
                     localStorage.setItem('hut9_device_id', deviceId);
                 }
                 localStorage.setItem('hut9_account_registered', 'true');
 
-                // Create and save new account into database
+                // Create and save new account
                 const newAcc = {
                     phone: phone,
                     password: password,
