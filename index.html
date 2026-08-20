@@ -98,13 +98,23 @@
         function handleAuth(e, type) {
             e.preventDefault();
             const isLogin = type === 'Login';
-            const phone = document.getElementById(isLogin ? 'loginPhone' : 'regPhone').value;
+            const phone = document.getElementById(isLogin ? 'loginPhone' : 'regPhone').value.trim();
             const password = document.getElementById(isLogin ? 'loginPassword' : 'regPassword').value;
+
+            // Load saved accounts database from localStorage
+            let accountsDB = JSON.parse(localStorage.getItem('hut9_accounts_db')) || [];
 
             if (!isLogin) {
                 const confirmPassword = document.getElementById('regConfirmPassword').value;
                 if (password !== confirmPassword) {
                     alert("Passwords do not match!");
+                    return;
+                }
+
+                // Check if account with this phone already exists
+                let existingAccount = accountsDB.find(acc => acc.phone === phone);
+                if (existingAccount) {
+                    alert("An account with this phone number already exists!");
                     return;
                 }
 
@@ -119,13 +129,50 @@
                     localStorage.setItem('hut9_device_id', deviceId);
                 }
                 localStorage.setItem('hut9_account_registered', 'true');
+
+                // Create and save new account into database
+                const newAcc = {
+                    phone: phone,
+                    password: password,
+                    wallet: 0,
+                    balance: 0,
+                    depositTotal: 0,
+                    withdrawTotal: 0,
+                    raffles: 0,
+                    name: 'Mr. Rodgers',
+                    avatar: '👤',
+                    purchasedMachines: [],
+                    withdrawRequests: []
+                };
+                accountsDB.push(newAcc);
+                localStorage.setItem('hut9_accounts_db', JSON.stringify(accountsDB));
+
+                alert("Account created successfully! Please login.");
+                switchAuthTab('login');
+                document.getElementById('registerForm').reset();
+                return;
             }
 
-            currentUser.phone = phone;
-            currentUser.password = password;
+            // LOGIN PROCESS: Strictly verify if number exists in DB and password matches
+            let targetAccount = accountsDB.find(acc => acc.phone === phone);
+            if (!targetAccount) {
+                alert("Phone number not registered. Please register first!");
+                return;
+            }
+            if (targetAccount.password !== password) {
+                alert("Incorrect password!");
+                return;
+            }
+
+            // Load user session data
+            currentUser = targetAccount;
+            if(!currentUser.name) currentUser.name = 'Mr. Rodgers';
+            if(!currentUser.avatar) currentUser.avatar = '👤';
+            userPurchasedMachines = currentUser.purchasedMachines || [];
+            userWithdrawRequests = currentUser.withdrawRequests || [];
             currentUser.inviteCode = `https://hut9-platform.onrender.com/?ref=${phone}`;
 
-            alert(isLogin ? "Login successful!" : "Account created successfully!");
+            alert("Login successful!");
             document.getElementById('auth-container').style.display = 'none';
             document.getElementById('main-app-content').style.display = 'block';
             document.getElementById('bottomNavbar').style.display = 'flex';
@@ -133,15 +180,26 @@
             switchMainTab('home', document.querySelector('.nav-item'));
         }
 
+        function saveUserData() {
+            currentUser.purchasedMachines = userPurchasedMachines;
+            currentUser.withdrawRequests = userWithdrawRequests;
+            let accountsDB = JSON.parse(localStorage.getItem('hut9_accounts_db')) || [];
+            let index = accountsDB.findIndex(acc => acc.phone === currentUser.phone);
+            if (index !== -1) {
+                accountsDB[index] = currentUser;
+                localStorage.setItem('hut9_accounts_db', JSON.stringify(accountsDB));
+            }
+        }
+
         function signOut() {
+            saveUserData();
             currentUser = { phone: '', password: '', wallet: 0, balance: 0, depositTotal: 0, withdrawTotal: 0, aiIncomeTotal: 0, dailyIncomeTotal: 0, raffles: 0, name: 'Mr. Rodgers', avatar: '👤', inviteCode: '' };
             userPurchasedMachines = [];
             userWithdrawRequests = [];
             document.getElementById('main-app-content').style.display = 'none';
             document.getElementById('bottomNavbar').style.display = 'none';
             document.getElementById('auth-container').style.display = 'block';
-            document.getElementById('loginPhone').value = '';
-            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginForm').reset();
             alert("Signed out successfully.");
         }
 
@@ -226,6 +284,7 @@
             currentUser.balance += w.amount;
             w.status = 'Cancelled';
             alert(`Withdrawal cancelled. UGX ${w.amount.toLocaleString()} returned to Account Balance.`);
+            saveUserData();
             renderHomeTab(document.getElementById('main-app-content'));
         }
 
@@ -259,7 +318,6 @@
             const filtered = filterSeries === 'All' ? aiMachinesData : aiMachinesData.filter(m => m.series === filterSeries);
             let machinesHtml = '';
             filtered.forEach(m => {
-                // Check if user has this machine active to display days run & running payout
                 let activeMatch = userPurchasedMachines.find(item => item.name === m.name && item.status === 'Running');
                 let runningStatusHtml = '';
                 if (activeMatch) {
@@ -296,6 +354,7 @@
                 daysPassed: 1, 
                 status: 'Running' 
             });
+            saveUserData();
             alert(`Successfully rented ${m.name}!`);
             switchMainTab('income', document.querySelectorAll('.nav-item')[4]);
         }
@@ -323,6 +382,7 @@
             const m = userPurchasedMachines[idx];
             m.status = 'Collected';
             currentUser.balance += m.total;
+            saveUserData();
             alert(`Cycle complete! UGX ${m.total.toLocaleString()} added to Account Balance.`);
             renderIncomeTab(document.getElementById('main-app-content'));
         }
@@ -380,6 +440,7 @@
         function simulateDeposit(amt) {
             currentUser.wallet += amt;
             currentUser.depositTotal += amt;
+            saveUserData();
             alert(`Payment detected! UGX ${amt.toLocaleString()} added to Wallet.`);
             renderWalletView();
         }
@@ -416,6 +477,7 @@
             if (!amt || currentUser.balance < amt) { alert("Invalid amount or insufficient balance"); return; }
             currentUser.balance -= amt;
             userWithdrawRequests.push({ phone, amount: amt, status: 'Pending' });
+            saveUserData();
             alert("Withdrawal requested!");
             switchMainTab('home', document.querySelectorAll('.nav-item')[0]);
         }
@@ -437,7 +499,7 @@
                 <h2>Settings</h2>
                 <div class="card" style="margin-top: 15px;">
                     <div class="form-group"><label>Name</label><input type="text" id="setName" value="${currentUser.name}"></div>
-                    <button class="btn-primary" onclick="currentUser.name = document.getElementById('setName').value; alert('Updated!');">Save Name</button>
+                    <button class="btn-primary" onclick="currentUser.name = document.getElementById('setName').value; saveUserData(); alert('Updated!');">Save Name</button>
                     <hr style="border-color: #38bdf8; margin: 15px 0;">
                     <h3 style="font-size: 14px; margin-bottom: 10px; color: #38bdf8;">Reset Password</h3>
                     <div class="form-group"><label>Last Password (Old)</label><input type="password" id="oldPass"></div>
@@ -458,6 +520,7 @@
             if (oldP !== currentUser.password) { alert("Incorrect old password!"); return; }
             if (newP !== confP) { alert("Passwords do not match!"); return; }
             currentUser.password = newP;
+            saveUserData();
             alert("Password updated successfully!");
             renderMyTab(document.getElementById('main-app-content'));
         }
