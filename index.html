@@ -7,25 +7,25 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background-color: #0b132b; color: #ffffff; padding-bottom: 70px; }
-        #auth-container { max-width: 400px; margin: 50px auto; padding: 20px; background: #1c2541; border-radius: 10px; }
-        #auth-container h1 { text-align: center; margin-bottom: 20px; }
+        #auth-container { max-width: 400px; margin: 50px auto; padding: 20px; background: #1c2541; border-radius: 10px; border: 1px solid #38bdf8; }
+        #auth-container h1 { text-align: center; margin-bottom: 20px; color: #38bdf8; }
         .auth-tabs { display: flex; margin-bottom: 20px; }
         .auth-tabs button { flex: 1; padding: 10px; background: #3a506b; color: #fff; border: none; cursor: pointer; font-weight: bold; }
         .auth-tabs button.active { background: #00b4d8; }
         .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; }
-        .form-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #475569; background: #0b132b; color: #fff; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #38bdf8; }
+        .form-group input { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #38bdf8; background: #0b132b; color: #fff; }
         .auth-submit-btn { width: 100%; padding: 12px; background: #00b4d8; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         #main-app-content { padding: 20px; display: none; }
-        #bottomNavbar { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #1c2541; display: none; flex-direction: row; justify-content: space-around; align-items: center; border-top: 1px solid #3a506b; z-index: 1000; }
+        #bottomNavbar { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #1c2541; display: none; flex-direction: row; justify-content: space-around; align-items: center; border-top: 1px solid #38bdf8; z-index: 1000; }
         .nav-item { color: #94a3b8; text-decoration: none; font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; flex: 1; padding: 8px 0; }
-        .nav-item.active { color: #00b4d8; }
-        .card { background: #1c2541; padding: 15px; border-radius: 8px; border: 1px solid #3a506b; margin-bottom: 12px; }
+        .nav-item.active { color: #38bdf8; }
+        .card { background: #1c2541; padding: 15px; border-radius: 8px; border: 1px solid #38bdf8; margin-bottom: 12px; }
         .btn-primary { width: 100%; padding: 10px; background: #00b4d8; color: #fff; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 5px; }
         .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-        .grid-item { background: #1c2541; padding: 12px; border-radius: 8px; border: 1px solid #3a506b; text-align: center; }
+        .grid-item { background: #1c2541; padding: 12px; border-radius: 8px; border: 1px solid #38bdf8; text-align: center; }
         .my-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
-        .my-btn { background: #1c2541; border: 1px solid #3a506b; padding: 12px 5px; border-radius: 8px; color: #fff; font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .my-btn { background: #1c2541; border: 1px solid #38bdf8; padding: 12px 5px; border-radius: 8px; color: #fff; font-size: 11px; font-weight: bold; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
     </style>
 </head>
 <body>
@@ -43,6 +43,7 @@
         <form id="registerForm" style="display: none;" onsubmit="handleAuth(event, 'Register')">
             <div class="form-group"><label>Phone Number</label><input type="text" id="regPhone" placeholder="+2567xxxxxxxx" required></div>
             <div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="Enter password" required></div>
+            <div class="form-group"><label>Confirm Password</label><input type="password" id="regConfirmPassword" placeholder="Confirm password" required></div>
             <button type="submit" class="auth-submit-btn">Create Account</button>
         </form>
     </div>
@@ -100,6 +101,26 @@
             const phone = document.getElementById(isLogin ? 'loginPhone' : 'regPhone').value;
             const password = document.getElementById(isLogin ? 'loginPassword' : 'regPassword').value;
 
+            if (!isLogin) {
+                const confirmPassword = document.getElementById('regConfirmPassword').value;
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match!");
+                    return;
+                }
+
+                // Device ID check to prevent multiple accounts per device
+                let deviceId = localStorage.getItem('hut9_device_id');
+                if (deviceId && localStorage.getItem('hut9_account_registered') === 'true') {
+                    alert("Multiple accounts are not allowed on this device.");
+                    return;
+                }
+                if (!deviceId) {
+                    deviceId = 'dev_' + Math.random().toString(36).substring(2);
+                    localStorage.setItem('hut9_device_id', deviceId);
+                }
+                localStorage.setItem('hut9_account_registered', 'true');
+            }
+
             currentUser.phone = phone;
             currentUser.password = password;
             currentUser.inviteCode = `https://hut9-platform.onrender.com/?ref=${phone}`;
@@ -110,6 +131,18 @@
             document.getElementById('bottomNavbar').style.display = 'flex';
             
             switchMainTab('home', document.querySelector('.nav-item'));
+        }
+
+        function signOut() {
+            currentUser = { phone: '', password: '', wallet: 0, balance: 0, depositTotal: 0, withdrawTotal: 0, aiIncomeTotal: 0, dailyIncomeTotal: 0, raffles: 0, name: 'Mr. Rodgers', avatar: '👤', inviteCode: '' };
+            userPurchasedMachines = [];
+            userWithdrawRequests = [];
+            document.getElementById('main-app-content').style.display = 'none';
+            document.getElementById('bottomNavbar').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'block';
+            document.getElementById('loginPhone').value = '';
+            document.getElementById('loginPassword').value = '';
+            alert("Signed out successfully.");
         }
 
         const aiMachinesData = [
@@ -159,30 +192,30 @@
             else if (tabName === 'my') renderMyTab(mainContent);
         }
         function renderHomeTab(container) {
-            let withdrawList = userWithdrawRequests.length === 0 ? '<p style="font-size: 12px; color: #94a3b8;">0</p>' : '';
+            let withdrawList = userWithdrawRequests.length === 0 ? '<p style="font-size: 12px; color: #38bdf8;">0</p>' : '';
             userWithdrawRequests.forEach((w, idx) => {
                 let cancelBtn = w.status === 'Pending' ? `<br><span style="color: #ef4444; cursor: pointer; font-size: 11px; text-decoration: underline;" onclick="cancelWithdraw(${idx})">Cancel</span>` : '';
                 withdrawList += `<p style="font-size: 12px; color: #38bdf8;">UGX ${w.amount.toLocaleString()} - <strong>${w.status}</strong>${cancelBtn}</p>`;
             });
 
-            let totalIncomeAll = userPurchasedMachines.reduce((sum, m) => sum + (m.status === 'Collected' ? m.total : 0), 0);
-            let dailySumAll = userPurchasedMachines.filter(m => m.status === 'Running').reduce((sum, m) => sum + m.daily, 0);
+            let aiIncomeAll = userPurchasedMachines.reduce((sum, m) => sum + (m.status === 'Collected' ? m.total : 0), 0);
+            let todaysEarningsAll = userPurchasedMachines.filter(m => m.status === 'Running').reduce((sum, m) => sum + m.daily, 0);
 
             container.innerHTML = `
-                <h2 style="color: #00b4d8; margin-bottom: 5px;">Welcome, ${currentUser.name}</h2>
-                <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;">HUT 9 Platform Dashboard</p>
+                <h2 style="color: #38bdf8; margin-bottom: 5px;">Welcome, ${currentUser.name}</h2>
+                <p style="font-size: 13px; color: #38bdf8; margin-bottom: 12px;">HUT 9 Platform Dashboard</p>
                 
-                <div style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px;">
-                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=300" style="width: 140px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #3a506b;">
-                    <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=300" style="width: 140px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #3a506b;">
-                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=300" style="width: 140px; height: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #3a506b;">
+                <div style="display: flex; gap: 10px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px;">
+                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500" style="width: 260px; height: 130px; object-fit: cover; border-radius: 6px; border: 1px solid #38bdf8;">
+                    <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=500" style="width: 260px; height: 130px; object-fit: cover; border-radius: 6px; border: 1px solid #38bdf8;">
+                    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=500" style="width: 260px; height: 130px; object-fit: cover; border-radius: 6px; border: 1px solid #38bdf8;">
                 </div>
 
                 <div class="grid-stats">
-                    <div class="grid-item"><span style="font-size: 11px; color: #94a3b8;">Deposit details</span><p style="font-size: 15px; font-weight: bold; color: #10b981; margin-top: 4px;">UGX ${currentUser.depositTotal.toLocaleString()}</p></div>
-                    <div class="grid-item"><span style="font-size: 11px; color: #94a3b8;">Withdraw details</span><div style="margin-top: 4px;">${withdrawList}</div></div>
-                    <div class="grid-item"><span style="font-size: 11px; color: #94a3b8;">All income</span><p style="font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 4px;">UGX ${totalIncomeAll.toLocaleString()}</p></div>
-                    <div class="grid-item"><span style="font-size: 11px; color: #94a3b8;">Daily income</span><p style="font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 4px;">UGX ${dailySumAll.toLocaleString()}</p></div>
+                    <div class="grid-item"><span style="font-size: 11px; color: #38bdf8;">Deposit details</span><p style="font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 4px;">UGX ${currentUser.depositTotal.toLocaleString()}</p></div>
+                    <div class="grid-item"><span style="font-size: 11px; color: #38bdf8;">Withdraw details</span><div style="margin-top: 4px;">${withdrawList}</div></div>
+                    <div class="grid-item"><span style="font-size: 11px; color: #38bdf8;">Ai income</span><p style="font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 4px;">UGX ${aiIncomeAll.toLocaleString()}</p></div>
+                    <div class="grid-item"><span style="font-size: 11px; color: #38bdf8;">Today's earnings</span><p style="font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 4px;">UGX ${todaysEarningsAll.toLocaleString()}</p></div>
                 </div>
             `;
         }
@@ -197,15 +230,15 @@
         }
 
         function renderRaffleTab(container) {
-            container.innerHTML = `<h2>Raffle Rewards</h2><div class="card" style="margin-top: 15px; text-align: center;"><p>Purchase machines to earn raffle bonuses!</p><p style="font-weight: bold; color: #10b981; margin-top: 10px;">Total Raffles: ${currentUser.raffles}</p></div>`;
+            container.innerHTML = `<h2>Raffle Rewards</h2><div class="card" style="margin-top: 15px; text-align: center;"><p style="color: #38bdf8;">Purchase machines to earn raffle bonuses!</p><p style="font-weight: bold; color: #38bdf8; margin-top: 10px;">Total Raffles: ${currentUser.raffles}</p></div>`;
         }
 
         function renderChatsTab(container) {
             container.innerHTML = `
                 <h2>Customer Support</h2>
                 <div class="card" style="margin-top: 15px; text-align: center;">
-                    <p style="font-size: 14px; color: #94a3b8; margin-bottom: 15px;">24/7 Online Customer Service</p>
-                    <a href="https://t.me/hut9uganda" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #229ED9; color: #fff; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+                    <p style="font-size: 14px; color: #38bdf8; margin-bottom: 15px;">24/7 Online Customer Service</p>
+                    <a href="https://t.me/hut9uganda" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #38bdf8; color: #0b132b; padding: 12px 20px; border-radius: 6px; text-decoration: none; font-weight: bold;">
                         <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.228-.461-1.901-.903-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.482-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.324-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635.099-.002.321.023.465.14.12.098.153.228.166.331.011.104.024.339.011.523z"/></svg>
                         Join Telegram Group
                     </a>
@@ -218,20 +251,28 @@
             const seriesList = ['All', 'H', 'D', 'G', 'Z', 'VIP'];
             let buttonsHtml = '<div style="display: flex; gap: 5px; overflow-x: auto; margin-bottom: 15px;">';
             seriesList.forEach(s => {
-                const activeStyle = filterSeries === s ? 'background: #00b4d8; color: #fff;' : 'background: #1c2541; color: #94a3b8;';
-                buttonsHtml += `<button onclick="renderAiDashboard('${s}')" style="padding: 8px 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; ${activeStyle}">${s}</button>`;
+                const activeStyle = filterSeries === s ? 'background: #38bdf8; color: #0b132b;' : 'background: #1c2541; color: #38bdf8; border: 1px solid #38bdf8;';
+                buttonsHtml += `<button onclick="renderAiDashboard('${s}')" style="padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; ${activeStyle}">${s}</button>`;
             });
             buttonsHtml += '</div>';
 
             const filtered = filterSeries === 'All' ? aiMachinesData : aiMachinesData.filter(m => m.series === filterSeries);
             let machinesHtml = '';
             filtered.forEach(m => {
+                // Check if user has this machine active to display days run & running payout
+                let activeMatch = userPurchasedMachines.find(item => item.name === m.name && item.status === 'Running');
+                let runningStatusHtml = '';
+                if (activeMatch) {
+                    runningStatusHtml = `<p style="font-size: 12px; color: #38bdf8; margin-top: 4px;"><strong>Running:</strong> Day ${activeMatch.daysPassed} of ${activeMatch.daysTotal} | Payout: UGX ${m.daily.toLocaleString()}/day</p>`;
+                }
+
                 machinesHtml += `
                     <div class="card">
-                        <h3 style="color: #00b4d8; font-size: 15px;">${m.name}</h3>
+                        <h3 style="color: #38bdf8; font-size: 15px;">${m.name}</h3>
                         <p style="font-size: 13px; margin: 3px 0;">Price: UGX ${m.price.toLocaleString()}</p>
-                        <p style="font-size: 13px; margin: 3px 0;">Daily: <strong style="color: #10b981;">UGX ${m.daily.toLocaleString()}</strong></p>
-                        <p style="font-size: 12px; color: #94a3b8; margin: 3px 0;">Cycle: ${m.days} Days</p>
+                        <p style="font-size: 13px; margin: 3px 0;">Daily Payout: <strong style="color: #38bdf8;">UGX ${m.daily.toLocaleString()}</strong></p>
+                        <p style="font-size: 12px; color: #38bdf8; margin: 3px 0;">Cycle: ${m.days} Days</p>
+                        ${runningStatusHtml}
                         <button class="btn-primary" onclick="buyMachine('${m.id}')">Rent Machine</button>
                     </div>
                 `;
@@ -260,16 +301,16 @@
         }
 
         function renderIncomeTab(container) {
-            let list = userPurchasedMachines.length === 0 ? '<p style="color: #94a3b8;">No machines rented.</p>' : '';
+            let list = userPurchasedMachines.length === 0 ? '<p style="color: #38bdf8;">No machines rented.</p>' : '';
             userPurchasedMachines.forEach((m, idx) => {
                 let canCollect = m.daysPassed >= m.daysTotal && m.status === 'Running';
                 let btnHtml = canCollect ? 
-                    `<button class="btn-primary" style="background: #10b981;" onclick="receiveIncome(${idx})">Receive Income (UGX ${m.total.toLocaleString()})</button>` :
-                    `<p style="font-size: 12px; color: #38bdf8; margin-top: 8px;">Status: ${m.status} (${m.daysPassed}/${m.daysTotal} Days)</p>`;
+                    `<button class="btn-primary" style="background: #38bdf8; color: #0b132b;" onclick="receiveIncome(${idx})">Receive Income (UGX ${m.total.toLocaleString()})</button>` :
+                    `<p style="font-size: 12px; color: #38bdf8; margin-top: 8px;">Status: ${m.status} (Day ${m.daysPassed} of ${m.daysTotal}) - Payout: UGX ${m.daily ? m.daily.toLocaleString() : 'N/A'}/day</p>`;
 
                 list += `
                     <div class="card">
-                        <h3 style="font-size: 15px; color: #00b4d8;">${m.name}</h3>
+                        <h3 style="font-size: 15px; color: #38bdf8;">${m.name}</h3>
                         <p style="font-size: 13px; margin: 3px 0;">Total Return: UGX ${m.total.toLocaleString()}</p>
                         ${btnHtml}
                     </div>
@@ -291,7 +332,7 @@
                 <h2>My Account</h2>
                 <div class="card" style="display: flex; align-items: center; gap: 10px; margin-top: 15px;">
                     <span style="font-size: 30px;">${currentUser.avatar}</span>
-                    <div><h3>${currentUser.name}</h3><p style="font-size: 13px; color: #94a3b8;">${currentUser.phone}</p></div>
+                    <div><h3 style="color: #38bdf8;">${currentUser.name}</h3><p style="font-size: 13px; color: #38bdf8;">${currentUser.phone}</p></div>
                 </div>
                 <div class="my-grid">
                     <button class="my-btn" onclick="renderDepositView()"><span>💳</span> Deposit</button>
@@ -326,11 +367,11 @@
             document.getElementById('main-app-content').innerHTML = `
                 <h2>Send Payment</h2>
                 <div class="card" style="margin-top: 15px; text-align: center;">
-                    <p>Send UGX ${amt.toLocaleString()} to:</p>
-                    <p style="font-size: 20px; color: #00b4d8; font-weight: bold; margin: 10px 0;">${phone}</p>
-                    <p style="font-size: 16px; color: #10b981; font-weight: bold;">${name}</p>
+                    <p style="color: #38bdf8;">Send UGX ${amt.toLocaleString()} to:</p>
+                    <p style="font-size: 20px; color: #38bdf8; font-weight: bold; margin: 10px 0;">${phone}</p>
+                    <p style="font-size: 16px; color: #38bdf8; font-weight: bold;">${name}</p>
                     <button class="btn-primary" onclick="navigator.clipboard.writeText('${phone} ${name}'); alert('Copied!');">Copy details</button>
-                    <button class="btn-primary" style="background: #10b981; margin-top: 10px;" onclick="simulateDeposit(${amt})">I Have Sent Money</button>
+                    <button class="btn-primary" style="background: #38bdf8; color: #0b132b; margin-top: 10px;" onclick="simulateDeposit(${amt})">I Have Sent Money</button>
                     <button class="btn-primary" style="background: #3a506b;" onclick="renderMyTab(document.getElementById('main-app-content'))">Back</button>
                 </div>
             `;
@@ -347,9 +388,9 @@
             document.getElementById('main-app-content').innerHTML = `
                 <h2>Wallet & Balance</h2>
                 <div class="card" style="margin-top: 15px;">
-                    <p style="color: #94a3b8; font-size: 13px;">Wallet Balance (For Machines)</p>
-                    <p style="font-size: 22px; color: #10b981; font-weight: bold; margin: 5px 0 15px 0;">UGX ${currentUser.wallet.toLocaleString()}</p>
-                    <p style="color: #94a3b8; font-size: 13px;">Account Balance (From Income)</p>
+                    <p style="color: #38bdf8; font-size: 13px;">Wallet Balance (For Machines)</p>
+                    <p style="font-size: 22px; color: #38bdf8; font-weight: bold; margin: 5px 0 15px 0;">UGX ${currentUser.wallet.toLocaleString()}</p>
+                    <p style="color: #38bdf8; font-size: 13px;">Account Balance (From Income)</p>
                     <p style="font-size: 22px; color: #38bdf8; font-weight: bold; margin: 5px 0 15px 0;">UGX ${currentUser.balance.toLocaleString()}</p>
                     <button class="btn-primary" style="background: #3a506b;" onclick="renderMyTab(document.getElementById('main-app-content'))">Back</button>
                 </div>
@@ -383,7 +424,7 @@
             document.getElementById('main-app-content').innerHTML = `
                 <h2>Invite Friends</h2>
                 <div class="card" style="margin-top: 15px;">
-                    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Earn UGX 3,000 when your invitee deposits & rents a machine!</p>
+                    <p style="font-size: 13px; color: #38bdf8; margin-bottom: 10px;">Earn UGX 3,000 when your invitee deposits & rents a machine!</p>
                     <div class="form-group"><input type="text" id="invLink" value="${currentUser.inviteCode}" readonly></div>
                     <button class="btn-primary" onclick="navigator.clipboard.writeText(document.getElementById('invLink').value); alert('Link copied!');">Copy Link</button>
                     <button class="btn-primary" style="background: #3a506b;" onclick="renderMyTab(document.getElementById('main-app-content'))">Back</button>
@@ -397,13 +438,15 @@
                 <div class="card" style="margin-top: 15px;">
                     <div class="form-group"><label>Name</label><input type="text" id="setName" value="${currentUser.name}"></div>
                     <button class="btn-primary" onclick="currentUser.name = document.getElementById('setName').value; alert('Updated!');">Save Name</button>
-                    <hr style="border-color: #3a506b; margin: 15px 0;">
-                    <h3 style="font-size: 14px; margin-bottom: 10px;">Reset Password</h3>
+                    <hr style="border-color: #38bdf8; margin: 15px 0;">
+                    <h3 style="font-size: 14px; margin-bottom: 10px; color: #38bdf8;">Reset Password</h3>
                     <div class="form-group"><label>Last Password (Old)</label><input type="password" id="oldPass"></div>
                     <div class="form-group"><label>Current / New Password</label><input type="password" id="newPass"></div>
                     <div class="form-group"><label>Confirm Password</label><input type="password" id="confPass"></div>
                     <button class="btn-primary" onclick="updatePassword()">Update Password</button>
-                    <button class="btn-primary" style="background: #3a506b;" onclick="renderMyTab(document.getElementById('main-app-content'))">Back</button>
+                    <hr style="border-color: #38bdf8; margin: 15px 0;">
+                    <button class="btn-primary" style="background: #ef4444;" onclick="signOut()">Sign Out</button>
+                    <button class="btn-primary" style="background: #3a506b; margin-top: 8px;" onclick="renderMyTab(document.getElementById('main-app-content'))">Back</button>
                 </div>
             `;
         }
