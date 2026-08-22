@@ -117,16 +117,18 @@
     </div>
 
     <!-- Bottom Navigation Bar -->
-    <div class="bottom-nav">
-        <div class="nav-item" onclick="switchTab('Home', this)">Home</div>
-        <div class="nav-item" onclick="switchTab('Raffle', this)">Raffle</div>
-        <div class="nav-item" onclick="switchTab('Chats', this)">Chats</div>
-        <div class="nav-item active" onclick="switchTab('AI', this)">AI</div>
-        <div class="nav-item" onclick="switchTab('Income', this)">Income</div>
-        <div class="nav-item" onclick="switchTab('My', this)">My</div>
-    </div>
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchMainTab('home', this)">Home</div>
+    <div class="nav-item" onclick="switchMainTab('raffle', this)">Raffle</div>
+    <div class="nav-item" onclick="switchMainTab('chats', this)">Chats</div>
+    <div class="nav-item" onclick="switchMainTab('ai', this)">AI</div>
+    <div class="nav-item" onclick="switchMainTab('income', this)">Income</div>
+    <div class="nav-item" onclick="switchMainTab('my', this)">My</div>
+</div>
 
-    <script>
+
+    <script src="script.js"></script>
+
         const machines = [
             // H Series
             { series: 'H', name: 'H1 Miner (1X)', price: 'UGX 200,000', payout: 'UGX 15,000', cycle: '20 Days' },
