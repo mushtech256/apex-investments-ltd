@@ -96,7 +96,7 @@ function handleAuth(event, type) {
             depositTotal: 0,
             withdrawTotal: 0,
             raffles: 0,
-            name: 'Mr. Rodgers',
+            name: 'User',
             avatar: '👤',
             inviteCode: generateUniqueInviteCode(),
             purchasedMachines: [],
@@ -126,7 +126,7 @@ function handleAuth(event, type) {
 
     currentUser = {
         ...targetAccount,
-        name: targetAccount.name || 'Mr. Rodgers',
+        name: targetAccount.name || 'User',
         avatar: targetAccount.avatar || '👤',
         inviteCode: targetAccount.inviteCode || generateUniqueInviteCode()
     };
