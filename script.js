@@ -1,361 +1,258 @@
-const AUTH_CONFIG = {
-    DB_KEY: 'hut9_accounts_db',
-    MIN_PASSWORD_LENGTH: 6
-};
-// Global App State with dynamic user defaults
-let userBalance = 0;
-let userWallet = 0;
-let userPendingWithdrawals = [];
-let userPurchasedMachines = [];
-let userProfile = {
-    name: "Investor",
-    phone: "Not Set",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
-    password: "password123"
-};
-let depositAttemptToggle = false;
+// --- APP STATE & AUTH ---
+let currentUser = JSON.parse(localStorage.getItem('hut9_user')) || null;
 
-// Main Tab Router
+const machines = [
+    { series: 'H', name: 'H1 Miner (1X)', price: '200,000', payout: '15,000', cycle: '20 Days' },
+    { series: 'H', name: 'H2 Miner (2X)', price: '400,000', payout: '32,000', cycle: '20 Days' },
+    { series: 'D', name: 'D1 Mining Unit (1X)', price: '500,000', payout: '50,000', cycle: '7 Days' },
+    { series: 'G', name: 'G1 Grid Unit (1X)', price: '300,000', payout: '25,000', cycle: '15 Days' },
+    { series: 'Z', name: 'Z1 Quantum Rig (1X)', price: '1,500,000', payout: '160,000', cycle: '30 Days' },
+    { series: 'VIP', name: 'VIP 1 Elite Core (1X)', price: '2,500,000', payout: '250,000', cycle: '100 Days' }
+];
+
+let currentFilter = 'All';
+
+// --- INITIAL LOAD & ROUTING ---
+window.onload = function() {
+    checkAuthAndRender();
+};
+
+function checkAuthAndRender() {
+    const mainContent = document.getElementById('main-content');
+    const bottomNav = document.querySelector('.bottom-nav');
+    const headerTitle = document.getElementById('header-title');
+
+    if (!currentUser) {
+        if (bottomNav) bottomNav.style.display = 'none';
+        headerTitle.innerText = 'Apex Investments - Access';
+        renderLoginScreen(mainContent);
+    } else {
+        if (bottomNav) bottomNav.style.display = 'flex';
+        headerTitle.innerText = 'Apex Investments';
+        switchMainTab('home', document.querySelector('.nav-item'));
+    }
+}
+
+// --- AUTH SCREENS ---
+function renderLoginScreen(container) {
+    container.innerHTML = `
+        <div style="padding:20px; max-width:400px; margin:auto;">
+            <div style="text-align:center; margin-bottom:20px;">
+                <h2 style="color:#38bdf8; margin-bottom:5px;">Welcome Back</h2>
+                <p style="color:#94a3b8; font-size:13px;">Login to manage your AI mining portfolio</p>
+            </div>
+            
+            <div style="background:#101935; padding:20px; border-radius:12px; border:1px solid #1e2952;">
+                <label style="font-size:12px; color:#cbd5e1;">Phone Number or Username</label>
+                <input type="text" id="login-phone" placeholder="Enter phone/username" style="width:100%; padding:10px; margin-top:5px; margin-bottom:15px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
+                
+                <label style="font-size:12px; color:#cbd5e1;">Password</label>
+                <input type="password" id="login-password" placeholder="Enter password" style="width:100%; padding:10px; margin-top:5px; margin-bottom:20px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
+                
+                <button onclick="handleLogin()" style="width:100%; background:#0284c7; border:none; padding:12px; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer; margin-bottom:10px;">Login</button>
+                <button onclick="renderRegisterScreen()" style="width:100%; background:transparent; border:1px solid #1e2952; padding:10px; border-radius:6px; color:#38bdf8; cursor:pointer;">Create Account (Register)</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderRegisterScreen() {
+    const container = document.getElementById('main-content');
+    container.innerHTML = `
+        <div style="padding:20px; max-width:400px; margin:auto;">
+            <div style="text-align:center; margin-bottom:20px;">
+                <h2 style="color:#38bdf8; margin-bottom:5px;">Create Account</h2>
+                <p style="color:#94a3b8; font-size:13px;">Join Apex Investments today</p>
+            </div>
+            
+            <div style="background:#101935; padding:20px; border-radius:12px; border:1px solid #1e2952;">
+                <label style="font-size:12px; color:#cbd5e1;">Full Name</label>
+                <input type="text" id="reg-name" placeholder="Enter your name" style="width:100%; padding:10px; margin-top:5px; margin-bottom:12px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
+                
+                <label style="font-size:12px; color:#cbd5e1;">Phone Number</label>
+                <input type="text" id="reg-phone" placeholder="+256..." style="width:100%; padding:10px; margin-top:5px; margin-bottom:12px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
+                
+                <label style="font-size:12px; color:#cbd5e1;">Password</label>
+                <input type="password" id="reg-password" placeholder="Create password" style="width:100%; padding:10px; margin-top:5px; margin-bottom:20px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
+                
+                <button onclick="handleRegister()" style="width:100%; background:#10b981; border:none; padding:12px; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer; margin-bottom:10px;">Register Account</button>
+                <button onclick="checkAuthAndRender()" style="width:100%; background:transparent; border:1px solid #1e2952; padding:10px; border-radius:6px; color:#94a3b8; cursor:pointer;">Back to Login</button>
+            </div>
+        </div>
+    `;
+}
+
+function handleLogin() {
+    const phone = document.getElementById('login-phone').value;
+    const pass = document.getElementById('login-password').value;
+
+    let savedUser = JSON.parse(localStorage.getItem('hut9_registered_user'));
+
+    if (savedUser && savedUser.phone === phone && savedUser.password === pass) {
+        currentUser = savedUser;
+        localStorage.setItem('hut9_user', JSON.stringify(currentUser));
+        checkAuthAndRender();
+    } else {
+        // Fallback default test login if none registered yet
+        if (phone === 'admin' && pass === 'password') {
+            currentUser = { name: "Admin User", phone: "+256700000000", balance: 55000, password: "password" };
+            localStorage.setItem('hut9_user', JSON.stringify(currentUser));
+            checkAuthAndRender();
+        } else {
+            alert("Invalid login credentials or account not found. Try registering first!");
+        }
+    }
+}
+
+function handleRegister() {
+    const name = document.getElementById('reg-name').value;
+    const phone = document.getElementById('reg-phone').value;
+    const password = document.getElementById('reg-password').value;
+
+    if (!name || !phone || !password) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    const newUser = { name, phone, balance: 10000, password }; // gives starting bonus balance
+    localStorage.setItem('hut9_registered_user', JSON.stringify(newUser));
+    localStorage.setItem('hut9_user', JSON.stringify(newUser));
+    currentUser = newUser;
+    
+    alert("Account created successfully!");
+    checkAuthAndRender();
+}
+
+function logout() {
+    localStorage.removeItem('hut9_user');
+    currentUser = null;
+    checkAuthAndRender();
+}
+
+// --- MAIN TAB ROUTER ---
 function switchMainTab(tabName, element) {
+    if (!currentUser) return;
+    
     document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     if (element) element.classList.add('active');
 
-    const mainContent = document.getElementById('main-content') || document.getElementById('main');
-    if (!mainContent) return;
-    mainContent.innerHTML = '';
+    const headerTitle = document.getElementById('header-title');
+    const container = document.getElementById('main-content');
+    container.innerHTML = '';
 
-    if (tabName === 'home') renderHomeTab(mainContent);
-    else if (tabName === 'raffle') renderRaffleTab(mainContent);
-    else if (tabName === 'chats') renderChatsTab(mainContent);
-    else if (tabName === 'ai') renderAiDashboard(mainContent);
-    else if (tabName === 'income') renderIncomeTab(mainContent);
-    else if (tabName === 'my') renderMyTab(mainContent);
-}
-
-// 1. HOME TAB
-function renderHomeTab(container) {
-    let pendingHtml = userPendingWithdrawals.map((w, index) => `
-        <div onclick="showWithdrawDetails(${index})" style="background: #1e2952; padding: 10px; border-radius: 8px; margin-top: 8px; cursor: pointer;">
-            <p style="margin:0; font-size:13px; color:#38bdf8;">Withdrawal: UGX ${w.amount.toLocaleString()} (${w.status})</p>
-            <p style="margin:0; font-size:11px; color:#94a3b8;">Tap to view details</p>
-        </div>
-    `).join('') || '<p style="font-size:12px; color:#94a3b8;">No pending withdrawal requests.</p>';
-
-    container.innerHTML = `
-        <div style="padding: 15px;">
-            <h2 style="color: #38bdf8; margin-bottom: 5px;">Welcome Back, ${userProfile.name}</h2>
-            <p style="font-size: 13px; color: #cbd5e1;">Account Balance: UGX ${userBalance.toLocaleString()}</p>
-            <p style="font-size: 13px; color: #cbd5e1;">Active Wallet: UGX ${userWallet.toLocaleString()}</p>
-            <div style="background: #101935; border: 1px solid #1e2952; border-radius: 12px; padding: 15px; margin-top: 15px;">
-                <h4 style="margin-top:0; color:#38bdf8;">Withdrawal Records</h4>
-                ${pendingHtml}
-            </div>
-        </div>
-    `;
-}
-
-function showWithdrawDetails(index) {
-    let w = userPendingWithdrawals[index];
-    alert(`Withdrawal Details:\nName: ${w.name}\nPhone: ${w.phone}\nAmount: UGX ${w.amount.toLocaleString()}\nStatus: ${w.status}`);
-}
-
-// 2. RAFFLE TAB
-function renderRaffleTab(container) {
-    container.innerHTML = `<div style="padding: 20px; text-align: center;"><h3 style="color:#38bdf8;">Raffle Section</h3><p>Participate and win exclusive daily rewards!</p></div>`;
-}
-
-// 3. CHATS TAB
-function renderChatsTab(container) {
-    container.innerHTML = `<div style="padding: 20px; text-align: center;"><h3 style="color:#38bdf8;">Community Chats</h3><p>Connect with other elite investors.</p></div>`;
-}
-
-// 4. AI MACHINES DASHBOARD
-function renderAiDashboard(container) {
-    container.innerHTML = `
-        <div style="padding: 15px;">
-            <h3 style="color: #38bdf8;">AI Mining & Elite Machines</h3>
-            <div style="background: #101935; padding: 15px; border-radius: 12px; border: 1px solid #1e2952; margin-bottom: 12px;">
-                <h4 style="margin:0 0 8px 0; color:#fff;">VIP 1 Elite Core (1X)</h4>
-                <p style="margin:4px 0; font-size:13px; color:#cbd5e1;">Price: UGX 2,500,000</p>
-                <p style="margin:4px 0; font-size:13px; color:#38bdf8;">Daily Payout: UGX 250,000</p>
-                <button onclick="rentMachine(2500000, 'VIP 1 Elite Core')" style="width:100%; background:#06b6d4; border:none; padding:10px; border-radius:8px; font-weight:bold; margin-top:8px; cursor:pointer;">Rent Machine</button>
-            </div>
-            <div style="background: #101935; padding: 15px; border-radius: 12px; border: 1px solid #1e2952; margin-bottom: 12px;">
-                <h4 style="margin:0 0 8px 0; color:#fff;">VIP 3 Elite Core (3X)</h4>
-                <p style="margin:4px 0; font-size:13px; color:#cbd5e1;">Price: UGX 6,000,000</p>
-                <p style="margin:4px 0; font-size:13px; color:#38bdf8;">Daily Payout: UGX 1,000,000</p>
-                <button onclick="rentMachine(6000000, 'VIP 3 Elite Core')" style="width:100%; background:#06b6d4; border:none; padding:10px; border-radius:8px; font-weight:bold; margin-top:8px; cursor:pointer;">Rent Machine</button>
-            </div>
-        </div>
-    `;
-}
-
-function rentMachine(price, name) {
-    if (userWallet < price) {
-        alert("Insufficient wallet balance to rent this machine. Please deposit funds first.");
-        return;
+    if (tabName === 'home') {
+        headerTitle.innerText = 'Apex Investments';
+        renderHomeTab(container);
+    } else if (tabName === 'raffle') {
+        headerTitle.innerText = 'Lucky Raffle';
+        container.innerHTML = `<div style="padding:15px; text-align:center;"><h3 style="color:#38bdf8;">Daily Raffle</h3><p style="color:#cbd5e1;">Spin and win rewards daily!</p></div>`;
+    } else if (tabName === 'chats') {
+        headerTitle.innerText = 'Community Chats';
+        container.innerHTML = `<div style="padding:15px;"><h3 style="color:#38bdf8;">Support & Community</h3><p style="color:#cbd5e1;">Join our official channels for updates.</p></div>`;
+    } else if (tabName === 'ai') {
+        headerTitle.innerText = 'AI Machines';
+        renderAiTab(container);
+    } else if (tabName === 'income') {
+        headerTitle.innerText = 'My Income';
+        container.innerHTML = `<div style="padding:15px;"><h3 style="color:#38bdf8;">Earnings Overview</h3><p style="color:#cbd5e1;">Active rentals and daily dividends will appear here.</p></div>`;
+    } else if (tabName === 'my') {
+        headerTitle.innerText = 'My Profile & Wallet';
+        renderMyTab(container);
     }
-    userWallet -= price;
-    userPurchasedMachines.push({ name, price, status: 'Active' });
-    alert(`Successfully rented ${name}! UGX ${price.toLocaleString()} has been deducted from your wallet.`);
 }
 
-// 5. INCOME TAB
-function renderIncomeTab(container) {
-    let machinesHtml = userPurchasedMachines.map((m, i) => `
-        <div style="background:#101935; padding:12px; border-radius:8px; margin-bottom:10px; border:1px solid #1e2952;">
-            <p style="margin:0; font-weight:bold; color:#38bdf8;">${m.name}</p>
-            <p style="margin:5px 0; font-size:12px; color:#cbd5e1;">Status: ${m.status}</p>
-            <button onclick="receiveMachineIncome(${i})" style="background:#10b981; border:none; color:#fff; padding:6px 12px; border-radius:6px; font-size:12px; cursor:pointer;">Receive Income</button>
-        </div>
-    `).join('') || '<p style="color:#94a3b8; font-size:13px;">No active rented machines found.</p>';
-
+// --- TAB RENDERERS ---
+function renderHomeTab(container) {
     container.innerHTML = `
-        <div style="padding: 15px;">
-            <h3 style="color: #38bdf8;">Income & Earnings</h3>
-            <p style="font-size:13px; color:#cbd5e1;">Current Balance: UGX ${userBalance.toLocaleString()}</p>
-            <div style="margin-top: 15px;">${machinesHtml}</div>
+        <div style="padding:15px;">
+            <div style="background:linear-gradient(135deg, #0284c7, #1e1b4b); padding:20px; border-radius:12px; margin-bottom:15px;">
+                <h2 style="margin:0 0 5px 0; color:#fff;">Welcome, ${currentUser.name}</h2>
+                <p style="margin:0; color:#94a3b8; font-size:13px;">Secure your future with automated AI mining returns.</p>
+            </div>
+            <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952;">
+                <h4 style="margin-top:0; color:#38bdf8;">Platform Notice</h4>
+                <p style="font-size:13px; color:#cbd5e1; margin-bottom:0;">Ensure you use our updated rotating deposit numbers when funding your wallet.</p>
+            </div>
         </div>
     `;
 }
 
-function receiveMachineIncome(index) {
-    let machine = userPurchasedMachines[index];
-    let earnings = 250000; // Accrued return
-    userBalance += earnings;
-    alert(`Successfully collected UGX ${earnings.toLocaleString()} from ${machine.name}! Added to your balance.`);
-    renderIncomeTab(document.getElementById('main-content'));
+function renderAiTab(container) {
+    container.innerHTML = `
+        <div style="padding:15px;">
+            <div style="display:flex; gap:8px; overflow-x:auto; margin-bottom:15px;" id="series-tabs">
+                <button class="nav-tab active" onclick="filterSeries('All', event)" style="background:#0284c7; border:none; color:#fff; padding:6px 14px; border-radius:16px; cursor:pointer;">All</button>
+                <button class="nav-tab" onclick="filterSeries('H', event)" style="background:#101935; border:1px solid #1e2952; color:#fff; padding:6px 14px; border-radius:16px; cursor:pointer;">H</button>
+                <button class="nav-tab" onclick="filterSeries('D', event)" style="background:#101935; border:1px solid #1e2952; color:#fff; padding:6px 14px; border-radius:16px; cursor:pointer;">D</button>
+                <button class="nav-tab" onclick="filterSeries('G', event)" style="background:#101935; border:1px solid #1e2952; color:#fff; padding:6px 14px; border-radius:16px; cursor:pointer;">G</button>
+                <button class="nav-tab" onclick="filterSeries('Z', event)" style="background:#101935; border:1px solid #1e2952; color:#fff; padding:6px 14px; border-radius:16px; cursor:pointer;">Z</button>
+                <button class="nav-tab" onclick="filterSeries('VIP', event)" style="background:#101935; border:1px solid #1e2952; color:#fff; padding:6px 14px; border-radius:16px; cursor:pointer;">VIP</button>
+            </div>
+            <div id="machines-container"></div>
+        </div>
+    `;
+    renderMachinesList('All');
 }
 
-// 6. MY TAB & SUB-MENUS
+function filterSeries(series, event) {
+    document.querySelectorAll('#series-tabs button').forEach(b => {
+        b.style.background = '#101935';
+        b.style.borderColor = '#1e2952';
+    });
+    event.target.style.background = '#0284c7';
+    renderMachinesList(series);
+}
+
+function renderMachinesList(filter) {
+    const container = document.getElementById('machines-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const filtered = filter === 'All' ? machines : machines.filter(m => m.series === filter);
+    
+    filtered.forEach(m => {
+        container.innerHTML += `
+            <div style="background:#101935; border:1px solid #1e2952; border-radius:12px; padding:15px; margin-bottom:12px;">
+                <div style="font-size:16px; font-weight:bold; color:#38bdf8; margin-bottom:6px;">${m.name}</div>
+                <div style="font-size:13px; color:#cbd5e1; margin-bottom:4px;">Price: UGX ${m.price}</div>
+                <div style="font-size:13px; color:#34d399; margin-bottom:4px;">Daily Payout: UGX ${m.payout}</div>
+                <div style="font-size:12px; color:#94a3b8; margin-bottom:10px;">Cycle: ${m.cycle}</div>
+                <button onclick="alert('Rented ${m.name} successfully!')" style="width:100%; background:#0284c7; border:none; padding:8px; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer;">Rent Machine</button>
+            </div>
+        `;
+    });
+}
+
 function renderMyTab(container) {
     container.innerHTML = `
-        <div style="padding: 15px;">
-            <div style="display: flex; align-items: center; gap: 12px; background: #101935; padding: 15px; border-radius: 12px; border: 1px solid #1e2952; margin-bottom: 15px;">
-                <img src="${userProfile.avatar}" style="width: 55px; height: 55px; border-radius: 50%; object-fit: cover;">
-                <div>
-                    <h3 style="margin: 0; color: #fff; font-size: 16px;">${userProfile.name}</h3>
-                    <p style="margin: 3px 0 0 0; color: #94a3b8; font-size: 12px;">Phone: ${userProfile.phone}</p>
-                </div>
+        <div style="padding:15px;">
+            <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952; margin-bottom:15px; text-align:center;">
+                <h3 style="margin:0 0 5px 0; color:#fff;">${currentUser.name}</h3>
+                <p style="margin:0; color:#cbd5e1; font-size:13px;">${currentUser.phone}</p>
+                <p style="margin:8px 0 0 0; color:#34d399; font-weight:bold;">Wallet Balance: UGX ${currentUser.balance.toLocaleString()}</p>
             </div>
-
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button onclick="renderDepositView()" style="background:#101935; color:#fff; border:1px solid #1e2952; padding:12px; border-radius:8px; text-align:left; font-weight:bold; cursor:pointer;">💳 Deposit</button>
-                <button onclick="renderWalletView()" style="background:#101935; color:#fff; border:1px solid #1e2952; padding:12px; border-radius:8px; text-align:left; font-weight:bold; cursor:pointer;">💰 Wallet</button>
-                <button onclick="renderWithdrawView()" style="background:#101935; color:#fff; border:1px solid #1e2952; padding:12px; border-radius:8px; text-align:left; font-weight:bold; cursor:pointer;">🏦 Withdraw</button>
-                <button onclick="renderInviteView()" style="background:#101935; color:#fff; border:1px solid #1e2952; padding:12px; border-radius:8px; text-align:left; font-weight:bold; cursor:pointer;">🔗 Invite Friends</button>
-                <button onclick="window.open('https://t.me/hut9uganda', '_blank')" style="background:#101935; color:#38bdf8; border:1px solid #1e2952; padding:12px; border-radius:8px; text-align:left; font-weight:bold; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
-                    <span>✈️ Customer Care (Telegram)</span>
-                    <span style="font-size:12px; background:#0284c7; color:#fff; padding:3px 8px; border-radius:4px;">Join</span>
-                </button>
-                <button onclick="alert('Downloading APK package...')" style="background:#101935; color:#fff; border:1px solid #1e2952; padding:12px; border-radius:8px; text-align:left; font-weight:bold; cursor:pointer;">📥 Download App</button>
-                <button onclick="renderSettingsView()" style="background:#101935; color:#fff; border:1px solid #1e2952; padding:12px; border-radius:8px; text-align:left; font-weight:bold; cursor:pointer;">⚙️ Settings & Security</button>
-            </div>
-        </div>
-    `;
-}
-
-// DEPOSIT SUB-VIEW (Rotating Numbers)
-function renderDepositView() {
-    const main = document.getElementById('main-content');
-    main.innerHTML = `
-        <div style="padding: 15px;">
-            <button onclick="renderMyTab(document.getElementById('main-content'))" style="background:none; border:none; color:#38bdf8; font-weight:bold; cursor:pointer; margin-bottom:10px;">← Back</button>
-            <h3 style="color: #38bdf8;">Deposit Funds</h3>
-            <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952;">
-                <label style="font-size:13px; color:#cbd5e1;">Your Phone Number</label>
-                <input type="text" id="dep-phone" value="${userProfile.phone !== 'Not Set' ? userProfile.phone : ''}" placeholder="e.g. 0770000000" style="width:100%; padding:10px; margin-top:5px; margin-bottom:12px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                <label style="font-size:13px; color:#cbd5e1;">Amount (UGX)</label>
-                <input type="number" id="dep-amount" placeholder="Enter amount" style="width:100%; padding:10px; margin-top:5px; margin-bottom:15px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                <button onclick="processDepositStep()" style="width:100%; background:#06b6d4; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">CONTINUE</button>
-            </div>
-        </div>
-    `;
-}
-
-function processDepositStep() {
-    const phone = document.getElementById('dep-phone').value;
-    const amount = document.getElementById('dep-amount').value;
-    if(!phone || !amount) {
-        alert("Please fill in both fields.");
-        return;
-    }
-
-    // Automatically sync phone number to user profile if not set
-    if(userProfile.phone === 'Not Set') {
-        userProfile.phone = phone;
-    }
-
-    // Toggle rotating numbers
-    depositAttemptToggle = !depositAttemptToggle;
-    let agentNumber = depositAttemptToggle ? "0795160094" : "0773539696";
-    let agentName = depositAttemptToggle ? "JOSEPH BYABASAIJA" : "NEMA KISA";
-
-    const main = document.getElementById('main-content');
-    main.innerHTML = `
-        <div style="padding: 15px;">
-            <button onclick="renderDepositView()" style="background:none; border:none; color:#38bdf8; font-weight:bold; cursor:pointer; margin-bottom:10px;">← Back to Deposit</button>
-            <h3 style="color: #38bdf8;">Complete Payment</h3>
-            <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952;">
-                <p style="font-size:13px; color:#cbd5e1;">Send <b>UGX ${Number(amount).toLocaleString()}</b> to the details below:</p>
-                <div style="background:#0b1329; padding:12px; border-radius:8px; margin:10px 0; border:1px solid #1e2952;">
-                    <p style="margin:0; font-size:15px; color:#38bdf8; font-weight:bold;">Number: ${agentNumber} <button onclick="navigator.clipboard.writeText('${agentNumber}');alert('Number copied!');" style="background:#0284c7; border:none; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px; cursor:pointer; margin-left:6px;">Copy</button></p>
-                    <p style="margin:5px 0 0 0; font-size:13px; color:#fff;">Name: ${agentName} <button onclick="navigator.clipboard.writeText('${agentName}');alert('Name copied!');" style="background:#0284c7; border:none; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px; cursor:pointer; margin-left:6px;">Copy</button></p>
-                </div>
-                <button onclick="simulateSuccessfulPayment(${amount})" style="width:100%; background:#10b981; border:none; padding:12px; border-radius:8px; font-weight:bold; color:#fff; cursor:pointer; margin-top:10px;">I Have Sent Money (Verify)</button>
-            </div>
-        </div>
-    `;
-}
-
-function simulateSuccessfulPayment(amount) {
-    userWallet += Number(amount);
-    alert(`Payment of UGX ${Number(amount).toLocaleString()} automatically detected and credited to your wallet!`);
-    switchMainTab('home', document.querySelector('.nav-item'));
-}
-
-// WALLET SUB-VIEW
-function renderWalletView() {
-    const main = document.getElementById('main-content');
-    main.innerHTML = `
-        <div style="padding: 15px;">
-            <button onclick="renderMyTab(document.getElementById('main-content'))" style="background:none; border:none; color:#38bdf8; font-weight:bold; cursor:pointer; margin-bottom:10px;">← Back</button>
-            <h3 style="color: #38bdf8;">My Wallet</h3>
-            <div style="background:#101935; padding:20px; border-radius:12px; border:1px solid #1e2952; text-align:center;">
-                <p style="font-size:14px; color:#cbd5e1; margin:0;">Active Wallet Balance</p>
-                <h1 style="color:#38bdf8; margin:10px 0;">UGX ${userWallet.toLocaleString()}</h1>
-                <p style="font-size:11px; color:#94a3b8;">Funds available for renting machines.</p>
-            </div>
-        </div>
-    `;
-}
-
-// WITHDRAW SUB-VIEW
-function renderWithdrawView() {
-    const main = document.getElementById('main-content');
-    main.innerHTML = `
-        <div style="padding: 15px;">
-            <button onclick="renderMyTab(document.getElementById('main-content'))" style="background:none; border:none; color:#38bdf8; font-weight:bold; cursor:pointer; margin-bottom:10px;">← Back</button>
-            <h3 style="color: #38bdf8;">Withdraw Funds</h3>
-            <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952;">
-                <label style="font-size:13px; color:#cbd5e1;">Phone Number</label>
-                <input type="text" id="w-phone" value="${userProfile.phone !== 'Not Set' ? userProfile.phone : ''}" placeholder="Enter recipient number" style="width:100%; padding:10px; margin-top:5px; margin-bottom:12px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                <label style="font-size:13px; color:#cbd5e1;">Account Names</label>
-                <input type="text" id="w-name" value="${userProfile.name !== 'Investor' ? userProfile.name : ''}" placeholder="Enter registered names" style="width:100%; padding:10px; margin-top:5px; margin-bottom:12px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                <label style="font-size:13px; color:#cbd5e1;">Amount to Withdraw</label>
-                <input type="number" id="w-amount" placeholder="Enter amount" style="width:100%; padding:10px; margin-top:5px; margin-bottom:15px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                <button onclick="submitWithdrawal()" style="width:100%; background:#06b6d4; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Confirm Withdrawal</button>
-            </div>
-        </div>
-    `;
-}
-
-function submitWithdrawal() {
-    const phone = document.getElementById('w-phone').value;
-    const name = document.getElementById('w-name').value;
-    const amount = Number(document.getElementById('w-amount').value);
-
-    if(!phone || !name || !amount) {
-        alert("Please fill in all withdrawal details.");
-        return;
-    }
-    if(amount > userBalance) {
-        alert("Insufficient balance.");
-        return;
-    }
-
-    userBalance -= amount;
-    userPendingWithdrawals.push({ phone, name, amount, status: 'Pending' });
-    alert("Withdrawal submitted successfully! Check Home tab for pending status.");
-    switchMainTab('home', document.querySelector('.nav-item'));
-}
-
-// INVITE SUB-VIEW
-function renderInviteView() {
-    const randomCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-    const inviteLink = `https://hut9-platform.onrender.com/register?ref=${randomCode}`;
-
-    const main = document.getElementById('main-content');
-    main.innerHTML = `
-        <div style="padding: 15px;">
-            <button onclick="renderMyTab(document.getElementById('main-content'))" style="background:none; border:none; color:#38bdf8; font-weight:bold; cursor:pointer; margin-bottom:10px;">← Back</button>
-            <h3 style="color: #38bdf8;">Invite Members & Earn</h3>
-            <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952;">
-                <p style="font-size:13px; color:#cbd5e1;">Share your professional referral link. Earn 3,000 UGX when your referral registers and buys a machine!</p>
-                <input type="text" readonly value="${inviteLink}" id="invite-link-box" style="width:100%; padding:10px; margin:10px 0; background:#0b1329; border:1px solid #1e2952; color:#38bdf8; border-radius:6px; font-size:12px;">
-                <button onclick="navigator.clipboard.writeText('${inviteLink}');alert('Invitation link copied successfully!');" style="width:100%; background:#06b6d4; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Copy Link</button>
-            </div>
-        </div>
-    `;
-}
-
-// SETTINGS & PASSWORD RESET SUB-VIEW
-function renderSettingsView() {
-    const main = document.getElementById('main-content');
-    main.innerHTML = `
-        <div style="padding: 15px;">
-            <button onclick="renderMyTab(document.getElementById('main-content'))" style="background:none; border:none; color:#38bdf8; font-weight:bold; cursor:pointer; margin-bottom:10px;">← Back</button>
-            <h3 style="color: #38bdf8;">Settings & Security</h3>
+            
             <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952; margin-bottom:15px;">
-                <h4 style="margin-top:0; color:#fff; font-size:14px;">Profile Customization</h4>
-                <label style="font-size:12px; color:#cbd5e1;">Display Name / Username</label>
-                <input type="text" id="set-name" value="${userProfile.name}" style="width:100%; padding:8px; margin-top:4px; margin-bottom:10px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
+                <h4 style="margin-top:0; color:#fff; font-size:14px;">Profile Settings</h4>
+                <label style="font-size:12px; color:#cbd5e1;">Display Name</label>
+                <input type="text" id="set-name" value="${currentUser.name}" style="width:100%; padding:8px; margin-top:4px; margin-bottom:10px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
                 
                 <label style="font-size:12px; color:#cbd5e1;">Phone Number</label>
-                <input type="text" id="set-phone" value="${userProfile.phone}" style="width:100%; padding:8px; margin-top:4px; margin-bottom:10px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
+                <input type="text" id="set-phone" value="${currentUser.phone}" style="width:100%; padding:8px; margin-top:4px; margin-bottom:12px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
                 
-                <label style="font-size:12px; color:#cbd5e1;">Avatar Image URL</label>
-                <input type="text" id="set-avatar" value="${userProfile.avatar}" style="width:100%; padding:8px; margin-top:4px; margin-bottom:10px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                
-le="width:100%; background:#0284c7; border:none; padding:10px; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer;">Save Profile</button>
+                <button onclick="updateProfileDetails()" style="width:100%; background:#0284c7; border:none; padding:10px; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer;">Save Profile</button>
             </div>
 
-            <div style="background:#101935; padding:15px; border-radius:12px; border:1px solid #1e2952;">
-                <h4 style="margin-top:0; color:#fff; font-size:14px;">Reset Password</h4>
-                <label style="font-size:12px; color:#cbd5e1;">Last Password</label>
-                <input type="password" id="pass-old" placeholder="Enter last password" style="width:100%; padding:8px; margin-top:4px; margin-bottom:10px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                <label style="font-size:12px; color:#cbd5e1;">Current / New Password</label>
-                <input type="password" id="pass-new" placeholder="Enter new password" style="width:100%; padding:8px; margin-top:4px; margin-bottom:10px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                <label style="font-size:12px; color:#cbd5e1;">Confirm Password</label>
-                <input type="password" id="pass-confirm" placeholder="Confirm new password" style="width:100%; padding:8px; margin-top:4px; margin-bottom:12px; background:#0b1329; border:1px solid #1e2952; color:#fff; border-radius:6px;">
-                
-                <button onclick="updatePassword()" style="width:100%; background:#10b981; border:none; padding:10px; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer;">Update Password</button>
-            </div>
+            <button onclick="logout()" style="width:100%; background:#ef4444; border:none; padding:12px; border-radius:6px; font-weight:bold; color:#fff; cursor:pointer;">Logout</button>
         </div>
     `;
 }
 
 function updateProfileDetails() {
-    userProfile.name = document.getElementById('set-name').value;
-    userProfile.phone = document.getElementById('set-phone').value;
-    userProfile.avatar = document.getElementById('set-avatar').value;
-    alert("Profile and phone details updated successfully!");
-    renderMyTab(document.getElementById('main-content'));
-}
-
-function updatePassword() {
-    let oldP = document.getElementById('pass-old').value;
-    let newP = document.getElementById('pass-new').value;
-    let confP = document.getElementById('pass-confirm').value;
-
-    if (oldP !== userProfile.password) {
-        alert("The last password you entered is incorrect.");
-        return;
-    }
-    if (!newP || newP !== confP) {
-        alert("New passwords do not match or are empty.");
-        return;
-    }
-
-    userProfile.password = newP;
-    alert("Password successfully updated! Use your new password for subsequent logins.");
+    currentUser.name = document.getElementById('set-name').value;
+    currentUser.phone = document.getElementById('set-phone').value;
+    localStorage.setItem('hut9_user', JSON.stringify(currentUser));
+    localStorage.setItem('hut9_registered_user', JSON.stringify(currentUser));
+    alert("Profile updated successfully!");
     renderMyTab(document.getElementById('main-content'));
 }
 
