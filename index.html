@@ -37,7 +37,7 @@
             padding: 8px 16px;
             border-radius: 20px;
             cursor: pointer;
-            white-space-nowrap;
+            white-space: nowrap;
         }
         .nav-tab.active {
             background: #0284c7;
@@ -84,6 +84,7 @@
             display: flex;
             justify-content: space-around;
             padding: 10px 0;
+            z-index: 1000;
         }
         .nav-item {
             color: #94a3b8;
@@ -98,17 +99,17 @@
 </head>
 <body>
 
-    <header>AI Machines</header>
+    <header id="header-title">AI Machines</header>
 
-    <div class="container">
+    <div class="container" id="main-content">
         <!-- Series Filter Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="filterSeries('All')">All</button>
-            <button class="nav-tab" onclick="filterSeries('H')">H</button>
-            <button class="nav-tab" onclick="filterSeries('D')">D</button>
-            <button class="nav-tab" onclick="filterSeries('G')">G</button>
-            <button class="nav-tab" onclick="filterSeries('Z')">Z</button>
-            <button class="nav-tab" onclick="filterSeries('VIP')">VIP</button>
+        <div class="nav-tabs" id="series-tabs">
+            <button class="nav-tab active" onclick="filterSeries('All', event)">All</button>
+            <button class="nav-tab" onclick="filterSeries('H', event)">H</button>
+            <button class="nav-tab" onclick="filterSeries('D', event)">D</button>
+            <button class="nav-tab" onclick="filterSeries('G', event)">G</button>
+            <button class="nav-tab" onclick="filterSeries('Z', event)">Z</button>
+            <button class="nav-tab" onclick="filterSeries('VIP', event)">VIP</button>
         </div>
 
         <!-- Machines List -->
@@ -117,16 +118,40 @@
 
     <!-- Bottom Navigation Bar -->
     <div class="bottom-nav">
-        <div class="nav-item">Home</div>
-        <div class="nav-item">Raffle</div>
-        <div class="nav-item">Chats</div>
-        <div class="nav-item active">AI</div>
-        <div class="nav-item">Income</div>
-        <div class="nav-item">My</div>
+        <div class="nav-item" onclick="switchTab('Home', this)">Home</div>
+        <div class="nav-item" onclick="switchTab('Raffle', this)">Raffle</div>
+        <div class="nav-item" onclick="switchTab('Chats', this)">Chats</div>
+        <div class="nav-item active" onclick="switchTab('AI', this)">AI</div>
+        <div class="nav-item" onclick="switchTab('Income', this)">Income</div>
+        <div class="nav-item" onclick="switchTab('My', this)">My</div>
     </div>
 
     <script>
         const machines = [
+            // H Series
+            { series: 'H', name: 'H1 Miner (1X)', price: 'UGX 200,000', payout: 'UGX 15,000', cycle: '20 Days' },
+            { series: 'H', name: 'H2 Miner (2X)', price: 'UGX 400,000', payout: 'UGX 32,000', cycle: '20 Days' },
+            { series: 'H', name: 'H3 Miner (3X)', price: 'UGX 700,000', payout: 'UGX 60,000', cycle: '20 Days' },
+            { series: 'H', name: 'H4 Miner (4X)', price: 'UGX 950,000', payout: 'UGX 85,000', cycle: '20 Days' },
+            { series: 'H', name: 'H5 Miner (5X)', price: 'UGX 1,200,000', payout: 'UGX 110,000', cycle: '20 Days' },
+            
+            // D Series
+            { series: 'D', name: 'D1 Mining Unit (1X)', price: 'UGX 500,000', payout: 'UGX 50,000', cycle: '7 Days' },
+            { series: 'D', name: 'D2 Mining Unit (2X)', price: 'UGX 850,000', payout: 'UGX 150,000', cycle: '7 Days' },
+            { series: 'D', name: 'D3 Mining Unit (3X)', price: 'UGX 1,000,000', payout: 'UGX 400,000', cycle: '7 Days' },
+            { series: 'D', name: 'D4 Mining Unit (4X)', price: 'UGX 1,500,000', payout: 'UGX 450,000', cycle: '7 Days' },
+            { series: 'D', name: 'D5 Mining Unit (5X)', price: 'UGX 2,000,000', payout: 'UGX 500,000', cycle: '7 Days' },
+
+            // G Series
+            { series: 'G', name: 'G1 Grid Unit (1X)', price: 'UGX 300,000', payout: 'UGX 25,000', cycle: '15 Days' },
+            { series: 'G', name: 'G2 Grid Unit (2X)', price: 'UGX 600,000', payout: 'UGX 55,000', cycle: '15 Days' },
+            { series: 'G', name: 'G3 Grid Unit (3X)', price: 'UGX 900,000', payout: 'UGX 85,000', cycle: '15 Days' },
+
+            // Z Series
+            { series: 'Z', name: 'Z1 Quantum Rig (1X)', price: 'UGX 1,500,000', payout: 'UGX 160,000', cycle: '30 Days' },
+            { series: 'Z', name: 'Z2 Quantum Rig (2X)', price: 'UGX 3,000,000', payout: 'UGX 350,000', cycle: '30 Days' },
+
+            // VIP Series
             { series: 'VIP', name: 'VIP 1 Elite Core (1X)', price: 'UGX 2,500,000', payout: 'UGX 250,000', cycle: '100 Days' },
             { series: 'VIP', name: 'VIP 2 Elite Core (2X)', price: 'UGX 4,000,000', payout: 'UGX 350,000', cycle: '100 Days' },
             { series: 'VIP', name: 'VIP 3 Elite Core (3X)', price: 'UGX 6,000,000', payout: 'UGX 1,000,000', cycle: '100 Days' },
@@ -134,7 +159,10 @@
             { series: 'VIP', name: 'VIP 5 Elite Core (5X)', price: 'UGX 10,000,000', payout: 'UGX 2,500,000', cycle: '100 Days' }
         ];
 
+        let currentFilter = 'All';
+
         function renderMachines(filter) {
+            currentFilter = filter;
             const container = document.getElementById('machines-container');
             container.innerHTML = '';
             
@@ -153,14 +181,35 @@
             });
         }
 
-        function filterSeries(series) {
+        function filterSeries(series, event) {
             document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             renderMachines(series);
         }
 
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+            
+            document.getElementById('header-title').innerText = tabName === 'AI' ? 'AI Machines' : tabName;
+            
+            const seriesTabs = document.getElementById('series-tabs');
+            if (tabName === 'AI') {
+                seriesTabs.style.display = 'flex';
+                renderMachines(currentFilter);
+            } else {
+                seriesTabs.style.display = 'none';
+                document.getElementById('machines-container').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                        <h3>${tabName} Section</h3>
+                        <p>Content for ${tabName} is active.</p>
+                    </div>
+                `;
+            }
+        }
+
         // Initial render
-        renderMachines('VIP');
+        renderMachines('All');
     </script>
 </body>
 </html>
