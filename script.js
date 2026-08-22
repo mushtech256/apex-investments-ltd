@@ -188,14 +188,13 @@ const aiMachinesData = [
     { id: 'Z2', series: 'Z', name: 'Z2 Quantum Rig (2X)', price: 850000, daily: 150000, days: 7, total: 150000 * 7 },
     { id: 'Z3', series: 'Z', name: 'Z3 Quantum Rig (3X)', price: 1000000, daily: 400000, days: 7, total: 400000 * 7 },
     { id: 'Z4', series: 'Z', name: 'Z4 Quantum Rig (4X)', price: 1500000, daily: 450000, days: 7, total: 450000 * 7 },
-    { id: 'Z5', series: 'Z', name: 'Z5 Quantum Rig (5X)', price: 2000000, daily: 500000, days: 7, total: 500000 * 7 },
+    { id: 'Z5', series: 'Z', name: 'Z5 Quantum Rig (5X)', price: 2000000, daily: 500000, days: 7, total: 500000 * 7 }, 
+       { id: 'V1', series: 'VIP', name: 'VIP 1 Elite Core (1X)', price: 2500000, dailyPayout: 250000, totalIncome: 25000000, cycle: '100 Days' },
+    { id: 'V2', series: 'VIP', name: 'VIP 2 Elite Core (2X)', price: 4000000, dailyPayout: 350000, totalIncome: 35000000, cycle: '100 Days' },
+    { id: 'V3', series: 'VIP', name: 'VIP 3 Elite Core (3X)', price: 6000000, dailyPayout: 1000000, totalIncome: 100000000, cycle: '100 Days' },
+    { id: 'V4', series: 'VIP', name: 'VIP 4 Elite Core (4X)', price: 8000000, dailyPayout: 1900000, totalIncome: 190000000, cycle: '100 Days' },
+    { id: 'V5', series: 'VIP', name: 'VIP 5 Elite Core (5X)', price: 10000000, dailyPayout: 2500000, totalIncome: 250000000, cycle: '100 Days' }
 
-    { id: 'V1', series: 'VIP', name: 'VIP 1 Elite Core (1X)', price: 2500000, daily: 250000, days: 100, total: 25000 * 100 },
-    { id: 'V2', series: 'VIP', name: 'VIP 2 Elite Core (2X)', price: 4000000, daily: 350000, days: 100, total: 35000 * 100 },
-    { id: 'V3', series: 'VIP', name: 'VIP 3 Elite Core (3X)', price: 6000000, daily: 1000000, days: 100, total: 100000 * 100 },
-    { id: 'V4', series: 'VIP', name: 'VIP 4 Elite Core (4X)', price: 8000000, daily: 1900000, days: 100, total: 190000 * 100 },
-    { id: 'V5', series: 'VIP', name: 'VIP 5 Elite Core (5X)', price: 10000000, daily: 2500000, days: 100, total: 250000 * 100 }
-];
 
 function switchMainTab(tabName, element) {
     const navItems = document.querySelectorAll('.nav-item');
