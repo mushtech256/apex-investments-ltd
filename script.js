@@ -11,7 +11,7 @@ let currentUser = {
     depositTotal: 0,
     withdrawTotal: 0,
     raffles: 0,
-    name: 'Mr. Rodgers',
+    name: 'User',
     avatar: '👤',
     inviteCode: ''
 };
