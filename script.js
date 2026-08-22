@@ -190,11 +190,11 @@ const aiMachinesData = [
     { id: 'Z4', series: 'Z', name: 'Z4 Quantum Rig (4X)', price: 1500000, daily: 450000, days: 7, total: 450000 * 7 },
     { id: 'Z5', series: 'Z', name: 'Z5 Quantum Rig (5X)', price: 2000000, daily: 500000, days: 7, total: 500000 * 7 },
 
-    { id: 'V1', series: 'VIP', name: 'VIP 1 Elite Core (1X)', price: 2500000, daily: 25000, days: 100, total: 25000 * 100 },
-    { id: 'V2', series: 'VIP', name: 'VIP 2 Elite Core (2X)', price: 4000000, daily: 35000, days: 100, total: 35000 * 100 },
-    { id: 'V3', series: 'VIP', name: 'VIP 3 Elite Core (3X)', price: 6000000, daily: 100000, days: 100, total: 100000 * 100 },
-    { id: 'V4', series: 'VIP', name: 'VIP 4 Elite Core (4X)', price: 8000000, daily: 190000, days: 100, total: 190000 * 100 },
-    { id: 'V5', series: 'VIP', name: 'VIP 5 Elite Core (5X)', price: 10000000, daily: 250000, days: 100, total: 250000 * 100 }
+    { id: 'V1', series: 'VIP', name: 'VIP 1 Elite Core (1X)', price: 2500000, daily: 250000, days: 100, total: 25000 * 100 },
+    { id: 'V2', series: 'VIP', name: 'VIP 2 Elite Core (2X)', price: 4000000, daily: 350000, days: 100, total: 35000 * 100 },
+    { id: 'V3', series: 'VIP', name: 'VIP 3 Elite Core (3X)', price: 6000000, daily: 1000000, days: 100, total: 100000 * 100 },
+    { id: 'V4', series: 'VIP', name: 'VIP 4 Elite Core (4X)', price: 8000000, daily: 1900000, days: 100, total: 190000 * 100 },
+    { id: 'V5', series: 'VIP', name: 'VIP 5 Elite Core (5X)', price: 10000000, daily: 2500000, days: 100, total: 250000 * 100 }
 ];
 
 function switchMainTab(tabName, element) {
