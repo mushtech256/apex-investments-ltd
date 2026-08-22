@@ -3,68 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apex Investments Ltd</title>
+    <title>Hut 9 - AI Mining & Investments</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #0b1329;
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-            padding-bottom: 70px;
-        }
-        header {
-            padding: 15px;
-            font-size: 20px;
-            font-weight: bold;
-            background: #101935;
-            border-bottom: 1px solid #1e2952;
-        }
-        .container {
-            padding: 15px;
-        }
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #0b1329;
-            border-top: 1px solid #1e2952;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-        .nav-item {
-            color: #94a3b8;
-            text-align: center;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        .nav-item.active {
-            color: #38bdf8;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #0b1329; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        header { background: #101935; border-bottom: 1px solid #1e2952; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { font-size: 18px; color: #38bdf8; font-weight: 700; }
+        #main-container { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #101935; border-top: 1px solid #1e2952; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        .nav-item { text-align: center; color: #94a3b8; font-size: 11px; cursor: pointer; background: none; border: none; flex: 1; }
+        .nav-item.active { color: #38bdf8; font-weight: bold; }
+        .nav-item span { display: block; font-size: 18px; margin-bottom: 2px; }
+        .card { background: #101935; border: 1px solid #1e2952; border-radius: 12px; padding: 16px; margin: 15px; }
+        .btn { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-danger { background: #ef4444; }
+        input { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 14px; background: #0b1329; border: 1px solid #1e2952; color: #fff; border-radius: 6px; }
+        label { font-size: 12px; color: #cbd5e1; }
     </style>
 </head>
 <body>
 
-    <header id="header-title">AI Machines</header>
+    <header>
+        <h1 id="header-title">Hut 9</h1>
+        <div id="header-balance" style="font-size: 13px; color: #34d399; font-weight: bold;"></div>
+    </header>
 
-    <div class="container" id="main-content">
-        <!-- Dynamic content will load here -->
-    </div>
+    <div id="main-container"></div>
 
-    <!-- Bottom Navigation Bar -->
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchMainTab('home', this)">Home</div>
-        <div class="nav-item" onclick="switchMainTab('raffle', this)">Raffle</div>
-        <div class="nav-item" onclick="switchMainTab('chats', this)">Chats</div>
-        <div class="nav-item" onclick="switchMainTab('ai', this)">AI</div>
-        <div class="nav-item" onclick="switchMainTab('income', this)">Income</div>
-        <div class="nav-item" onclick="switchMainTab('my', this)">My</div>
-    </div>
+    <nav class="bottom-nav" id="bottom-nav" style="display: none;">
+        <button class="nav-item active" onclick="switchTab('home', this)"><span>🏠</span>Home</button>
+        <button class="nav-item" onclick="switchTab('ai', this)"><span>🤖</span>AI Rigs</button>
+        <button class="nav-item" onclick="switchTab('raffle', this)"><span>🎁</span>Raffle</button>
+        <button class="nav-item" onclick="switchTab('income', this)"><span>📊</span>Income</button>
+        <button class="nav-item" onclick="switchTab('my', this)"><span>👤</span>Profile</button>
+    </nav>
 
-    <script src="script.js"></script>
+    <script>
+        let currentUser = JSON.parse(localStorage.getItem('hut9_user')) || null;
+        
+        const machines = [
+            { name: 'H1 Miner (1X)', price: '200,000', payout: '15,000', cycle: '20 Days' },
+            { name: 'H2 Miner (2X)', price: '400,000', payout: '32,000', cycle: '20 Days' },
+            { name: 'D1 Mining Unit', price: '500,000', payout: '50,000', cycle: '7 Days' },
+            { name: 'Z1 Quantum Rig', price: '1,500,000', payout: '160,000', cycle: '30 Days' }
+        ];
+
+        window.onload = function() {
+            initApp();
+        };
+
+        function initApp() {
+            const nav = document.getElementById('bottom-nav');
+            const balanceEl = document.getElementById('header-balance');
+            
+            if (!currentUser) {
+                nav.style.display = 'none';
+                balanceEl.innerText = '';
+                renderLogin();
+            } else {
+                nav.style.display = 'flex';
+                balanceEl.innerText = `UGX ${(currentUser.balance || 10000).toLocaleString()}`;
+                switchTab('home', document.querySelector('.nav-item'));
+            }
+        }
+
+        function renderLogin() {
+            document.getElementById('header-title').innerText = 'Hut 9 - Access';
+            document.getElementById('main-container').innerHTML = `
+                <div class="card" style="max-width: 400px; margin: 40px auto;">
+                    <h2 style="color: #38bdf8; margin-bottom: 5px; text-align: center;">Welcome Back</h2>
+                    <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-bottom: 20px;">Sign in to your mining dashboard</p>
+                    <label>Phone Number</label>
+                    <input type="text" id="login-phone" placeholder="Enter your phone">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" placeholder="Enter password">
+                    <button class="btn" onclick="handleLogin()">Login</button>
+                    <button class="btn" style="background: transparent; border: 1px solid #1e2952; color: #38bdf8; margin-top: 8px;" onclick="renderRegister()">Create Account</button>
+                </div>
+            `;
+        }
+
+        function renderRegister() {
+            document.getElementById('header-title').innerText = 'Hut 9 - Register';
+            document.getElementById('main-container').innerHTML = `
+                <div class="card" style="max-width: 400px; margin: 40px auto;">
+                    <h2 style="color: #38bdf8; margin-bottom: 5px; text-align: center;">Register</h2>
+                    <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-bottom: 20px;">Get started with bonus balance</p>
+                    <label>Full Name</label>
+                    <input type="text" id="reg-name" placeholder="Enter name">
+                    <label>Phone Number</label>
+                    <input type="text" id="reg-phone" placeholder="Enter phone">
+                    <label>Password</label>
+                    <input type="password" id="reg-pass" placeholder="Create password">
+                    <button class="btn" style="background: #10b981;" onclick="handleRegister()">Register Account</button>
+                    <button class="btn" style="background: transparent; border: 1px solid #1e2952; color: #94a3b8; margin-top: 8px;" onclick="renderLogin()">Back to Login</button>
+                </div>
+            `;
+        }
+
+        function handleLogin() {
+            const phone = document.getElementById('login-phone').value;
+            if (!phone) { alert('Please enter your phone number'); return; }
+            currentUser = { name: "Investor", phone: phone, balance: 25000 };
+            localStorage.setItem('hut9_user', JSON.stringify(currentUser));
+            initApp();
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('reg-name').value;
+            const phone = document.getElementById('reg-phone').value;
+            if (!name || !phone) { alert('Please fill in all fields'); return; }
+            currentUser = { name: name, phone: phone, balance: 15000 };
+            localStorage.setItem('hut9_user', JSON.stringify(currentUser));
+            alert('Account created successfully with bonus!');
+            initApp();
+        }
+
+        function switchTab(tabName, element) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            const container = document.getElementById('main-container');
+            const title = document.getElementById('header-title');
+
+            if (tabName === 'home') {
+                title.innerText = 'Hut 9 Dashboard';
+                container.innerHTML = `
+                    <div class="card" style="background: linear-gradient(135deg, #0284c7, #1e1b4b);">
+                        <h2>Hello, ${currentUser.name}</h2>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-top: 5px;">Your automated AI cloud mining portfolio is active.</p>
+                    </div>
+                    <div class="card">
+                        <h3 style="color: #38bdf8; margin-bottom: 8px;">Quick Stats</h3>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">Active Rigs: 1</p>
+                        <p style="font-size: 13px; color: #34d399;">Total Earned: UGX 15,000</p>
+                    </div>
+                `;
+            } else if (tabName === 'ai') {
+                title.innerText = 'AI Mining Rigs';
+                let html = '<div style="padding: 10px;">';
+                machines.forEach(m => {
+                    html += `
+                        <div class="card" style="margin: 10px 0;">
+                            <h3 style="color: #38bdf8; margin-bottom: 4px;">${m.name}</h3>
+                            <p style="font-size: 13px; color: #cbd5e1;">Price: UGX ${m.price}</p>
+                            <p style="font-size: 13px; color: #34d399;">Daily Payout: UGX ${m.payout}</p>
+                            <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Cycle: ${m.cycle}</p>
+                            <button class="btn" onclick="alert('Successfully rented ${m.name}!')">Rent Rig</button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else if (tabName === 'raffle') {
+                title.innerText = 'Lucky Raffle';
+                container.innerHTML = `
+                    <div class="card" style="text-align: center;">
+                        <h3 style="color: #38bdf8; margin-bottom: 10px;">Daily Spin & Win</h3>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">Test your luck and win instant rewards.</p>
+                        <button class="btn" onclick="alert('Congratulations! You won UGX 5,000!')">Spin Now</button>
+                    </div>
+                `;
+            } else if (tabName === 'income') {
+                title.innerText = 'Income Overview';
+                container.innerHTML = `
+                    <div class="card">
+                        <h3 style="color: #38bdf8; margin-bottom: 10px;">Dividend History</h3>
+                        <p style="font-size: 13px; color: #cbd5e1;">No recent payout deductions. Daily earnings credit automatically at midnight.</p>
+                    </div>
+                `;
+            } else if (tabName === 'my') {
+                title.innerText = 'My Profile';
+                container.innerHTML = `
+                    <div class="card">
+                        <h3 style="margin-bottom: 5px;">${currentUser.name}</h3>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">${currentUser.phone}</p>
+                        <button class="btn btn-danger" onclick="logout()">Logout</button>
+                    </div>
+                `;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('hut9_user');
+            currentUser = null;
+            initApp();
+        }
+    </script>
 </body>
 </html>
-
