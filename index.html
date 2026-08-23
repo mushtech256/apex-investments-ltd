@@ -389,7 +389,6 @@
         }
 let pendingDepositAmount = 0;
 let pendingUserPhone = '';
-
 function goToPaymentPage() {
     const phone = document.getElementById('dep-phone').value.trim();
     const amt = parseInt(document.getElementById('dep-amt').value);
@@ -409,7 +408,9 @@ function goToPaymentPage() {
     const container = document.getElementById('main-container');
     document.getElementById('header-title').innerText = 'Make Payment';
 
-    container.innerHTML = `
+    container.innerHTML = `...`;
+}
+
         <div class="card" style="text-align:center;">
             <h3 style="color:#38bdf8; margin-bottom:10px;">Send UGX ${amt.toLocaleString()}</h3>
             <p style="font-size:14px; color:#cbd5e1; margin-bottom:15px;">Copy one of the numbers below and send money via Mobile Money:</p>
