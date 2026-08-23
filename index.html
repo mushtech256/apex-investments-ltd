@@ -408,9 +408,7 @@ function goToPaymentPage() {
     const container = document.getElementById('main-container');
     document.getElementById('header-title').innerText = 'Make Payment';
 
-    container.innerHTML = `...`;
-}
-
+    container.innerHTML = `
         <div class="card" style="text-align:center;">
             <h3 style="color:#38bdf8; margin-bottom:10px;">Send UGX ${amt.toLocaleString()}</h3>
             <p style="font-size:14px; color:#cbd5e1; margin-bottom:15px;">Copy one of the numbers below and send money via Mobile Money:</p>
@@ -427,6 +425,7 @@ function goToPaymentPage() {
         </div>
     `;
 }
+
 
 function submitDepositRequest() {
     const trxId = document.getElementById('trx-id').value.trim();
