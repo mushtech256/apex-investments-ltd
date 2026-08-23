@@ -443,6 +443,27 @@ function rentRig(id) {
     alert(`Successfully rented ${rig.name}!`);
     switchTab('home', document.querySelectorAll('.nav-item')[0]);
 }
+function logout() {
+    localStorage.removeItem('hut9_active_user');
+    currentUser = null;
+    alert('Logged out successfully!');
+    initApp();
+}
+
+function updateProfile() {
+    const nameInput = document.getElementById('set-name');
+    const newName = nameInput ? nameInput.value.trim() : '';
+    
+    if (!newName) {
+        alert('Please enter a valid name.');
+        return;
+    }
+    
+    currentUser.name = newName;
+    saveUserData();
+    alert('Profile updated successfully!');
+    renderSubMenu('settings');
+}
 
  </script>
 </body>
