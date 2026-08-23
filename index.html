@@ -394,10 +394,19 @@ function loadAdminPanel() {
     const adminContainer = document.getElementById('admin-deposits-list');
     if (!adminContainer) return;
 
+    // Change this to your exact admin phone number
+    const ADMIN_PHONE = '0773539696'; 
+    const userPhone = currentUser.phone || '';
+
+    if (userPhone !== ADMIN_PHONE) {
+        adminContainer.innerHTML = '<p style="color: #ef4444; text-align:center;">Access Denied: Admin Only.</p>';
+        return;
+    }
+
     let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
     const pending = allPendingDeposits.filter(d => d.status === 'Pending');
 
-    if (pending.length === 0) {
+    if (pending.length === '0' || pending.length === 0) {
         adminContainer.innerHTML = '<p style="color: #94a3b8; text-align:center;">No pending deposits.</p>';
         return;
     }
@@ -416,6 +425,24 @@ function loadAdminPanel() {
     adminContainer.innerHTML = html;
 }
 
+
+function rentRig(id) {
+    const rig = machines.find(m => m.id == id);
+    if (!rig) return;
+
+    if ((currentUser.balance || 0) < rig.price) {
+        alert('Insufficient balance! Please deposit to rent this machine.');
+        return;
+    }
+
+    currentUser.balance -= rig.price;
+    currentUser.rigs = currentUser.rigs || [];
+    currentUser.rigs.push({ ...rig, rentedAt: new Date().toISOString() });
+    
+    saveUserData();
+    alert(`Successfully rented ${rig.name}!`);
+    switchTab('home', document.querySelectorAll('.nav-item')[0]);
+}
 
  </script>
 </body>
