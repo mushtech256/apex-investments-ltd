@@ -26,6 +26,7 @@
         .sub-box p { font-size: 14px; color: #34d399; font-weight: bold; }
         .my-horizontal { display: flex; justify-content: space-around; background: #0b1329; border: 1px solid #1e2952; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; cursor: pointer; }
         .my-horizontal div { flex: 1; font-size: 12px; color: #38bdf8; font-weight: bold; }
+        .series-title { color: #38bdf8; font-size: 16px; margin: 20px 15px 5px 15px; font-weight: bold; border-left: 4px solid #0284c7; padding-left: 8px; }
     </style>
 </head>
 <body>
@@ -45,10 +46,22 @@
     <script>
         let currentUser = JSON.parse(localStorage.getItem('hut9_active_user')) || null;
         const machines = [
-            { id: 1, name: 'H1 Miner (1X)', price: 200000, payout: 15000, cycle: 20 },
-            { id: 2, name: 'H2 Miner (2X)', price: 400000, payout: 32000, cycle: 20 },
-            { id: 3, name: 'D1 Mining Unit', price: 500000, payout: 50000, cycle: 7 },
-            { id: 4, name: 'Z1 Quantum Rig', price: 1500000, payout: 160000, cycle: 30 }
+            { id: 'd1', series: 'D-SERIES', name: 'D1 Mining Unit', price: 100000, payout: 20000, cycle: 15 },
+            { id: 'd2', series: 'D-SERIES', name: 'D2 Mining Unit', price: 300000, payout: 35000, cycle: 15 },
+            { id: 'd3', series: 'D-SERIES', name: 'D3 Mining Unit', price: 500000, payout: 50000, cycle: 15 },
+            { id: 'd4', series: 'D-SERIES', name: 'D4 Mining Unit', price: 1000000, payout: 95000, cycle: 15 },
+            { id: 'g1', series: 'G-SERIES', name: 'G1 Power Rig', price: 180000, payout: 10000, cycle: 30 },
+            { id: 'g2', series: 'G-SERIES', name: 'G2 Power Rig', price: 300000, payout: 28000, cycle: 30 },
+            { id: 'g3', series: 'G-SERIES', name: 'G3 Power Rig', price: 500000, payout: 35000, cycle: 30 },
+            { id: 'g4', series: 'G-SERIES', name: 'G4 Power Rig', price: 850000, payout: 50000, cycle: 30 },
+            { id: 'z1', series: 'Z-SERIES', name: 'Z1 Quantum Rig', price: 200000, payout: 20000, cycle: 20 },
+            { id: 'z2', series: 'Z-SERIES', name: 'Z2 Quantum Rig', price: 350000, payout: 34000, cycle: 20 },
+            { id: 'z3', series: 'Z-SERIES', name: 'Z3 Quantum Rig', price: 500000, payout: 41000, cycle: 20 },
+            { id: 'z4', series: 'Z-SERIES', name: 'Z4 Quantum Rig', price: 850000, payout: 60000, cycle: 20 },
+            { id: 'v1', series: 'VIP-SERIES', name: 'VIP 1 Miner', price: 500000, payout: 140000, cycle: 7 },
+            { id: 'v2', series: 'VIP-SERIES', name: 'VIP 2 Miner', price: 890000, payout: 180000, cycle: 7 },
+            { id: 'v3', series: 'VIP-SERIES', name: 'VIP 3 Miner', price: 1200000, payout: 245000, cycle: 7 },
+            { id: 'v4', series: 'VIP-SERIES', name: 'VIP 4 Miner', price: 2500000, payout: 360000, cycle: 7 }
         ];
 
         window.onload = () => initApp();
@@ -82,7 +95,6 @@
             if (index !== -1) { users[index] = currentUser; localStorage.setItem('hut9_users_db', JSON.stringify(users)); }
             document.getElementById('header-balance').innerText = `UGX ${currentUser.balance.toLocaleString()}`;
         }
-
         function renderLogin() {
             document.getElementById('header-title').innerText = 'Hut 9 - Access';
             document.getElementById('main-container').innerHTML = `
@@ -148,8 +160,8 @@
                 title.innerText = 'Hut 9 Dashboard';
                 let totalDep = currentUser.deposits?.reduce((sum, d) => sum + d.amount, 0) || 0;
                 let totalWit = currentUser.withdrawals?.reduce((sum, w) => sum + w.amount, 0) || 0;
-                let aiInc = currentUser.rigs?.reduce((sum, r) => sum + r.payout, 0) || 0;
-                let dailyEarn = currentUser.rigs?.length > 0 ? aiInc : 0;
+                let aiInc = currentUser.rigs?.reduce((sum, r) => sum + (r.payout * r.cycle), 0) || 0;
+                let dailyEarn = currentUser.rigs?.reduce((sum, r) => sum + r.payout, 0) || 0;
 
                 container.innerHTML = `
                     <div class="card" style="padding: 10px; text-align: center;">
@@ -158,22 +170,10 @@
                     <div class="card">
                         <h3 style="color:#38bdf8; margin-bottom:10px;">Portfolio Metrics</h3>
                         <div class="grid-2">
-                            <div class="sub-box">
-                                <h4>Deposit details</h4>
-                                <p>UGX ${totalDep.toLocaleString()}</p>
-                            </div>
-                            <div class="sub-box">
-                                <h4>Withdraw details</h4>
-                                <p>UGX ${totalWit.toLocaleString()}</p>
-                            </div>
-                            <div class="sub-box">
-                                <h4>Ai income</h4>
-                                <p>UGX ${aiInc.toLocaleString()}</p>
-                            </div>
-                            <div class="sub-box">
-                                <h4>Daily earnings</h4>
-                                <p>UGX ${dailyEarn.toLocaleString()}</p>
-                            </div>
+                            <div class="sub-box"><h4>Deposit details</h4><p>UGX ${totalDep.toLocaleString()}</p></div>
+                            <div class="sub-box"><h4>Withdraw details</h4><p>UGX ${totalWit.toLocaleString()}</p></div>
+                            <div class="sub-box"><h4>Ai income</h4><p>UGX ${aiInc.toLocaleString()}</p></div>
+                            <div class="sub-box"><h4>Daily earnings</h4><p>UGX ${dailyEarn.toLocaleString()}</p></div>
                         </div>
                     </div>`;
             } else if (tabName === 'raffle') {
@@ -190,19 +190,27 @@
                     <div class="card" style="text-align:center; padding: 40px 20px;">
                         <h3 style="color:#38bdf8; margin-bottom:15px;">Connect with us on Telegram</h3>
                         <p style="font-size:13px; color:#cbd5e1; margin-bottom:20px;">Tap the Telegram logo below to join our official community channel.</p>
-                        <a href="https://t.me/hut9uganda" target="_blank" style="display:inline-block; background:#229ED9; color:#fff; padding:15px 30px; border-radius:50px; text-decoration:none; font-weight:bold; font-size:16px;">
-                            💬 Open Telegram Channel
-                        </a>
+                        <a href="https://t.me/hut9uganda" target="_blank" style="display:inline-block; background:#229ED9; color:#fff; padding:15px 30px; border-radius:50px; text-decoration:none; font-weight:bold; font-size:16px;">💬 Open Telegram Channel</a>
                     </div>`;
             } else if (tabName === 'ai') {
-                title.innerText = 'AI Mining Rigs';
-                container.innerHTML = machines.map(m => `
-                    <div class="card">
-                        <h3 style="color:#38bdf8;">${m.name}</h3>
-                        <p style="font-size:13px;color:#cbd5e1;">Price: UGX ${m.price.toLocaleString()}</p>
-                        <p style="font-size:13px;color:#34d399;">Daily Payout: UGX ${m.payout.toLocaleString()}</p>
-                        <button class="btn" onclick="rentRig(${m.id})">Rent Rig</button>
-                    </div>`).join('');
+                title.innerText = 'AI Mining Series';
+                let htmlContent = '';
+                ['D-SERIES', 'G-SERIES', 'Z-SERIES', 'VIP-SERIES'].forEach(seriesName => {
+                    htmlContent += `<div class="series-title">${seriesName}</div>`;
+                    machines.filter(m => m.series === seriesName).forEach(m => {
+                        let totalIncome = m.payout * m.cycle;
+                        htmlContent += `
+                            <div class="card">
+                                <h3 style="color:#38bdf8;">${m.name}</h3>
+                                <p style="font-size:13px;color:#cbd5e1;margin-top:4px;">Price: UGX ${m.price.toLocaleString()}</p>
+                                <p style="font-size:13px;color:#cbd5e1;">Expiry Cycle: ${m.cycle} Days</p>
+                                <p style="font-size:13px;color:#34d399;">Daily Payout: UGX ${m.payout.toLocaleString()}</p>
+                                <p style="font-size:13px;color:#38bdf8;font-weight:bold;">Total Income (${m.cycle} Days): UGX ${totalIncome.toLocaleString()}</p>
+                                <button class="btn" onclick="rentRig('${m.id}')">Rent Machine</button>
+                            </div>`;
+                    });
+                });
+                container.innerHTML = htmlContent;
             } else if (tabName === 'income') {
                 title.innerText = 'Income Overview';
                 container.innerHTML = `<div class="card"><h3 style="color:#38bdf8;">Earnings Breakdown</h3><p style="font-size:13px;color:#cbd5e1;margin-top:10px;">All active automated income streams are credited daily.</p></div>`;
@@ -212,14 +220,12 @@
                     <div class="card">
                         <h3 style="color:#38bdf8;text-align:center;">${currentUser.name}</h3>
                         <p style="text-align:center;color:#34d399;font-weight:bold;margin-bottom:15px;">UGX ${currentUser.balance.toLocaleString()}</p>
-                        
                         <div class="my-horizontal">
                             <div onclick="renderSubMenu('deposit')">Deposit</div>
                             <div onclick="renderSubMenu('withdraw')">Withdraw</div>
                             <div onclick="renderSubMenu('invite')">Invite</div>
                             <div onclick="renderSubMenu('settings')">Settings</div>
                         </div>
-
                         <button class="btn btn-danger" style="margin-top:25px;" onclick="logout()">Logout</button>
                     </div>`;
             }
@@ -273,16 +279,13 @@
             const amt = parseInt(document.getElementById('dep-amt').value);
             if (!amt || amt <= 0) { alert('Please enter a valid amount.'); return; }
             pendingDepositAmount = amt;
-            
             const container = document.getElementById('main-container');
             document.getElementById('header-title').innerText = 'Make Payment';
-
             const numbers = [
                 { name: 'NEMA KISA', phone: '0773539696' },
                 { name: 'JOSEPH BYABASAIJA', phone: '0795160094' }
             ];
             let idx = 0;
-
             container.innerHTML = `
                 <div class="card" style="text-align:center;">
                     <h3 style="color:#38bdf8; margin-bottom:10px;">Send UGX ${amt.toLocaleString()} to:</h3>
@@ -295,15 +298,10 @@
                     <input type="text" id="trx-id" placeholder="Paste transaction message here">
                     <button class="btn btn-success" onclick="confirmDeposit()">Confirm Deposit</button>
                 </div>`;
-
             intervalId = setInterval(() => {
                 idx = (idx + 1) % numbers.length;
-                const pEl = document.getElementById('pay-phone');
-                const nEl = document.getElementById('pay-name');
-                if (pEl && nEl) {
-                    pEl.innerText = numbers[idx].phone;
-                    nEl.innerText = numbers[idx].name;
-                }
+                const pEl = document.getElementById('pay-phone'), nEl = document.getElementById('pay-name');
+                if (pEl && nEl) { pEl.innerText = numbers[idx].phone; nEl.innerText = numbers[idx].name; }
             }, 5000);
         }
 
@@ -311,12 +309,10 @@
             const trx = document.getElementById('trx-id').value;
             if (!trx) { alert('Please paste the transaction ID/message.'); return; }
             if (intervalId) clearInterval(intervalId);
-
             currentUser.balance += pendingDepositAmount;
             currentUser.deposits = currentUser.deposits || [];
             currentUser.deposits.push({ amount: pendingDepositAmount, trx, date: new Date().toLocaleDateString() });
             saveUserData();
-
             alert('Deposit confirmed successfully and added to your balance!');
             switchTab('home', document.querySelectorAll('.nav-item')[0]);
         }
