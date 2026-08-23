@@ -18,11 +18,14 @@
         .btn { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-success { background: #10b981; }
         .btn-danger { background: #ef4444; }
-        .btn-warning { background: #f59e0b; color: #000; }
         input, select { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 14px; background: #0b1329; border: 1px solid #1e2952; color: #fff; border-radius: 6px; }
         label { font-size: 12px; color: #cbd5e1; }
-        .badge { display: inline-block; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; background: #1e2952; color: #38bdf8; }
-        .menu-row { display: flex; justify-content: space-between; background: #0b1329; padding: 12px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #1e2952; cursor: pointer; align-items: center; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .sub-box { background: #0b1329; border: 1px solid #1e2952; padding: 12px; border-radius: 8px; text-align: center; }
+        .sub-box h4 { font-size: 11px; color: #94a3b8; margin-bottom: 5px; }
+        .sub-box p { font-size: 14px; color: #34d399; font-weight: bold; }
+        .my-horizontal { display: flex; justify-content: space-around; background: #0b1329; border: 1px solid #1e2952; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; cursor: pointer; }
+        .my-horizontal div { flex: 1; font-size: 12px; color: #38bdf8; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -33,23 +36,24 @@
     <div id="main-container"></div>
     <nav class="bottom-nav" id="bottom-nav" style="display: none;">
         <button class="nav-item active" onclick="switchTab('home', this)"><span>🏠</span>Home</button>
-        <button class="nav-item" onclick="switchTab('ai', this)"><span>🤖</span>AI Rigs</button>
         <button class="nav-item" onclick="switchTab('raffle', this)"><span>🎁</span>Raffle</button>
+        <button class="nav-item" onclick="switchTab('chat', this)"><span>💬</span>Chat</button>
+        <button class="nav-item" onclick="switchTab('ai', this)"><span>🤖</span>AI</button>
+        <button class="nav-item" onclick="switchTab('income', this)"><span>📊</span>Income</button>
         <button class="nav-item" onclick="switchTab('my', this)"><span>👤</span>My</button>
-        <a class="nav-item" href="https://t.me/hut9uganda" target="_blank"><span>💬</span>Chat</a>
     </nav>
     <script>
         let currentUser = JSON.parse(localStorage.getItem('hut9_active_user')) || null;
         const machines = [
-            { id: 1, name: 'H1 Miner (1X)', price: 200000, payout: 15000, cycle: '20 Days' },
-            { id: 2, name: 'H2 Miner (2X)', price: 400000, payout: 32000, cycle: '20 Days' },
-            { id: 3, name: 'D1 Mining Unit', price: 500000, payout: 50000, cycle: '7 Days' },
-            { id: 4, name: 'Z1 Quantum Rig', price: 1500000, payout: 160000, cycle: '30 Days' }
+            { id: 1, name: 'H1 Miner (1X)', price: 200000, payout: 15000, cycle: 20 },
+            { id: 2, name: 'H2 Miner (2X)', price: 400000, payout: 32000, cycle: 20 },
+            { id: 3, name: 'D1 Mining Unit', price: 500000, payout: 50000, cycle: 7 },
+            { id: 4, name: 'Z1 Quantum Rig', price: 1500000, payout: 160000, cycle: 30 }
         ];
 
         window.onload = () => initApp();
 
-        function generateAlphaNumericCode() {
+        function generateCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let code = 'HUT9-';
             for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -66,7 +70,7 @@
             } else {
                 nav.style.display = 'flex';
                 balanceEl.innerText = `UGX ${(currentUser.balance || 0).toLocaleString()}`;
-                if (!currentUser.inviteCode) { currentUser.inviteCode = generateAlphaNumericCode(); saveUserData(); }
+                if (!currentUser.inviteCode) { currentUser.inviteCode = generateCode(); saveUserData(); }
                 switchTab('home', document.querySelector('.nav-item'));
             }
         }
@@ -111,7 +115,7 @@
             if (!name || !phone || !pass) { alert('Please fill in all fields.'); return; }
             let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
             if (users.some(u => u.phone === phone)) { alert('Account already exists!'); renderLogin(); return; }
-            currentUser = { name, phone, pass, balance: 15000, rigs: [], inviteCode: generateAlphaNumericCode() };
+            currentUser = { name, phone, pass, balance: 15000, rigs: [], deposits: [], withdrawals: [], inviteCode: generateCode() };
             users.push(currentUser);
             localStorage.setItem('hut9_users_db', JSON.stringify(users));
             localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
@@ -127,7 +131,9 @@
             if (foundUser) {
                 currentUser = foundUser;
                 if(!currentUser.rigs) currentUser.rigs = [];
-                if(!currentUser.inviteCode) currentUser.inviteCode = generateAlphaNumericCode();
+                if(!currentUser.deposits) currentUser.deposits = [];
+                if(!currentUser.withdrawals) currentUser.withdrawals = [];
+                if(!currentUser.inviteCode) currentUser.inviteCode = generateCode();
                 localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
                 initApp();
             } else { alert('Invalid credentials.'); }
@@ -140,19 +146,36 @@
 
             if (tabName === 'home') {
                 title.innerText = 'Hut 9 Dashboard';
-                let rigsHtml = currentUser.rigs?.length ? currentUser.rigs.map(r => `<p style="color:#34d399;font-size:13px;">✔ ${r.name}</p>`).join('') : '<p style="color:#94a3b8;font-size:13px;">No active rigs.</p>';
+                let totalDep = currentUser.deposits?.reduce((sum, d) => sum + d.amount, 0) || 0;
+                let totalWit = currentUser.withdrawals?.reduce((sum, w) => sum + w.amount, 0) || 0;
+                let aiInc = currentUser.rigs?.reduce((sum, r) => sum + r.payout, 0) || 0;
+                let dailyEarn = currentUser.rigs?.length > 0 ? aiInc : 0;
+
                 container.innerHTML = `
-                    <div class="card" style="background:linear-gradient(135deg, #0284c7, #1e1b4b);"><h2>Hello, ${currentUser.name}</h2></div>
-                    <div class="card"><h3>Balance: UGX ${currentUser.balance.toLocaleString()}</h3><hr style="margin:10px 0;border-color:#1e2952;"><h4 style="font-size:14px;color:#cbd5e1;">Your Rigs</h4>${rigsHtml}</div>`;
-            } else if (tabName === 'ai') {
-                title.innerText = 'AI Mining Rigs';
-                container.innerHTML = machines.map(m => `
+                    <div class="card" style="padding: 10px; text-align: center;">
+                        <img src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=600&q=80" style="width:100%; height:140px; object-fit:cover; border-radius:8px;" alt="Tractors">
+                    </div>
                     <div class="card">
-                        <h3 style="color:#38bdf8;">${m.name}</h3>
-                        <p style="font-size:13px;color:#cbd5e1;">Price: UGX ${m.price.toLocaleString()}</p>
-                        <p style="font-size:13px;color:#34d399;">Daily: UGX ${m.payout.toLocaleString()}</p>
-                        <button class="btn" onclick="rentRig(${m.id})">Rent Rig</button>
-                    </div>`).join('');
+                        <h3 style="color:#38bdf8; margin-bottom:10px;">Portfolio Metrics</h3>
+                        <div class="grid-2">
+                            <div class="sub-box">
+                                <h4>Deposit details</h4>
+                                <p>UGX ${totalDep.toLocaleString()}</p>
+                            </div>
+                            <div class="sub-box">
+                                <h4>Withdraw details</h4>
+                                <p>UGX ${totalWit.toLocaleString()}</p>
+                            </div>
+                            <div class="sub-box">
+                                <h4>Ai income</h4>
+                                <p>UGX ${aiInc.toLocaleString()}</p>
+                            </div>
+                            <div class="sub-box">
+                                <h4>Daily earnings</h4>
+                                <p>UGX ${dailyEarn.toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </div>`;
             } else if (tabName === 'raffle') {
                 title.innerText = 'Lucky Raffle';
                 container.innerHTML = `
@@ -161,37 +184,141 @@
                         <div id="spin-result" style="font-size:16px;margin:15px 0;color:#34d399;">Ready?</div>
                         <button class="btn" onclick="spinWheel()">Spin</button>
                     </div>`;
+            } else if (tabName === 'chat') {
+                title.innerText = 'Support Chat';
+                container.innerHTML = `
+                    <div class="card" style="text-align:center; padding: 40px 20px;">
+                        <h3 style="color:#38bdf8; margin-bottom:15px;">Connect with us on Telegram</h3>
+                        <p style="font-size:13px; color:#cbd5e1; margin-bottom:20px;">Tap the Telegram logo below to join our official community channel.</p>
+                        <a href="https://t.me/hut9uganda" target="_blank" style="display:inline-block; background:#229ED9; color:#fff; padding:15px 30px; border-radius:50px; text-decoration:none; font-weight:bold; font-size:16px;">
+                            💬 Open Telegram Channel
+                        </a>
+                    </div>`;
+            } else if (tabName === 'ai') {
+                title.innerText = 'AI Mining Rigs';
+                container.innerHTML = machines.map(m => `
+                    <div class="card">
+                        <h3 style="color:#38bdf8;">${m.name}</h3>
+                        <p style="font-size:13px;color:#cbd5e1;">Price: UGX ${m.price.toLocaleString()}</p>
+                        <p style="font-size:13px;color:#34d399;">Daily Payout: UGX ${m.payout.toLocaleString()}</p>
+                        <button class="btn" onclick="rentRig(${m.id})">Rent Rig</button>
+                    </div>`).join('');
+            } else if (tabName === 'income') {
+                title.innerText = 'Income Overview';
+                container.innerHTML = `<div class="card"><h3 style="color:#38bdf8;">Earnings Breakdown</h3><p style="font-size:13px;color:#cbd5e1;margin-top:10px;">All active automated income streams are credited daily.</p></div>`;
             } else if (tabName === 'my') {
                 title.innerText = 'My Dashboard';
                 container.innerHTML = `
-                    <div class="card" style="max-width:400px;margin:20px auto;">
+                    <div class="card">
                         <h3 style="color:#38bdf8;text-align:center;">${currentUser.name}</h3>
                         <p style="text-align:center;color:#34d399;font-weight:bold;margin-bottom:15px;">UGX ${currentUser.balance.toLocaleString()}</p>
-                        <div class="menu-row" onclick="renderSubMenu('deposit')"><span>💳 Deposit</span><span>➔</span></div>
-                        <div class="menu-row" onclick="renderSubMenu('withdraw')"><span>💸 Withdraw</span><span>➔</span></div>
-                        <div class="menu-row" onclick="renderSubMenu('invite')"><span>🔗 Invite Friends</span><span>➔</span></div>
-                        <div class="menu-row" onclick="renderSubMenu('settings')"><span>⚙ Settings</span><span>➔</span></div>
-                        <button class="btn btn-danger" style="margin-top:20px;" onclick="logout()">Logout</button>
+                        
+                        <div class="my-horizontal">
+                            <div onclick="renderSubMenu('deposit')">Deposit</div>
+                            <div onclick="renderSubMenu('withdraw')">Withdraw</div>
+                            <div onclick="renderSubMenu('invite')">Invite</div>
+                            <div onclick="renderSubMenu('settings')">Settings</div>
+                        </div>
+
+                        <button class="btn btn-danger" style="margin-top:25px;" onclick="logout()">Logout</button>
                     </div>`;
             }
         }
 
+        let intervalId = null;
         function renderSubMenu(sub) {
+            if (intervalId) clearInterval(intervalId);
             const container = document.getElementById('main-container'), title = document.getElementById('header-title');
+
             if (sub === 'deposit') {
                 title.innerText = 'Deposit';
-                container.innerHTML = `<div class="card"><button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[3])">← Back</button><label>Amount (UGX)</label><input type="number" id="dep-amount"><button class="btn btn-success" onclick="processDeposit()">Confirm</button></div>`;
+                container.innerHTML = `
+                    <div class="card">
+                        <button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[5])">← Back</button>
+                        <label>Phone Number</label><input type="text" id="dep-phone" value="${currentUser.phone}">
+                        <label>Amount (UGX)</label><input type="number" id="dep-amt" placeholder="Enter amount">
+                        <button class="btn btn-success" onclick="goToPaymentPage()">CONTINUE</button>
+                    </div>`;
             } else if (sub === 'withdraw') {
                 title.innerText = 'Withdraw';
-                container.innerHTML = `<div class="card"><button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[3])">← Back</button><label>Amount (UGX)</label><input type="number" id="wit-amount"><button class="btn btn-warning" onclick="processWithdraw()">Submit</button></div>`;
+                container.innerHTML = `
+                    <div class="card">
+                        <button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[5])">← Back</button>
+                        <label>Amount (UGX)</label><input type="number" id="wit-amt" placeholder="Enter amount">
+                        <button class="btn btn-danger" onclick="processWithdraw()">Submit Request</button>
+                    </div>`;
             } else if (sub === 'invite') {
                 title.innerText = 'Invite Friends';
                 const link = `https://hut9.onrender.com/?ref=${currentUser.inviteCode}`;
-                container.innerHTML = `<div class="card" style="text-align:center;"><button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[3])">← Back</button><label>Your Code</label><input type="text" readonly value="${currentUser.inviteCode}" style="text-align:center;color:#34d399;"><label>Link</label><input type="text" readonly value="${link}" style="text-align:center;font-size:10px;"><button class="btn btn-success" onclick="navigator.clipboard.writeText('${link}');alert('Copied!');">Copy Link</button></div>`;
+                container.innerHTML = `
+                    <div class="card" style="text-align:center;">
+                        <button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[5])">← Back</button>
+                        <label>Your Code</label><input type="text" readonly value="${currentUser.inviteCode}" style="text-align:center;color:#34d399;">
+                        <label>Link</label><input type="text" readonly value="${link}" style="text-align:center;font-size:10px;">
+                        <button class="btn btn-success" onclick="navigator.clipboard.writeText('${link}');alert('Copied!');">Copy Link</button>
+                    </div>`;
             } else if (sub === 'settings') {
                 title.innerText = 'Settings';
-                container.innerHTML = `<div class="card"><button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[3])">← Back</button><label>Name</label><input type="text" id="set-name" value="${currentUser.name}"><button class="btn" onclick="currentUser.name=document.getElementById('set-name').value;saveUserData();alert('Updated!');switchTab('my', document.querySelectorAll('.nav-item')[3])">Save</button></div>`;
+                container.innerHTML = `
+                    <div class="card">
+                        <button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[5])">← Back</button>
+                        <label>Name</label><input type="text" id="set-name" value="${currentUser.name}">
+                        <button class="btn" onclick="currentUser.name=document.getElementById('set-name').value;saveUserData();alert('Updated!');switchTab('my', document.querySelectorAll('.nav-item')[5])">Save</button>
+                    </div>`;
             }
+        }
+
+        let pendingDepositAmount = 0;
+        function goToPaymentPage() {
+            const amt = parseInt(document.getElementById('dep-amt').value);
+            if (!amt || amt <= 0) { alert('Please enter a valid amount.'); return; }
+            pendingDepositAmount = amt;
+            
+            const container = document.getElementById('main-container');
+            document.getElementById('header-title').innerText = 'Make Payment';
+
+            const numbers = [
+                { name: 'NEMA KISA', phone: '0773539696' },
+                { name: 'JOSEPH BYABASAIJA', phone: '0795160094' }
+            ];
+            let idx = 0;
+
+            container.innerHTML = `
+                <div class="card" style="text-align:center;">
+                    <h3 style="color:#38bdf8; margin-bottom:10px;">Send UGX ${amt.toLocaleString()} to:</h3>
+                    <div id="payment-target" style="background:#0b1329; border:1px solid #1e2952; padding:15px; border-radius:8px; margin:15px 0;">
+                        <p style="font-size:18px; color:#34d399; font-weight:bold;" id="pay-phone">${numbers[0].phone}</p>
+                        <p style="font-size:14px; color:#cbd5e1;" id="pay-name">${numbers[0].name}</p>
+                    </div>
+                    <p style="font-size:11px; color:#94a3b8; margin-bottom:15px;">Number rotates automatically. Send money, then paste your transaction ID below.</p>
+                    <label>Transaction ID / Message</label>
+                    <input type="text" id="trx-id" placeholder="Paste transaction message here">
+                    <button class="btn btn-success" onclick="confirmDeposit()">Confirm Deposit</button>
+                </div>`;
+
+            intervalId = setInterval(() => {
+                idx = (idx + 1) % numbers.length;
+                const pEl = document.getElementById('pay-phone');
+                const nEl = document.getElementById('pay-name');
+                if (pEl && nEl) {
+                    pEl.innerText = numbers[idx].phone;
+                    nEl.innerText = numbers[idx].name;
+                }
+            }, 5000);
+        }
+
+        function confirmDeposit() {
+            const trx = document.getElementById('trx-id').value;
+            if (!trx) { alert('Please paste the transaction ID/message.'); return; }
+            if (intervalId) clearInterval(intervalId);
+
+            currentUser.balance += pendingDepositAmount;
+            currentUser.deposits = currentUser.deposits || [];
+            currentUser.deposits.push({ amount: pendingDepositAmount, trx, date: new Date().toLocaleDateString() });
+            saveUserData();
+
+            alert('Deposit confirmed successfully and added to your balance!');
+            switchTab('home', document.querySelectorAll('.nav-item')[0]);
         }
 
         function rentRig(id) {
@@ -202,25 +329,18 @@
             currentUser.rigs.push(rig);
             saveUserData();
             alert(`Rented ${rig.name}!`);
-            switchTab('home', document.querySelector('.nav-item'));
-        }
-
-        function processDeposit() {
-            const amt = parseInt(document.getElementById('dep-amount').value);
-            if (!amt || amt <= 0) { alert('Enter valid amount'); return; }
-            currentUser.balance += amt;
-            saveUserData();
-            alert('Deposit successful!');
-            switchTab('my', document.querySelectorAll('.nav-item')[3]);
+            switchTab('home', document.querySelectorAll('.nav-item')[0]);
         }
 
         function processWithdraw() {
-            const amt = parseInt(document.getElementById('wit-amount').value);
-            if (!amt || amt > currentUser.balance) { alert('Invalid or insufficient balance'); return; }
+            const amt = parseInt(document.getElementById('wit-amt').value);
+            if (!amt || amt <= 0 || amt > currentUser.balance) { alert('Invalid or insufficient balance'); return; }
             currentUser.balance -= amt;
+            currentUser.withdrawals = currentUser.withdrawals || [];
+            currentUser.withdrawals.push({ amount: amt, date: new Date().toLocaleDateString() });
             saveUserData();
-            alert('Withdrawal requested!');
-            switchTab('my', document.querySelectorAll('.nav-item')[3]);
+            alert('Withdrawal request submitted successfully!');
+            switchTab('home', document.querySelectorAll('.nav-item')[0]);
         }
 
         function spinWheel() {
@@ -229,10 +349,15 @@
             const prize = [0, 1000, 3000, 5000, 15000, 50000][Math.floor(Math.random() * 6)];
             currentUser.balance += prize;
             saveUserData();
-            document.getElementById('spin-result').innerText = prize >  0 ? `Won UGX ${prize.toLocaleString()}!` : 'No win!';
+            document.getElementById('spin-result').innerText = prize > 0 ? `Won UGX ${prize.toLocaleString()}!` : 'No win!';
         }
 
-        function logout() { localStorage.removeItem('hut9_active_user'); currentUser = null; initApp(); }
+        function logout() { 
+            if (intervalId) clearInterval(intervalId);
+            localStorage.removeItem('hut9_active_user'); 
+            currentUser = null; 
+            initApp(); 
+        }
     </script>
 </body>
 </html>
