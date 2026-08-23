@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hut 9 - AI Mining & Investments</title>
@@ -300,48 +302,45 @@
             }
         }
 
-        let pendingDepositAmount = 0;
-        function goToPaymentPage() {
-            const amt = parseInt(document.getElementById('dep-amt').value);
-            if (!amt || amt <= 0) { alert('Please enter a valid amount.'); return; }
-            pendingDepositAmount = amt;
-            const container = document.getElementById('main-container');
-            document.getElementById('header-title').innerText = 'Make Payment';
-            const numbers = [
-                { name: 'NEMA KISA', phone: '0773539696' },
-                { name: 'JOSEPH BYABASAIJA', phone: '0795160094' }
-            ];
-            let idx = 0;
-            container.innerHTML = `
-                <div class="card" style="text-align:center;">
-                    <h3 style="color:#38bdf8; margin-bottom:10px;">Send UGX ${amt.toLocaleString()} to:</h3>
-                    <div id="payment-target" style="background:#0b1329; border:1px solid #1e2952; padding:15px; border-radius:8px; margin:15px 0;">
-                        <p style="font-size:18px; color:#34d399; font-weight:bold;" id="pay-phone">${numbers[0].phone}</p>
-                        <p style="font-size:14px; color:#cbd5e1;" id="pay-name">${numbers[0].name}</p>
-                    </div>
-                    <p style="font-size:11px; color:#94a3b8; margin-bottom:15px;">Number rotates automatically. Send money, then paste your transaction ID below.</p>
-                    <label>Transaction ID / Message</label>
-                    <input type="text" id="trx-id" placeholder="Paste transaction message here">
-                    <button class="btn btn-success" onclick="confirmDeposit()">Confirm Deposit</button>
-                </div>`;
-            intervalId = setInterval(() => {
-                idx = (idx + 1) % numbers.length;
-                const pEl = document.getElementById('pay-phone'), nEl = document.getElementById('pay-name');
-                if (pEl && nEl) { pEl.innerText = numbers[idx].phone; nEl.innerText = numbers[idx].name; }
-            }, 5000);
-        }
+        
+           function goToPaymentPage() {
+    const amt = parseInt(document.getElementById('dep-amt').value);
+    if (!amt || amt <= 0) { alert('Please enter a valid amount.'); return; }
+    
+    const publicKey = "FLWPUBK_TEST-xxxxxxxxxxxxxxxxxxxxx-X"; 
 
-        function confirmDeposit() {
-            const trx = document.getElementById('trx-id').value;
-            if (!trx) { alert('Please paste the transaction ID/message.'); return; }
-            if (intervalId) clearInterval(intervalId);
-            currentUser.balance += pendingDepositAmount;
+    FlutterwaveCheckout({
+        public_key: publicKey,
+        tx_ref: "HUT9-TX-" + Date.now(),
+        amount: amt,
+        currency: "UGX",
+        payment_options: "mobilemoneyuganda, card",
+        customer: {
+            email: currentUser.phone + "@hut9.local",
+            phone_number: currentUser.phone,
+            name: currentUser.name,
+        },
+        customizations: {
+            title: "Hut 9 Deposit",
+            description: "Automated wallet funding",
+            logo: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=100&q=80",
+        },
+        callback: function (response) {
+            currentUser.balance += amt;
             currentUser.deposits = currentUser.deposits || [];
-            currentUser.deposits.push({ amount: pendingDepositAmount, trx, date: new Date().toLocaleDateString() });
+            currentUser.deposits.push({ amount: amt, trx: response.transaction_id, date: new Date().toLocaleDateString() });
             saveUserData();
-            alert('Deposit confirmed successfully and added to your balance!');
+            
+            alert(`Payment of UGX ${amt.toLocaleString()} successful!`);
             switchTab('home', document.querySelectorAll('.nav-item')[0]);
+        },
+        onclose: function () {
+            console.log('Payment modal closed.');
         }
+    });
+}
+
+           
 
         function rentRig(id) {
             const rig = machines.find(m => m.id === id);
