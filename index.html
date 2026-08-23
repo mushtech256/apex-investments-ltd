@@ -307,88 +307,9 @@
 
         }
 
-        let pendingDepositAmount = 0;
-        function goToPaymentPage() {
-            const amt = parseInt(document.getElementById('dep-amt').value);
-            if (!amt || amt <= 0) { alert('Please enter a valid amount.'); return; }
-            pendingDepositAmount = amt;
-            const container = document.getElementById('main-container');
-            document.getElementById('header-title').innerText = 'Make Payment';
-            const numbers = [
-                { name: 'NEMA KISA', phone: '0773539696' },
-                { name: 'JOSEPH BYABASAIJA', phone: '0795160094' }
-            ];
-            let idx = 0;
-            container.innerHTML = `
-                <div class="card" style="text-align:center;">
-                    <h3 style="color:#38bdf8; margin-bottom:10px;">Send UGX ${amt.toLocaleString()} to:</h3>
-                    <div id="payment-target" style="background:#0b1329; border:1px solid #1e2952; padding:15px; border-radius:8px; margin:15px 0;">
-                        <p style="font-size:18px; color:#34d399; font-weight:bold;" id="pay-phone">${numbers[0].phone}</p>
-                        <p style="font-size:14px; color:#cbd5e1;" id="pay-name">${numbers[0].name}</p>
-                    </div>
-                    <p style="font-size:11px; color:#94a3b8; margin-bottom:15px;">Number rotates automatically. Send money, then paste your transaction ID below.</p>
-                    <label>Transaction ID / Message</label>
-                    <input type="text" id="trx-id" placeholder="Paste transaction message here">
-                    <button class="btn btn-success" onclick="confirmDeposit()">Confirm Deposit</button>
-                </div>`;
-            intervalId = setInterval(() => {
-                idx = (idx + 1) % numbers.length;
-                const pEl = document.getElementById('pay-phone'), nEl = document.getElementById('pay-name');
-                if (pEl && nEl) { pEl.innerText = numbers[idx].phone; nEl.innerText = numbers[idx].name; }
-            }, 5000);
-        }
-
-        function confirmDeposit() {
-            const trx = document.getElementById('trx-id').value;
-            if (!trx) { alert('Please paste the transaction ID/message.'); return; }
-            if (intervalId) clearInterval(intervalId);
-            currentUser.balance += pendingDepositAmount;
-            currentUser.deposits = currentUser.deposits || [];
-            currentUser.deposits.push({ amount: pendingDepositAmount, trx, date: new Date().toLocaleDateString() });
-            saveUserData();
-            alert('Deposit confirmed successfully and added to your balance!');
-            switchTab('home', document.querySelectorAll('.nav-item')[0]);
-        }
-
-        function rentRig(id) {
-            const rig = machines.find(m => m.id === id);
-            if (currentUser.balance < rig.price) { alert('Insufficient balance!'); renderSubMenu('deposit'); return; }
-            currentUser.balance -= rig.price;
-            currentUser.rigs = currentUser.rigs || [];
-            currentUser.rigs.push({ ...rig, rentedAt: new Date().toISOString() });
-            saveUserData();
-            alert(`Rented ${rig.name}!`);
-            switchTab('income', document.querySelectorAll('.nav-item')[4]);
-        }
-
-        function processWithdraw() {
-            const amt = parseInt(document.getElementById('wit-amt').value);
-            if (!amt || amt <= 0 || amt > currentUser.balance) { alert('Invalid or insufficient balance'); return; }
-            currentUser.balance -= amt;
-            currentUser.withdrawals = currentUser.withdrawals || [];
-            currentUser.withdrawals.push({ amount: amt, date: new Date().toLocaleDateString() });
-            saveUserData();
-            alert('Withdrawal request submitted successfully!');
-            switchTab('home', document.querySelectorAll('.nav-item')[0]);
-        }
-
-        function spinWheel() {
-            if (currentUser.balance < 2000) { alert('Need at least 2,000 UGX'); return; }
-            currentUser.balance -= 2000;
-            const prize = [0, 1000, 3000, 5000, 15000, 50000][Math.floor(Math.random() * 6)];
-            currentUser.balance += prize;
-            saveUserData();
-            document.getElementById('spin-result').innerText = prize > 0 ? `Won UGX ${prize.toLocaleString()}!` : 'No win!';
-        }
-
-        function logout() { 
-            if (intervalId) clearInterval(intervalId);
-            localStorage.removeItem('hut9_active_user'); 
-            currentUser = null; 
-            initApp(); 
-        }
 let pendingDepositAmount = 0;
 let pendingUserPhone = '';
+
 function goToPaymentPage() {
     const phone = document.getElementById('dep-phone').value.trim();
     const amt = parseInt(document.getElementById('dep-amt').value);
@@ -426,7 +347,6 @@ function goToPaymentPage() {
     `;
 }
 
-
 function submitDepositRequest() {
     const trxId = document.getElementById('trx-id').value.trim();
     if (!trxId) {
@@ -453,7 +373,6 @@ function submitDepositRequest() {
     switchTab('home', document.querySelectorAll('.nav-item')[0]);
 }
 
-// Admin function to approve deposit and credit user balance
 function approveDeposit(depositId) {
     let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
     const index = allPendingDeposits.findIndex(d => d.id === depositId);
@@ -471,7 +390,6 @@ function approveDeposit(depositId) {
     }
 }
 
-// Function to render pending deposits for admin verification
 function loadAdminPanel() {
     const adminContainer = document.getElementById('admin-deposits-list');
     if (!adminContainer) return;
