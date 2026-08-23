@@ -39,7 +39,7 @@
     </nav>
 
     <script>
-        let currentUser = JSON.parse(localStorage.getItem('hut9_user')) || null;
+        let currentUser = JSON.parse(localStorage.getItem('hut9_active_user')) || null;
         
         const machines = [
             { name: 'H1 Miner (1X)', price: '200,000', payout: '15,000', cycle: '20 Days' },
@@ -62,7 +62,7 @@
                 renderLogin();
             } else {
                 nav.style.display = 'flex';
-                balanceEl.innerText = `UGX ${(currentUser.balance || 10000).toLocaleString()}`;
+                balanceEl.innerText = `UGX ${(currentUser.balance || 0).toLocaleString()}`;
                 switchTab('home', document.querySelector('.nav-item'));
             }
         }
@@ -101,22 +101,54 @@
             `;
         }
 
-        function handleLogin() {
-            const phone = document.getElementById('login-phone').value;
-            if (!phone) { alert('Please enter your phone number'); return; }
-            currentUser = { name: "Investor", phone: phone, balance: 25000 };
-            localStorage.setItem('hut9_user', JSON.stringify(currentUser));
-            initApp();
-        }
-
         function handleRegister() {
             const name = document.getElementById('reg-name').value;
             const phone = document.getElementById('reg-phone').value;
-            if (!name || !phone) { alert('Please fill in all fields'); return; }
-            currentUser = { name: name, phone: phone, balance: 15000 };
-            localStorage.setItem('hut9_user', JSON.stringify(currentUser));
-            alert('Account created successfully with bonus!');
+            const pass = document.getElementById('reg-pass').value;
+
+            if (!name || !phone || !pass) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            // Check if user already exists in database
+            let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
+            if (users.some(u => u.phone === phone)) {
+                alert('An account with this phone number already exists! Please login.');
+                renderLogin();
+                return;
+            }
+
+            const newUser = { name, phone, pass, balance: 15000 };
+            users.push(newUser);
+            localStorage.setItem('hut9_users_db', JSON.stringify(users));
+            
+            currentUser = newUser;
+            localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
+            
+            alert('Account created successfully! Welcome bonus UGX 15,000 added.');
             initApp();
+        }
+
+        function handleLogin() {
+            const phone = document.getElementById('login-phone').value;
+            const pass = document.getElementById('login-pass').value;
+
+            if (!phone || !pass) {
+                alert('Please enter both phone number and password.');
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
+            const foundUser = users.find(u => u.phone === phone && u.pass === pass);
+
+            if (foundUser) {
+                currentUser = foundUser;
+                localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
+                initApp();
+            } else {
+                alert('Invalid phone number or password, or account does not exist. Please register first.');
+            }
         }
 
         function switchTab(tabName, element) {
@@ -135,8 +167,8 @@
                     </div>
                     <div class="card">
                         <h3 style="color: #38bdf8; margin-bottom: 8px;">Quick Stats</h3>
-                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">Active Rigs: 1</p>
-                        <p style="font-size: 13px; color: #34d399;">Total Earned: UGX 15,000</p>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">Active Rigs: 0</p>
+                        <p style="font-size: 13px; color: #34d399;">Wallet Balance: UGX ${currentUser.balance.toLocaleString()}</p>
                     </div>
                 `;
             } else if (tabName === 'ai') {
@@ -178,6 +210,7 @@
                     <div class="card">
                         <h3 style="margin-bottom: 5px;">${currentUser.name}</h3>
                         <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">${currentUser.phone}</p>
+                        <p style="font-size: 13px; color: #34d399; margin-bottom: 15px;">Balance: UGX ${currentUser.balance.toLocaleString()}</p>
                         <button class="btn btn-danger" onclick="logout()">Logout</button>
                     </div>
                 `;
@@ -185,7 +218,7 @@
         }
 
         function logout() {
-            localStorage.removeItem('hut9_user');
+            localStorage.removeItem('hut9_active_user');
             currentUser = null;
             initApp();
         }
