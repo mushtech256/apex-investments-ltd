@@ -302,8 +302,34 @@
             }
         }
 
-        
-           // User submits a manual deposit request
+         
+}
+
+}
+   
+
+        function rentRig(id) {
+            const rig = machines.find(m => m.id === id);
+            if (currentUser.balance < rig.price) { alert('Insufficient balance!'); renderSubMenu('deposit'); return; }
+            currentUser.balance -= rig.price;
+            currentUser.rigs = currentUser.rigs || [];
+            currentUser.rigs.push({ ...rig, rentedAt: new Date().toISOString() });
+            saveUserData();
+            alert(`Rented ${rig.name}!`);
+            switchTab('income', document.querySelectorAll('.nav-item')[4]);
+        }
+
+        function processWithdraw() {
+            const amt = parseInt(document.getElementById('wit-amt').value);
+            if (!amt || amt <= 0 || amt > currentUser.balance) { alert('Invalid or insufficient balance'); return; }
+            currentUser.balance -= amt;
+            currentUser.withdrawals = currentUser.withdrawals || [];
+            currentUser.withdrawals.push({ amount: amt, date: new Date().toLocaleDateString() });
+            saveUserData();
+            alert('Withdrawal request submitted successfully!');
+            switchTab('home', document.querySelectorAll('.nav-item')[0]);
+        }
+// User submits a manual deposit request
 function goToPaymentPage() {
     const amt = parseInt(document.getElementById('dep-amt').value);
     const trxId = document.getElementById('trx-id').value.trim();
@@ -379,31 +405,6 @@ function loadAdminPanel() {
     adminContainer.innerHTML = html;
 }
 
-}
-
-           
-
-        function rentRig(id) {
-            const rig = machines.find(m => m.id === id);
-            if (currentUser.balance < rig.price) { alert('Insufficient balance!'); renderSubMenu('deposit'); return; }
-            currentUser.balance -= rig.price;
-            currentUser.rigs = currentUser.rigs || [];
-            currentUser.rigs.push({ ...rig, rentedAt: new Date().toISOString() });
-            saveUserData();
-            alert(`Rented ${rig.name}!`);
-            switchTab('income', document.querySelectorAll('.nav-item')[4]);
-        }
-
-        function processWithdraw() {
-            const amt = parseInt(document.getElementById('wit-amt').value);
-            if (!amt || amt <= 0 || amt > currentUser.balance) { alert('Invalid or insufficient balance'); return; }
-            currentUser.balance -= amt;
-            currentUser.withdrawals = currentUser.withdrawals || [];
-            currentUser.withdrawals.push({ amount: amt, date: new Date().toLocaleDateString() });
-            saveUserData();
-            alert('Withdrawal request submitted successfully!');
-            switchTab('home', document.querySelectorAll('.nav-item')[0]);
-        }
 
         function spinWheel() {
             if (currentUser.balance < 2000) { alert('Need at least 2,000 UGX'); return; }
