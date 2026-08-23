@@ -380,7 +380,85 @@
             currentUser = null; 
             initApp(); 
         }
-    </script>
+// User submits a manual deposit request
+function goToPaymentPage() {
+    const amt = parseInt(document.getElementById('dep-amt').value);
+    const trxId = document.getElementById('trx-id').value.trim();
+
+    if (!amt || amt <= 0) {
+        alert('Please enter a valid deposit amount.');
+        return;
+    }
+    if (!trxId) {
+        alert('Please enter your Mobile Money Transaction ID.');
+        return;
+    }
+
+    let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
+    
+    const depositEntry = {
+        id: Date.now(),
+        userPhone: currentUser.phone,
+        userName: currentUser.name,
+        amount: amt,
+        trx: trxId,
+        date: new Date().toLocaleString(),
+        status: 'Pending'
+    };
+
+    allPendingDeposits.push(depositEntry);
+    localStorage.setItem('hut9_pending_deposits', JSON.stringify(allPendingDeposits));
+
+    alert(`Deposit of UGX ${amt.toLocaleString()} submitted for verification!`);
+}
+
+// Admin function to approve a deposit and credit user balance
+function approveDeposit(depositId) {
+    let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
+    const index = allPendingDeposits.findIndex(d => d.id === depositId);
+    
+    if (index !== -1) {
+        const dep = allPendingDeposits[index];
+        dep.status = 'Approved';
+        
+        // If the current user is the one depositing, credit them (or update storage)
+        currentUser.balance = (currentUser.balance || 0) + dep.amount;
+        saveUserData();
+
+        localStorage.setItem('hut9_pending_deposits', JSON.stringify(allPendingDeposits));
+        alert(`Deposit for ${dep.userName} (UGX ${dep.amount}) approved & credited!`);
+        loadAdminPanel();
+    }
+}
+
+// Function to render pending deposits for admin verification
+function loadAdminPanel() {
+    const adminContainer = document.getElementById('admin-deposits-list');
+    if (!adminContainer) return;
+
+    let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
+    const pending = allPendingDeposits.filter(d => d.status === 'Pending');
+
+    if (pending.length === 0) {
+        adminContainer.innerHTML = '<p style="color: #94a3b8; text-align: center;">No pending deposits.</p>';
+        return;
+    }
+
+    let html = '';
+    pending.forEach(dep => {
+        html += `
+            <div style="background: #020617; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155;">
+                <p style="color: #38bdf8; font-weight: bold; margin: 0 0 5px 0;">${dep.userName} (${dep.userPhone})</p>
+                <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 5px 0;">Amount: <b>UGX ${dep.amount.toLocaleString()}</b></p>
+                <p style="color: #94a3b8; font-size: 12px; margin: 0 0 10px 0;">Trx ID: ${dep.trx} | ${dep.date}</p>
+                <button onclick="approveDeposit(${dep.id})" style="background: #22c55e; color: #000; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">Approve & Credit</button>
+            </div>
+        `;
+    });
+    adminContainer.innerHTML = html;
+}
+
+ </script>
 </body>
 </html>
 
