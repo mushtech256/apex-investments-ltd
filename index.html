@@ -9,16 +9,18 @@
         body { background-color: #0b1329; color: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         header { background: #101935; border-bottom: 1px solid #1e2952; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
         header h1 { font-size: 18px; color: #38bdf8; font-weight: 700; }
-        #main-container { flex: 1; overflow-y: auto; padding-bottom: 70px; }
+        #main-container { flex: 1; overflow-y: auto; padding-bottom: 80px; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #101935; border-top: 1px solid #1e2952; display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
         .nav-item { text-align: center; color: #94a3b8; font-size: 11px; cursor: pointer; background: none; border: none; flex: 1; }
         .nav-item.active { color: #38bdf8; font-weight: bold; }
         .nav-item span { display: block; font-size: 18px; margin-bottom: 2px; }
         .card { background: #101935; border: 1px solid #1e2952; border-radius: 12px; padding: 16px; margin: 15px; }
         .btn { width: 100%; background: #0284c7; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-success { background: #10b981; }
         .btn-danger { background: #ef4444; }
-        input { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 14px; background: #0b1329; border: 1px solid #1e2952; color: #fff; border-radius: 6px; }
+        input, select { width: 100%; padding: 10px; margin-top: 6px; margin-bottom: 14px; background: #0b1329; border: 1px solid #1e2952; color: #fff; border-radius: 6px; }
         label { font-size: 12px; color: #cbd5e1; }
+        .badge { display: inline-block; padding: 4px 8px; font-size: 11px; font-weight: bold; border-radius: 4px; background: #1e2952; color: #38bdf8; }
     </style>
 </head>
 <body>
@@ -33,8 +35,8 @@
     <nav class="bottom-nav" id="bottom-nav" style="display: none;">
         <button class="nav-item active" onclick="switchTab('home', this)"><span>🏠</span>Home</button>
         <button class="nav-item" onclick="switchTab('ai', this)"><span>🤖</span>AI Rigs</button>
+        <button class="nav-item" onclick="switchTab('deposit', this)"><span>💳</span>Deposit</button>
         <button class="nav-item" onclick="switchTab('raffle', this)"><span>🎁</span>Raffle</button>
-        <button class="nav-item" onclick="switchTab('income', this)"><span>📊</span>Income</button>
         <button class="nav-item" onclick="switchTab('my', this)"><span>👤</span>Profile</button>
     </nav>
 
@@ -42,10 +44,10 @@
         let currentUser = JSON.parse(localStorage.getItem('hut9_active_user')) || null;
         
         const machines = [
-            { name: 'H1 Miner (1X)', price: '200,000', payout: '15,000', cycle: '20 Days' },
-            { name: 'H2 Miner (2X)', price: '400,000', payout: '32,000', cycle: '20 Days' },
-            { name: 'D1 Mining Unit', price: '500,000', payout: '50,000', cycle: '7 Days' },
-            { name: 'Z1 Quantum Rig', price: '1,500,000', payout: '160,000', cycle: '30 Days' }
+            { id: 1, name: 'H1 Miner (1X)', price: 200000, payout: 15000, cycle: '20 Days' },
+            { id: 2, name: 'H2 Miner (2X)', price: 400000, payout: 32000, cycle: '20 Days' },
+            { id: 3, name: 'D1 Mining Unit', price: 500000, payout: 50000, cycle: '7 Days' },
+            { id: 4, name: 'Z1 Quantum Rig', price: 1500000, payout: 160000, cycle: '30 Days' }
         ];
 
         window.onload = function() {
@@ -65,6 +67,18 @@
                 balanceEl.innerText = `UGX ${(currentUser.balance || 0).toLocaleString()}`;
                 switchTab('home', document.querySelector('.nav-item'));
             }
+        }
+
+        function saveUserData() {
+            localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
+            // Update master database as well
+            let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
+            let index = users.findIndex(u => u.phone === currentUser.phone);
+            if (index !== -1) {
+                users[index] = currentUser;
+                localStorage.setItem('hut9_users_db', JSON.stringify(users));
+            }
+            document.getElementById('header-balance').innerText = `UGX ${currentUser.balance.toLocaleString()}`;
         }
 
         function renderLogin() {
@@ -88,14 +102,14 @@
             document.getElementById('main-container').innerHTML = `
                 <div class="card" style="max-width: 400px; margin: 40px auto;">
                     <h2 style="color: #38bdf8; margin-bottom: 5px; text-align: center;">Register</h2>
-                    <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-bottom: 20px;">Get started with bonus balance</p>
+                    <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-bottom: 20px;">Get started with UGX 15,000 bonus</p>
                     <label>Full Name</label>
                     <input type="text" id="reg-name" placeholder="Enter name">
                     <label>Phone Number</label>
                     <input type="text" id="reg-phone" placeholder="Enter phone">
                     <label>Password</label>
                     <input type="password" id="reg-pass" placeholder="Create password">
-                    <button class="btn" style="background: #10b981;" onclick="handleRegister()">Register Account</button>
+                    <button class="btn btn-success" onclick="handleRegister()">Register Account</button>
                     <button class="btn" style="background: transparent; border: 1px solid #1e2952; color: #94a3b8; margin-top: 8px;" onclick="renderLogin()">Back to Login</button>
                 </div>
             `;
@@ -106,27 +120,23 @@
             const phone = document.getElementById('reg-phone').value;
             const pass = document.getElementById('reg-pass').value;
 
-            if (!name || !phone || !pass) {
-                alert('Please fill in all fields.');
-                return;
-            }
+            if (!name || !phone || !pass) { alert('Please fill in all fields.'); return; }
 
-            // Check if user already exists in database
             let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
             if (users.some(u => u.phone === phone)) {
-                alert('An account with this phone number already exists! Please login.');
+                alert('Account already exists with this phone number!');
                 renderLogin();
                 return;
             }
 
-            const newUser = { name, phone, pass, balance: 15000 };
+            const newUser = { name, phone, pass, balance: 15000, rigs: [] };
             users.push(newUser);
             localStorage.setItem('hut9_users_db', JSON.stringify(users));
             
             currentUser = newUser;
             localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
             
-            alert('Account created successfully! Welcome bonus UGX 15,000 added.');
+            alert('Registration successful! UGX 15,000 bonus added.');
             initApp();
         }
 
@@ -134,20 +144,18 @@
             const phone = document.getElementById('login-phone').value;
             const pass = document.getElementById('login-pass').value;
 
-            if (!phone || !pass) {
-                alert('Please enter both phone number and password.');
-                return;
-            }
+            if (!phone || !pass) { alert('Please enter phone and password.'); return; }
 
             let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
             const foundUser = users.find(u => u.phone === phone && u.pass === pass);
 
             if (foundUser) {
                 currentUser = foundUser;
+                if(!currentUser.rigs) currentUser.rigs = [];
                 localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
                 initApp();
             } else {
-                alert('Invalid phone number or password, or account does not exist. Please register first.');
+                alert('Invalid credentials or account not found.');
             }
         }
 
@@ -160,60 +168,135 @@
 
             if (tabName === 'home') {
                 title.innerText = 'Hut 9 Dashboard';
+                let rigsHtml = '';
+                if (currentUser.rigs && currentUser.rigs.length > 0) {
+                    currentUser.rigs.forEach(r => {
+                        rigsHtml += `<p style="font-size: 13px; color: #34d399; margin-top: 4px;">✔ Active: ${r.name} (Daily: UGX ${r.payout.toLocaleString()})</p>`;
+                    });
+                } else {
+                    rigsHtml = `<p style="font-size: 13px; color: #94a3b8; margin-top: 4px;">No active rigs rented yet. Visit AI Rigs to start mining.</p>`;
+                }
+
                 container.innerHTML = `
                     <div class="card" style="background: linear-gradient(135deg, #0284c7, #1e1b4b);">
                         <h2>Hello, ${currentUser.name}</h2>
-                        <p style="font-size: 13px; color: #cbd5e1; margin-top: 5px;">Your automated AI cloud mining portfolio is active.</p>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-top: 5px;">Automated Cloud Mining Portfolio</p>
                     </div>
                     <div class="card">
-                        <h3 style="color: #38bdf8; margin-bottom: 8px;">Quick Stats</h3>
-                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">Active Rigs: 0</p>
-                        <p style="font-size: 13px; color: #34d399;">Wallet Balance: UGX ${currentUser.balance.toLocaleString()}</p>
+                        <h3 style="color: #38bdf8; margin-bottom: 8px;">Wallet & Earnings</h3>
+                        <p style="font-size: 15px; color: #34d399; font-weight: bold; margin-bottom: 10px;">Balance: UGX ${currentUser.balance.toLocaleString()}</p>
+                        <hr style="border:0; border-top:1px solid #1e2952; margin: 10px 0;">
+                        <h4 style="font-size: 14px; color: #cbd5e1; margin-bottom: 6px;">Your Rigs</h4>
+                        ${rigsHtml}
                     </div>
                 `;
             } else if (tabName === 'ai') {
                 title.innerText = 'AI Mining Rigs';
-                let html = '<div style="padding: 10px;">';
+                let html = '<div style="padding: 5px;">';
                 machines.forEach(m => {
                     html += `
-                        <div class="card" style="margin: 10px 0;">
+                        <div class="card">
                             <h3 style="color: #38bdf8; margin-bottom: 4px;">${m.name}</h3>
-                            <p style="font-size: 13px; color: #cbd5e1;">Price: UGX ${m.price}</p>
-                            <p style="font-size: 13px; color: #34d399;">Daily Payout: UGX ${m.payout}</p>
-                            <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">Cycle: ${m.cycle}</p>
-                            <button class="btn" onclick="alert('Successfully rented ${m.name}!')">Rent Rig</button>
+                            <p style="font-size: 13px; color: #cbd5e1;">Price: UGX ${m.price.toLocaleString()}</p>
+                            <p style="font-size: 13px; color: #34d399;">Daily Payout: UGX ${m.payout.toLocaleString()}</p>
+                            <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Cycle Duration: ${m.cycle}</p>
+                            <button class="btn" onclick="rentRig(${m.id})">Rent Rig Now</button>
                         </div>
                     `;
                 });
                 html += '</div>';
                 container.innerHTML = html;
-            } else if (tabName === 'raffle') {
-                title.innerText = 'Lucky Raffle';
+            } else if (tabName === 'deposit') {
+                title.innerText = 'Deposit Funds';
                 container.innerHTML = `
-                    <div class="card" style="text-align: center;">
-                        <h3 style="color: #38bdf8; margin-bottom: 10px;">Daily Spin & Win</h3>
-                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">Test your luck and win instant rewards.</p>
-                        <button class="btn" onclick="alert('Congratulations! You won UGX 5,000!')">Spin Now</button>
+                    <div class="card" style="max-width: 400px; margin: 20px auto;">
+                        <h3 style="color: #38bdf8; margin-bottom: 10px;">Mobile Money Deposit</h3>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">Top up your wallet instantly via MTN or Airtel.</p>
+                        <label>Select Network</label>
+                        <select id="dep-network">
+                            <option value="MTN">MTN Mobile Money</option>
+                            <option value="AIRTEL">Airtel Money</option>
+                        </select>
+                        <label>Amount (UGX)</label>
+                        <input type="number" id="dep-amount" placeholder="e.g. 50000">
+                        <label>Mobile Number</label>
+                        <input type="text" id="dep-phone" value="${currentUser.phone}">
+                        <button class="btn btn-success" onclick="processDeposit()">Confirm & Pay</button>
                     </div>
                 `;
-            } else if (tabName === 'income') {
-                title.innerText = 'Income Overview';
+            } else if (tabName === 'raffle') {
+                title.innerText = 'Lucky Raffle Spin';
                 container.innerHTML = `
-                    <div class="card">
-                        <h3 style="color: #38bdf8; margin-bottom: 10px;">Dividend History</h3>
-                        <p style="font-size: 13px; color: #cbd5e1;">No recent payout deductions. Daily earnings credit automatically at midnight.</p>
+                    <div class="card" style="text-align: center; max-width: 400px; margin: 20px auto;">
+                        <h3 style="color: #38bdf8; margin-bottom: 10px;">Daily Spin & Win</h3>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">Cost per spin: <span class="badge">UGX 2,000</span></p>
+                        <div id="spin-result" style="font-size: 18px; font-weight: bold; margin: 20px 0; color: #34d399;">Ready to spin?</div>
+                        <button class="btn" onclick="spinWheel()">Spin Wheel</button>
                     </div>
                 `;
             } else if (tabName === 'my') {
                 title.innerText = 'My Profile';
                 container.innerHTML = `
-                    <div class="card">
-                        <h3 style="margin-bottom: 5px;">${currentUser.name}</h3>
-                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 15px;">${currentUser.phone}</p>
-                        <p style="font-size: 13px; color: #34d399; margin-bottom: 15px;">Balance: UGX ${currentUser.balance.toLocaleString()}</p>
+                    <div class="card" style="max-width: 400px; margin: 20px auto;">
+                        <h3 style="margin-bottom: 5px; color: #38bdf8;">${currentUser.name}</h3>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 10px;">Phone: ${currentUser.phone}</p>
+                        <p style="font-size: 13px; color: #34d399; margin-bottom: 20px;">Wallet Balance: UGX ${currentUser.balance.toLocaleString()}</p>
                         <button class="btn btn-danger" onclick="logout()">Logout</button>
                     </div>
                 `;
+            }
+        }
+
+        function rentRig(id) {
+            const rig = machines.find(m => m.id === id);
+            if (currentUser.balance < rig.price) {
+                alert('Insufficient wallet balance! Please make a deposit first.');
+                switchTab('deposit', document.querySelectorAll('.nav-item')[2]);
+                return;
+            }
+            currentUser.balance -= rig.price;
+            if(!currentUser.rigs) currentUser.rigs = [];
+            currentUser.rigs.push(rig);
+            saveUserData();
+            alert(`Success! You have rented the ${rig.name}.`);
+            switchTab('home', document.querySelectorAll('.nav-item')[0]);
+        }
+
+        function processDeposit() {
+            const amount = parseInt(document.getElementById('dep-amount').value);
+            const network = document.getElementById('dep-network').value;
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid deposit amount.');
+                return;
+            }
+            currentUser.balance += amount;
+            saveUserData();
+            alert(`Deposit of UGX ${amount.toLocaleString()} via ${network} was successful!`);
+            switchTab('home', document.querySelectorAll('.nav-item')[0]);
+        }
+
+        function spinWheel() {
+            const spinCost = 2000;
+            if (currentUser.balance < spinCost) {
+                alert('You need at least UGX 2,000 in your wallet to spin!');
+                return;
+            }
+            currentUser.balance -= spinCost;
+            
+            const prizes = [0, 1000, 3000, 5000, 15000, 50000];
+            // Weighted random prize selector
+            const prize = prizes[Math.floor(Math.random() * prizes.length)];
+            
+            currentUser.balance += prize;
+            saveUserData();
+
+            const resEl = document.getElementById('spin-result');
+            if (prize > 0) {
+                resEl.style.color = '#34d399';
+                resEl.innerText = `🎉 Congratulations! You won UGX ${prize.toLocaleString()}!`;
+            } else {
+                resEl.style.color = '#ef4444';
+                resEl.innerText = `😢 So close! Better luck next time.`;
             }
         }
 
