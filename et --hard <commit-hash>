@@ -1,0 +1,100 @@
+[33ma204ea4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Update renderMyTab with correct button click handlers
+[33me7c4a48[m Confirm phone input handling and finalize deposit route
+[33m0f5fc2f[m Fix syntax error in loadAdminPanel and approval functions
+[33m356f60c[m Add full deposits and withdrawals lists to admin panel
+[33mda87f0c[m Add clean logout and updateProfile functions
+[33m724defc[m Add rentRig function right before closing script tag
+[33m9ab1d3d[m Clean reset of deposit functions and templates
+[33m751a74a[m Use backticks for goToPaymentPage HTML template
+[33mbc9fa7e[m Clean and correct goToPaymentPage script structure
+[33m064d4e3[m Finalize settings tab and deposit integration
+[33md1adf78[m Finalize manual deposit and admin functions
+[33m2dd5cc7[m Restore stable layout with all navigation tabs and login
+[33m10fc116[m Add manual deposit and admin functions
+[33m34575a1[m Add manual deposit admin approval system
+[33m05bc493[m Integrate Flutterwave automated payment gateway
+[33m1de9911[m Add active machine tracking and earnings progress to Income tab
+[33md3e9c3c[m Align series items horizontally side-by-side
+[33m625fbd7[m Update series and UI layout smoothly
+[33m133b082[m Update layout structure cleanly
+[33m5f6d043[m Clean and compact single file deployment
+[33mc80eaf9[m Add full deposit system, raffle game, and active rig rentals
+[33mc3af0dc[m Add strict user registration and credential validation database
+[33m2fb8f14[m Deploy complete single file index.html with working tabs
+[33mfeb0196[m Update working script file cleanly
+[33md78bee4[m Add compact stable login script
+[33m7e5a184[m Fix login and register script cleanly
+[33m6d8e0c0[m Clean index.html and route logic entirely to script.js
+[33m1f95813[m Remove redundant embedded script block from index.html
+[33m9dd51f2[m Update index.html bottom navigation bindings
+[33mb2eab35[m Finalize dynamic profile, rotating deposit numbers, wallet, withdraw, settings, and invite systems
+[33mb4fb368[m Restore all machine series and interactive navigation
+[33m4add3f4[m Direct inline HTML update with correct VIP payouts
+[33me4beee7[m Remove duplicate machine data array and fix VIP payouts
+[33m47894a5[m Update series names, filter spacing, and scaled VIP payouts
+[33m9287765[m Increase VIP daily payouts and update total incomes
+[33m946cfa6[m Remove hardcoded Mr. Rodgers from dashboard welcome message
+[33mdd73e02[m Remove Mr. Rodgers placeholder and update to User
+[33mef4a58a[m Complete script update with unique invite codes and AI series filter tabs
+[33m2086b6c[m Machine running progress, daily payouts, sign out section, strict device-lock registration & light blue theme adjustments
+[33ma2b6025[m Fix phone formatting and loose multi-account registration constraints
+[33m900328e[m Fix registration flow to prioritize checking phone number existence before triggering device restriction limits
+[33m1576b3f[m Fix login verification to strictly reject unregistered numbers and match account records
+[33m2e5bc69[m Machine running progress, daily payouts, sign out section, strict device-lock registration & light blue theme adjustments
+[33m5c03234[m All machines restored, horizontal My buttons, Home stats with image slider and cancel withdrawal
+[33mc822cb5[m Add full features including rotating deposits, wallet, withdraw, invite and password reset
+[33m0f4106a[m Complete file assembly with all tabs and AI machines
+[33m5b84943[m Compact fixed code for buttons
+[33m2649079[m Fix button event responsiveness and syntax bugs
+[33m93b2f83[m Add complete feature-rich investment platform code with deposits, withdrawals, alternating numbers, and series limits
+[33m36762c2[m Provide complete fixed index.html with login toggles and AI series
+[33mf3fba79[m Restore toggleAuthForm function for login and register tabs
+[33mb0352ac[m Add AI series filter buttons and machine cards with calculated totals
+[33mb815c21[m Add Home, Raffle, Chats, AI, Income, My horizontal bottom navbar tabs
+[33m3a09348[m Match frontend register endpoint to server route
+[33m2185091[m Replace with clean full index.html layout
+[33m21d28c6[m Fix auth form tab switching click handlers
+[33ma245128[m Secure app behind authentication and unlock navbar on success
+[33mcf7d467[m Fix navbar CSS class selector and horizontal alignment
+[33mdb3746b[m Fix bottom navbar layout structure
+[33m2869fae[m Fix button event listeners and navigation mapping
+[33m716bcb1[m Make authentication and navigation buttons fully interactive
+[33m09cfaa0[m Keep verified navigation layout
+[33mc7947d4[m Finalize navigation and clean up file structure
+[33m9da786e[m Implement full switchMainTab function
+[33mc281b1a[m Add switchTab helper function
+[33m4ec7a29[m Fix route handler bracket in server.js
+[33mb5f65d4[m Move index.html to root directory
+[33m48765b6[m Add Income section and navigation button
+[33m0c11d0f[m Add CNAME file for custom domain setup
+[33mf9fd35d[m Update registration form design with rounded inputs and captcha
+[33m8b53904[m Successfully fix auth tab buttons markup
+[33m2f6ce34[m Fix complete auth script structure
+[33m2ff3349[m Final cleanup of duplicate lines in index.html
+[33m0a59ff8[m Add password matching security check to registration
+[33m93d3392[m Fix backend routes, update frontend and script
+[33m37a1598[m Add interactive Deposit modal with Mobile Money network selection and balance update
+[33m5084618[m Fix login transition to directly switch tabs and persist active account state
+[33m05ac5d5[m Restore Login and Register options on home page
+[33m1df0479[m Add Deposit, Withdraw, Download App and Account controls to My tab
+[33m3989112[m Fix layout structure and embed horizontal series inside AI tab
+[33m14ff818[m Add horizontal series tabs with daily return, expiration days, and total revenue calculations
+[33m6e8fc65[m Enable mock deposit mode for frontend testing
+[33m2f0b770[m Update Relworx API endpoint to payments.relworx.com
+[33m98c1654[m Added safe JSON parsing and browser headers to Relworx API call
+[33mba919ee[m Fix Relworx API base URL domain
+[33m6a572cf[m Updated server.js with phone formatting and deposit error handling
+[33m2ac0e3a[m Added Relworx deposit and webhook routes in server.js
+[33m24b3a6c[m Updated deposit modal with Relworx API
+[33mb30edaf[m Integrated Relworx live Mobile Money USSD push
+[33m9f4d212[m Updated bottom navigation structure: My tab shows full profile UI, Home displays interface, AI displays machines
+[33mf5c10e6[m Added horizontal bottom navigation bar (Home, Raffle, AI, Chats, Me)
+[33md8c337a[m Removed static balances, HUT8 cryptocurrency section, hardcoded phone number and reset VIP level to VIP-0
+[33m4d66dfc[m Updated bottom navigation structure: My tab shows full profile UI, Home displays interface, AI displays machines
+[33mde14228[m Added horizontal bottom navigation bar (Home, Raffle, AI, Chats, Me)
+[33m8b5730a[m Fix layout visibility and force deposit modal hidden by default
+[33m8edf512[m Added deposit prompt with NEMA KISA and Joseph Byabasaija merchant details
+[33m65c7401[m Updated UI to dark matrix theme matching screenshot
+[33m78222ac[m Added dedicated Login button and auth toggle
+[33mf974b5e[m Added machine buying, deposit/withdraw UI, and profit collector
+[33mabc16ab[m Initial HUT 9 deploy
