@@ -8,7 +8,8 @@ app.use(cors());
 app.use(express.static(path.join(__dirname)));
 
 
-let users = [];
+let users = [];let withdrawals = [];
+
 
 // STRUCTURED MACHINE SERIES
 const MACHINE_SERIES = {
@@ -131,6 +132,44 @@ app.post('/api/deposit', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Server error processing mock deposit' });
   }
 });
+// WITHDRAWAL API ROUTES
+app.post('/api/auth/withdraw', (req, res) => {
+    const { phone_number, amount } = req.body;
+    if (!phone_number || !amount || Number(amount) <= 0) {
+        return res.status(400).json({ success: false, error: 'Invalid phone number or amount' });
+    }
+    const newWithdrawal = {
+        id: withdrawals.length + 1,
+        phone_number,
+        amount: Number(amount),
+        status: 'pending',
+        date: new Date().toISOString()
+    };
+    withdrawals.push(newWithdrawal);
+    res.status(201).json({ success: true, message: 'Withdrawal request submitted successfully!', withdrawal: newWithdrawal });
+});
+
+app.get('/api/admin/withdrawals', (req, res) => {
+    res.json({ success: true, withdrawals });
+});
+
+app.post('/api/admin/withdrawals/:id/action', (req, res) => {
+    const withdrawalId = Number(req.params.id);
+    const { action } = req.body;
+    const withdrawal = withdrawals.find(w => w.id === withdrawalId);
+    if (!withdrawal) {
+        return res.status(404).json({ success: false, error: 'Withdrawal request not found' });
+    }
+    if (action === 'approve') {
+        withdrawal.status = 'approved';
+    } else if (action === 'reject') {
+        withdrawal.status = 'rejected';
+    } else {
+        return res.status(400).json({ success: false, error: 'Invalid action' });
+    }
+    res.json({ success: true, message: `Withdrawal ${withdrawal.status}`, withdrawal });
+});
+
 
 
 app.post('/api/auth/register', (req, res) => {
