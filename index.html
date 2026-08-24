@@ -339,6 +339,59 @@ async function submitWithdrawal() {
         alert('Network error submitting withdrawal');
     }
 }
+async function submitWithdrawal() {
+    const phone_number = document.getElementById('withdraw-phone').value.trim();
+    const amount = Number(document.getElementById('withdraw-amt').value);
+
+    if (!phone_number || !amount || amount <= 0) {
+        alert('Please fill in valid withdrawal details.');
+        return;
+    }
+
+    if ((currentUser.balance || 0) < amount) {
+        alert('Insufficient balance!');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/withdraw', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone_number, amount })
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.success) {
+            // Instantly deduct money from balance locally
+            currentUser.balance = (currentUser.balance || 0) - amount;
+            
+            // Track total withdrawn for home metrics
+            let currentTotalWithdraw = Number(localStorage.getItem('hut9_total_withdraw') || 0);
+            localStorage.setItem('hut9_total_withdraw', currentTotalWithdraw + amount);
+
+            // Save user data and update top bar balance display
+            saveUserData();
+            if (typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay();
+            }
+
+            // Update Home screen "Withdraw details" if element exists
+            const withdrawDetailsEl = document.getElementById('withdraw-details-val');
+            if (withdrawDetailsEl) {
+                withdrawDetailsEl.innerText = `UGX ${(currentTotalWithdraw + amount).toLocaleString()}`;
+            }
+
+            alert('Withdrawal request submitted successfully!');
+            document.getElementById('withdraw-phone').value = '';
+            document.getElementById('withdraw-amt').value = '';
+        } else {
+            alert(data.error || 'Failed to submit withdrawal');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Network error submitting withdrawal');
+    }
+}
 
 async function loadAdminWithdrawals() {
     try {
@@ -453,7 +506,6 @@ function submitDepositRequest() {
     alert(`Deposit of UGX ${pendingDepositAmount.toLocaleString()} submitted successfully for verification!`);
     switchTab('home', document.querySelectorAll('.nav-item')[0]);
 }
-
 function approveDeposit(depositId) {
     let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
     const index = allPendingDeposits.findIndex(d => d.id === depositId);
@@ -461,15 +513,36 @@ function approveDeposit(depositId) {
     if (index !== -1) {
         const dep = allPendingDeposits[index];
         dep.status = 'Approved';
-
-        currentUser.balance = (currentUser.balance || 0) + dep.amount;
-        saveUserData();
-
         localStorage.setItem('hut9_pending_deposits', JSON.stringify(allPendingDeposits));
-        alert(`Deposit for ${dep.userName} (UGX ${dep.amount.toLocaleString()}) approved!`);
+
+        // Update the target user's balance in stored users list
+        let registeredUsers = JSON.parse(localStorage.getItem('hut9_users') || '[]');
+        let userIndex = registeredUsers.findIndex(u => u.phone === dep.userPhone || u.phone_number === dep.userPhone);
+
+        if (userIndex !== -1) {
+            registeredUsers[userIndex].balance = (registeredUsers[userIndex].balance || 0) + dep.amount;
+            localStorage.setItem('hut9_users', JSON.stringify(registeredUsers));
+        }
+
+        // Only update current balance if the logged-in user IS the depositor
+        if (currentUser && (currentUser.phone === dep.userPhone || currentUser.phone_number === dep.userPhone)) {
+            currentUser.balance = (currentUser.balance || 0) + dep.amount;
+            saveUserData();
+            if (typeof updateBalanceDisplay === 'function') {
+                updateBalanceDisplay();
+            }
+        }
+
+        // Track deposit details for the home screen metric
+        let currentTotalDep = Number(localStorage.getItem('hut9_total_deposit') || 0);
+        localStorage.setItem('hut9_total_deposit', currentTotalDep + dep.amount);
+
+        alert(`Deposit of UGX ${dep.amount.toLocaleString()} for ${dep.userName} approved successfully!`);
         loadAdminPanel();
     }
 }
+
+
 async function loadAdminPanel() {
     const adminContainer = document.getElementById('admin-deposits-list');
     if (!adminContainer) return;
