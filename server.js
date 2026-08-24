@@ -155,15 +155,16 @@ app.post('/api/auth/register', (req, res) => {
 
   res.status(201).json({ message: 'Success!', user: newUser });
 });
-// Explicitly handle the root URL and query parameters
-app.get('/', (req, res) => {
+/// Catch-all route that handles the root, query parameters, and all sub-paths
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Catch-all route for other paths without extensions
-app.get(/[^.]*$/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
 });
+
 
 
 
