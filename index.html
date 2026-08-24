@@ -271,14 +271,15 @@
                         <label>Amount (UGX)</label><input type="number" id="dep-amt" placeholder="Enter amount">
                         <button class="btn btn-success" onclick="goToPaymentPage()">CONTINUE</button>
                     </div>`;
-            } else if (sub === 'withdraw') {
-                title.innerText = 'Withdraw';
-                container.innerHTML = `
-                    <div class="card">
-                        <button class="btn" style="background:transparent;border:1px solid #1e2952;color:#38bdf8;margin-bottom:10px;" onclick="switchTab('my', document.querySelectorAll('.nav-item')[5])">← Back</button>
-                        <label>Amount (UGX)</label><input type="number" id="wit-amt" placeholder="Enter amount">
-                        <button class="btn btn-danger" onclick="processWithdraw()">Submit Request</button>
-                    </div>`;
+                } else if (sub === 'withdraw') {
+        title.innerText = 'Withdraw';
+        container.innerHTML = `
+            <div class="card">
+                <label>Phone Number</label><input type="text" id="withdraw-phone" placeholder="+256XXXXXXXXX">
+                <label>Amount (UGX)</label><input type="number" id="withdraw-amt" placeholder="Enter amount">
+                <button class="btn btn-danger" onclick="submitWithdrawal()">Submit Withdraw</button>
+            </div>`;
+
             } else if (sub === 'invite') {
                 title.innerText = 'Invite Friends';
                 const link = `https://hut9.onrender.com/?ref=${currentUser.inviteCode}`;
@@ -309,6 +310,86 @@
 
 let pendingDepositAmount = 0;
 let pendingUserPhone = '';
+async function submitWithdrawal() {
+    const phone_number = document.getElementById('withdraw-phone').value.trim();
+    const amount = document.getElementById('withdraw-amt').value;
+
+    if (!phone_number || !amount) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/withdraw', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone_number, amount })
+        });
+        
+        const data = await response.json();
+        if (response.ok && data.success) {
+            alert('Withdrawal request submitted successfully!');
+            document.getElementById('withdraw-phone').value = '';
+            document.getElementById('withdraw-amt').value = '';
+        } else {
+            alert(data.error || 'Failed to submit withdrawal');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Network error submitting withdrawal');
+    }
+}
+
+async function loadAdminWithdrawals() {
+    try {
+        const res = await fetch('/api/admin/withdrawals');
+        const data = await res.json();
+        const listDiv = document.getElementById('admin-withdrawals-list');
+        if (!listDiv) return;
+
+        if (!data.withdrawals || data.withdrawals.length === 0) {
+            listDiv.innerHTML = '<p>No withdrawal requests.</p>';
+            return;
+        }
+
+        let html = '<h4 style="color:#fff;">Pending Withdrawals</h4><table style="width:100%; color:#fff; font-size:12px;"><tr><th>Phone</th><th>Amount</th><th>Action</th></tr>';
+        data.withdrawals.forEach(w => {
+            html += `<tr>
+                <td>${w.phone_number}</td>
+                <td>${w.amount}</td>
+                <td>
+                    ${w.status === 'pending' ? `
+                        <button onclick="handleWithdrawal(${w.id}, 'approve')" style="background:green; color:white; padding:2px 5px;">Approve</button>
+                        <button onclick="handleWithdrawal(${w.id}, 'reject')" style="background:red; color:white; padding:2px 5px;">Reject</button>
+                    ` : w.status}
+                </td>
+            </tr>`;
+        });
+        html += '</table>';
+        listDiv.innerHTML = html;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function handleWithdrawal(id, action) {
+    try {
+        const res = await fetch(`/api/admin/withdrawals/${id}/action`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action })
+        });
+        const data = await res.json();
+        if (data.success) {
+            alert(`Withdrawal ${action}d!`);
+            loadAdminWithdrawals();
+        } else {
+            alert('Action failed');
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 function goToPaymentPage() {
     const phone = document.getElementById('dep-phone').value.trim();
@@ -389,41 +470,67 @@ function approveDeposit(depositId) {
         loadAdminPanel();
     }
 }
-
-function loadAdminPanel() {
+async function loadAdminPanel() {
     const adminContainer = document.getElementById('admin-deposits-list');
     if (!adminContainer) return;
 
     // Change this to your exact admin phone number
-    const ADMIN_PHONE = '0773539696'; 
+    const ADMIN_PHONE = '0773539696';
     const userPhone = currentUser.phone || '';
 
     if (userPhone !== ADMIN_PHONE) {
-        adminContainer.innerHTML = '<p style="color: #ef4444; text-align:center;">Access Denied: Admin Only.</p>';
+        adminContainer.innerHTML = '<p style="color: #ef4444; text-align:center;">Access Denied: Admin Only</p>';
         return;
     }
 
+    let html = '<h3 style="color:#38bdf8; margin-bottom:10px;">Admin Panel</h3>';
+
+    // 1. Load Pending Deposits
     let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
-    const pending = allPendingDeposits.filter(d => d.status === 'Pending');
-
-    if (pending.length === '0' || pending.length === 0) {
-        adminContainer.innerHTML = '<p style="color: #94a3b8; text-align:center;">No pending deposits.</p>';
-        return;
+    let pendingDeps = allPendingDeposits.filter(d => d.status === 'Pending');
+    
+    html += '<h4 style="color:#fff; margin-top:10px;">Pending Deposits</h4>';
+    if (pendingDeps.length === 0) {
+        html += '<p style="color: #94a3b8; font-size:12px;">No pending deposits.</p>';
+    } else {
+        pendingDeps.forEach(dep => {
+            html += `<div style="background: #020617; padding: 12px; margin-bottom: 8px; border-radius: 6px;">
+                <p style="color: #38bdf8; font-weight: bold; margin:0;">${dep.userName} (${dep.userPhone})</p>
+                <p style="color: #cbd5e1; font-size: 14px; margin:2px 0;">Amount: UGX ${dep.amount.toLocaleString()}</p>
+                <p style="color: #94a3b8; font-size: 12px; margin:0 0 8px 0;">TRX: ${dep.trx}</p>
+                <button onclick="approveDeposit(${dep.id})" style="background: #22c55e; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor:pointer;">Approve Deposit</button>
+            </div>`;
+        });
     }
 
-    let html = '';
-    pending.forEach(dep => {
-        html += `
-            <div style="background: #020617; padding: 12px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #334155;">
-                <p style="color: #38bdf8; font-weight: bold; margin: 0 0 5px 0;">${dep.userName} (${dep.userPhone})</p>
-                <p style="color: #cbd5e1; font-size: 14px; margin: 0 0 3px 0;">Amount: <b>UGX ${dep.amount.toLocaleString()}</b></p>
-                <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px 0;">Trx ID: ${dep.trx} | ${dep.date}</p>
-                <button onclick="approveDeposit(${dep.id})" style="background: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Approve & Credit</button>
-            </div>
-        `;
-    });
+    // 2. Load Pending Withdrawals
+    try {
+        const res = await fetch('/api/admin/withdrawals');
+        const data = await res.json();
+        const pendingWithdrawals = (data.withdrawals || []).filter(w => w.status === 'pending');
+
+        html += '<h4 style="color:#fff; margin-top:20px;">Pending Withdrawals</h4>';
+        if (pendingWithdrawals.length === 0) {
+            html += '<p style="color: #94a3b8; font-size:12px;">No pending withdrawals.</p>';
+        } else {
+            pendingWithdrawals.forEach(w => {
+                html += `<div style="background: #020617; padding: 12px; margin-bottom: 8px; border-radius: 6px;">
+                    <p style="color: #38bdf8; font-weight: bold; margin:0;">Phone: ${w.phone_number}</p>
+                    <p style="color: #cbd5e1; font-size: 14px; margin:2px 0;">Amount: UGX ${w.amount.toLocaleString()}</p>
+                    <div style="margin-top: 8px;">
+                        <button onclick="handleWithdrawal(${w.id}, 'approve')" style="background: #22c55e; color: white; border: none; padding: 6px 10px; border-radius: 4px; margin-right: 5px; cursor:pointer;">Approve</button>
+                        <button onclick="handleWithdrawal(${w.id}, 'reject')" style="background: #ef4444; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor:pointer;">Reject</button>
+                    </div>
+                </div>`;
+            });
+        }
+    } catch (err) {
+        html += '<p style="color: #ef4444; font-size:12px;">Error loading withdrawals.</p>';
+    }
+
     adminContainer.innerHTML = html;
 }
+
 
 
 function rentRig(id) {
