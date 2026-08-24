@@ -157,7 +157,7 @@ app.post('/api/auth/register', (req, res) => {
 });
 /// Catch-all route that handles the root, query parameters, and all sub-paths
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.resolve(__dirname, 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
