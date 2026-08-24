@@ -155,13 +155,23 @@ app.post('/api/auth/register', (req, res) => {
 
   res.status(201).json({ message: 'Success!', user: newUser });
 });
-/// Catch-all route that handles the root, query parameters, and all sub-paths
+// Catch-all route with absolute fallback paths
 app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, 'index.html'));
+    const rootPath = path.resolve(__dirname, 'index.html');
+    const publicPath = path.resolve(__dirname, 'public', 'index.html');
+    
+    if (require('fs').existsSync(rootPath)) {
+        res.sendFile(rootPath);
+    } else if (require('fs').existsSync(publicPath)) {
+        res.sendFile(publicPath);
+    } else {
+        res.status(404).send('index.html not found on server');
+    }
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
 });
+
 
