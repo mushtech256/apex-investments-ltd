@@ -201,7 +201,7 @@
             } else if (tabName === 'ai') {
                 title.innerText = 'AI Mining Series';
                 let htmlContent = '';
-                ['D-SERIES', 'G-SERIES', 'Z-SERIES', 'VIP-SERIES'].forEach(seriesName => {
+                ['K-SERIES', 'D-SERIES', 'G-SERIES', 'Z-SERIES', 'VIP-SERIES'].forEach(seriesName => {
                     htmlContent += `<div class="series-title">${seriesName}</div><div class="series-grid">`;
                     machines.filter(m => m.series === seriesName).forEach(m => {
                         let totalIncome = m.payout * m.cycle;
