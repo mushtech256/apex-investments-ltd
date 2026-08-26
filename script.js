@@ -1,3 +1,5 @@
+// Force update K-Series
+
 let currentUser = JSON.parse(localStorage.getItem('hut9_user')) || null;
 window.onload = () => checkAuth();
 
