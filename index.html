@@ -638,22 +638,47 @@ async function loadAdminPanel() {
 
 
 
-function rentRig(id) {
-    const rig = machines.find(m => m.id == id);
-    if (!rig) return;
+async function rentRig(id) {
+  const rig = machines.find(m => m.id == id);
+  if (!rig) return;
 
-    if ((currentUser.balance || 0) < rig.price) {
-        alert('Insufficient balance! Please deposit to rent this machine.');
-        return;
+  if ((currentUser.balance || 0) < rig.price) {
+    alert('Insufficient balance! Please deposit to rent this machine');
+    return;
+  }
+
+  const phone_number = currentUser.phone_number || currentUser.phone;
+
+  try {
+    const response = await fetch('/api/rigs/purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        phone_number: phone_number, 
+        rigId: rig.id, 
+        rigName: rig.name, 
+        price: rig.price 
+      })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      alert(data.error || 'Failed to purchase machine');
+      return;
     }
 
-    currentUser.balance -= rig.price;
-    currentUser.rigs = currentUser.rigs || [];
-    currentUser.rigs.push({ ...rig, rentedAt: new Date().toISOString() });
-    
+    currentUser.balance = data.balance;
+    currentUser.rigs = data.rigs;
     saveUserData();
+
     alert(`Successfully rented ${rig.name}!`);
     switchTab('home', document.querySelectorAll('.nav-item')[0]);
+  } catch (err) {
+    console.error('Error renting machine:', err);
+    alert('Network error renting machine.');
+  }
+}
+
 }
 function logout() {
     localStorage.removeItem('hut9_active_user');
