@@ -122,6 +122,70 @@ app.get('/api/admin/withdrawals', async (req, res) => {
   }
 });
 
+// Route: Handle User Withdrawals (with bonus restriction check)
+app.post('/api/withdraw', async (req, res) => {
+  try {
+    const { phone_number, amount } = req.body;
+    const user = await User.findOne({ phone_number });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Ensure balance is sufficient
+    const currentBalance = user.balance || 0;
+    const withdrawAmount = Number(amount);
+
+    if (currentBalance < withdrawAmount) {
+      return res.status(400).json({ error: 'Insufficient account balance.' });
+    }
+
+    // Bonus restriction: Must have made a deposit or purchased a machine
+    const hasPurchasedRig = user.rigs && user.rigs.length > 0;
+    const hasDeposited = user.deposits && user.deposits.length > 0;
+
+    if (!hasPurchasedRig && !hasDeposited) {
+      return res.status(400).json({ 
+        error: 'Withdrawal restricted! You must make a deposit and purchase at least one machine before withdrawing.' 
+      });
+    }
+
+    // Deduct balance and save
+    user.balance = currentBalance - withdrawAmount;
+    await user.save();
+
+    res.json({ message: 'Withdrawal request submitted successfully!', newBalance: user.balance });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error during withdrawal' });
+  }
+});
+
+// Route: Handle Purchasing / Renting a Machine (Rigs)
+app.post('/api/rigs/purchase', async (req, res) => {
+  try {
+    const { phone_number, rigId, rigName, price } = req.body;
+    const user = await User.findOne({ phone_number });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if ((user.balance || 0) < Number(price)) {
+      return res.status(400).json({ error: 'Insufficient balance to purchase this machine.' });
+    }
+
+    // Deduct price and add rig to user's rigs array
+    user.balance -= Number(price);
+    if (!user.rigs) user.rigs = [];
+    user.rigs.push({ rigId, rigName, price, purchasedAt: new Date() });
+
+    await user.save();
+    res.json({ message: 'Machine purchased successfully!', balance: user.balance, rigs: user.rigs });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error purchasing machine' });
+  }
+});
+
 // Admin Route: Approve Deposit & Add Funds to User Balance
 app.post('/api/admin/approve-deposit', async (req, res) => {
   try {
