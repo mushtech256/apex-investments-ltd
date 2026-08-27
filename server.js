@@ -68,7 +68,12 @@ if (existingUser) {
 }
 
 const hashedPassword = await bcrypt.hash(password, 10);
-const newUser = new User({ phone_number: formattedPhone, password: hashedPassword });
+const newUser = new User({ 
+  phone_number: formattedPhone, 
+  password: hashedPassword, 
+  balance: 10000 
+});
+
 await newUser.save();
 
 
