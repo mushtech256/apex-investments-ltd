@@ -578,7 +578,8 @@ async function loadAdminPanel() {
     // Change this to your exact admin phone number
     const ADMIN_PHONE = '+256773539696';
 
-    const userPhone = currentUser.phone || '';
+    const userPhone = currentUser.phone_number || currentUser.phone || '';
+
 
     if (userPhone !== ADMIN_PHONE) {
         adminContainer.innerHTML = '<p style="color: #ef4444; text-align:center;">Access Denied: Admin Only</p>';
