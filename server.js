@@ -21,7 +21,9 @@ mongoose.connect(MONGO_URI)
 const userSchema = new mongoose.Schema({
   phone_number: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  balance: { type: Number, default: 0 }
+  balance: { type: Number, default: 0 },
+  rigs: { type: Array, default: [] },
+  deposits: { type: Array, default: [] }
 });
 const User = mongoose.model('User', userSchema);
 
@@ -190,21 +192,26 @@ app.post('/api/rigs/purchase', async (req, res) => {
 app.post('/api/admin/approve-deposit', async (req, res) => {
   try {
     const { phone_number, amount } = req.body;
-    
-    // Find user and add the deposit amount to their balance
     const user = await User.findOne({ phone_number });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     user.balance = (user.balance || 0) + Number(amount);
+
+    // Track the deposit so the withdrawal restriction lifts!
+    user.deposits = user.deposits || [];
+    user.deposits.push({ amount: Number(amount), date: new Date() });
+
     await user.save();
 
     res.json({ message: 'Deposit approved successfully!', newBalance: user.balance });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error approving deposit' });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
