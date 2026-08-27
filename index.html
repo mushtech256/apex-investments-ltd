@@ -382,14 +382,16 @@ async function submitWithdrawal() {
     }
 
     try {
-        const response = await fetch('/api/auth/withdraw', {
+        const response = await fetch('/api/withdraw', {
+
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ phone_number, amount })
         });
         
         const data = await response.json();
-        if (response.ok && data.success) {
+        if (response.ok) {
+
             // Instantly deduct money from balance locally
             currentUser.balance = (currentUser.balance || 0) - amount;
             
