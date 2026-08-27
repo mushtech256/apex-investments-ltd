@@ -141,21 +141,30 @@
             initApp();
         }
 
-        function handleLogin() {
-            const phone = document.getElementById('login-phone').value;
-            const pass = document.getElementById('login-pass').value;
-            let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
-            const foundUser = users.find(u => u.phone === phone && u.pass === pass);
-            if (foundUser) {
-                currentUser = foundUser;
-                if(!currentUser.rigs) currentUser.rigs = [];
-                if(!currentUser.deposits) currentUser.deposits = [];
-                if(!currentUser.withdrawals) currentUser.withdrawals = [];
-                if(!currentUser.inviteCode) currentUser.inviteCode = generateCode();
-                localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
-                initApp();
-            } else { alert('Invalid credentials.'); }
-        }
+        async function handleLogin() {
+  const phone = document.getElementById('login-phone').value;
+  const pass = document.getElementById('login-pass').value;
+  
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone_number: phone, password: pass })
+    });
+    const data = await response.json();
+    
+    if (response.ok) {
+      currentUser = data.user;
+      localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
+      initApp();
+    } else {
+      alert(data.error || 'Invalid credentials.');
+    }
+  } catch (err) {
+    alert('Server connection error.');
+  }
+}
+
 
         function switchTab(tabName, element) {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
