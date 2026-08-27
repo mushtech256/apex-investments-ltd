@@ -126,20 +126,35 @@
                 </div>`;
         }
 
-        function handleRegister() {
-            const name = document.getElementById('reg-name').value;
-            const phone = document.getElementById('reg-phone').value;
-            const pass = document.getElementById('reg-pass').value;
-            if (!name || !phone || !pass) { alert('Please fill in all fields.'); return; }
-            let users = JSON.parse(localStorage.getItem('hut9_users_db')) || [];
-            if (users.some(u => u.phone === phone)) { alert('Account already exists!'); renderLogin(); return; }
-            currentUser = { name, phone, pass, balance: 15000, rigs: [], deposits: [], withdrawals: [], inviteCode: generateCode() };
-            users.push(currentUser);
-            localStorage.setItem('hut9_users_db', JSON.stringify(users));
-            localStorage.setItem('hut9_active_user', JSON.stringify(currentUser));
-            alert('Registration successful! UGX 15,000 bonus added.');
-            initApp();
-        }
+        async function handleRegister() {
+  const name = document.getElementById('reg-name').value;
+  const phone = document.getElementById('reg-phone').value;
+  const pass = document.getElementById('reg-pass').value;
+  
+  if (!name || !phone || !pass) {
+    alert('Please fill in all fields.');
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, phone_number: phone, password: pass })
+    });
+    const data = await response.json();
+    
+    if (response.ok) {
+      alert('Registration successful! UGX 10,000 bonus added. Please log in.');
+      renderLogin();
+    } else {
+      alert(data.error || 'Registration failed.');
+    }
+  } catch (err) {
+    alert('Server connection error.');
+  }
+}
+
 
         async function handleLogin() {
   const phone = document.getElementById('login-phone').value;
