@@ -54,21 +54,23 @@ const MACHINE_SERIES = {
 // REGISTER ROUTE (Connected to MongoDB)
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { phone_number, password } = req.body;
-    const ugandaPhoneRegex = /^\+256\d{9}$/;
+    // Inside REGISTER ROUTE:
+const { phone_number, password } = req.body;
+let cleanedPhone = phone_number.replace(/\D/g, '');
+if (cleanedPhone.startsWith('0')) {
+  cleanedPhone = '256' + cleanedPhone.slice(1);
+}
+const formattedPhone = '+' + cleanedPhone;
 
-    if (!ugandaPhoneRegex.test(phone_number)) {
-      return res.status(400).json({ error: 'Invalid format! Use +256...' });
-    }
+let existingUser = await User.findOne({ phone_number: formattedPhone });
+if (existingUser) {
+  return res.status(400).json({ error: 'Phone number already registered' });
+}
 
-    let existingUser = await User.findOne({ phone_number });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Phone number already registered' });
-    }
+const hashedPassword = await bcrypt.hash(password, 10);
+const newUser = new User({ phone_number: formattedPhone, password: hashedPassword });
+await newUser.save();
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ phone_number, password: hashedPassword, balance: 0 });
-    await newUser.save();
 
     res.status(201).json({ message: 'Success!', user: { id: newUser._id, phone_number: newUser.phone_number } });
   } catch (err) {
@@ -79,9 +81,15 @@ app.post('/api/auth/register', async (req, res) => {
 // LOGIN ROUTE (Connected to MongoDB)
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { phone_number, password } = req.body;
-    const user = await User.findOne({ phone_number });
-    
+        const { phone_number, password } = req.body;
+    let cleanedPhone = phone_number.replace(/\D/g, '');
+    if (cleanedPhone.startsWith('0')) {
+      cleanedPhone = '256' + cleanedPhone.slice(1);
+    }
+    const formattedPhone = '+' + cleanedPhone;
+
+    const user = await User.findOne({ phone_number: formattedPhone });
+
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
