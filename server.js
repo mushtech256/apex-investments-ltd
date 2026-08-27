@@ -1,216 +1,104 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(express.static(path.join(__dirname)));
 
+// Your MongoDB Atlas Connection String
+const MONGO_URI = "mongodb+srv://mushtech256_db_user:Mtvt96J1IcyL78Eu@cluster0.kd5otgm.mongodb.net/?appName=Cluster0";
 
-let users = [];let withdrawals = [];
+// Connect to MongoDB Atlas
+mongoose.connect(MONGO_URI)
+  .then(() => console.log("Connected to MongoDB Atlas successfully!"))
+  .catch((err) => console.error("MongoDB connection error:", err));
 
+// Define User Schema & Model
+const userSchema = new mongoose.Schema({
+  phone_number: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  balance: { type: Number, default: 0 }
+});
+const User = mongoose.model('User', userSchema);
+
+let withdrawals = [];
 
 // STRUCTURED MACHINE SERIES
 const MACHINE_SERIES = {
   'C-SERIES': [
-    { id: 101, name: 'HUT 1 Starter Miner', price: 15000, daily_return: 1000, days: 30 },
-    { id: 102, name: 'HUT 3 Turbo Miner', price: 50000, daily_return: 3500, days: 45 },
-    { id: 103, name: 'HUT 9 Pro Rig', price: 150000, daily_return: 12000, days: 60 }
+    { id: 101, name: 'HUT 1 Starter Miner', price: 15000, daily_return: 500, days: 30 },
+    { id: 102, name: 'HUT 3 Turbo Miner', price: 50000, daily_return: 3500, days: 30 },
+    { id: 103, name: 'HUT 9 Pro Rig', price: 150000, daily_return: 12000, days: 30 }
   ],
   'D-SERIES': [
     { id: 201, name: 'D-1 Express Miner', price: 30000, daily_return: 2200, days: 30 },
-    { id: 202, name: 'D-2 Advanced Rig', price: 100000, daily_return: 7800, days: 45 }
+    { id: 202, name: 'D-2 Advanced Rig', price: 100000, daily_return: 7500, days: 30 }
   ],
   'F-SERIES': [
-    { id: 301, name: 'F-1 Power Node', price: 200000, daily_return: 16000, days: 60 },
-    { id: 302, name: 'F-2 Ultra Cluster', price: 500000, daily_return: 42000, days: 90 }
+    { id: 301, name: 'F-1 Power Node', price: 200000, daily_return: 16000, days: 30 },
+    { id: 302, name: 'F-2 Ultra Cluster', price: 500000, daily_return: 42000, days: 30 }
   ],
   'Z-SERIES': [
-    { id: 401, name: 'Z-1 Quantum Vault', price: 800000, daily_return: 70000, days: 90 },
-    { id: 402, name: 'Z-2 Apex Core', price: 1500000, daily_return: 135000, days: 120 }
+    { id: 401, name: 'Z-1 Quantum Vault', price: 800000, daily_return: 70000, days: 30 },
+    { id: 402, name: 'Z-2 Apex Core', price: 1500000, daily_return: 135000, days: 30 }
   ],
   'VIP-SERIES': [
-    { id: 501, name: 'VIP Supreme Engine', price: 3000000, daily_return: 300000, days: 180 }
+    { id: 501, name: 'VIP Supreme Engine', price: 3000000, daily_return: 300000, days: 30 }
   ]
 };
 
-// Flatten list helper for validation
-const ALL_MACHINES = Object.values(MACHINE_SERIES).flat().map(m => ({
-  ...m,
-  total_return: m.daily_return * m.days
-}));
-
-// REGISTER ROUTE
-app.post('/api/auth/register', (req, res) => {
-  const { phone_number, password } = req.body;
-  const ugandaPhoneRegex = /^\+256\d{9}$/;
-
-  if (!ugandaPhoneRegex.test(phone_number)) {
-    return res.status(400).json({ error: 'Invalid format! Use +256...' });
-  }
-
-  let existingUser = users.find(u => u.phone_number === phone_number);
-  if (existingUser) {
-    return res.status(400).json({ error: 'Phone number already registered' });
-  }
-
-  const newUser = { id: users.length + 1, phone_number, password, balance: 0, daily_earning: 0 };
-  users.push(newUser);
-
-  res.status(201).json({ message: 'Success!', user: newUser });
-});
-
-// LOGIN ROUTE
-app.post('/api/auth/login', (req, res) => {
-  const { phone_number, password } = req.body;
-  const user = users.find(u => u.phone_number === phone_number && u.password === password);
-  if (!user) {
-    return res.status(400).json({ error: 'Invalid phone number or password' });
-  }
-  res.status(200).json({ message: 'Login successful!', user });
-});
-
-// GET MACHINES (BY SERIES OR ALL)
-app.get('/api/machines', (req, res) => {
-  const formattedData = {};
-  for (let series in MACHINE_SERIES) {
-    formattedData[series] = MACHINE_SERIES[series].map(m => ({
-      ...m,
-      total_return: m.daily_return * m.days
-    }));
-  }
-  res.json(formattedData);
-});
-
-// BUY MACHINE
-app.post('/api/buy', (req, res) => {
-  const { phone_number, machineId } = req.body;
-  const user = users.find(u => u.phone_number === phone_number);
-  const machine = ALL_MACHINES.find(m => m.id === Number(machineId));
-
-  if (!user || !machine) return res.status(400).json({ error: 'Invalid request' });
-  if (user.balance < machine.price) return res.status(400).json({ error: 'Insufficient balance' });
-
-  user.balance -= machine.price;
-  user.daily_earning += machine.daily_return;
-  res.json({ message: 'Machine purchased successfully', user });
-});
-
-// CLAIM ROUTE
-app.post('/api/claim', (req, res) => {
-  const { phone_number } = req.body;
-  const user = users.find(u => u.phone_number === phone_number);
-
-  if (!user || user.daily_earning <= 0) return res.status(400).json({ error: 'No earnings to claim' });
-
-  user.balance += user.daily_earning;
-  res.json({ message: `Claimed +${user.daily_earning} UGX daily earnings!`, balance: user.balance });
-});
-
-// MOCK DEPOSIT ROUTE
-app.post('/api/deposit', async (req, res) => {
+// REGISTER ROUTE (Connected to MongoDB)
+app.post('/api/auth/register', async (req, res) => {
   try {
-    const { phone, amount } = req.body;
-    if (!phone || !amount) {
-      return res.status(400).json({ success: false, message: 'Phone and amount are required' });
+    const { phone_number, password } = req.body;
+    const ugandaPhoneRegex = /^\+256\d{9}$/;
+
+    if (!ugandaPhoneRegex.test(phone_number)) {
+      return res.status(400).json({ error: 'Invalid format! Use +256...' });
     }
 
-    let cleanPhone = phone.toString().replace(/\+/g, '').trim();
-    if (cleanPhone.startsWith('0')) cleanPhone = '256' + cleanPhone.slice(1);
-    const formattedPhone = '+' + cleanPhone;
-
-    let user = users.find(u => u.phone_number === formattedPhone);
-    if (user) {
-      user.balance = (user.balance || 0) + Number(amount);
+    let existingUser = await User.findOne({ phone_number });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Phone number already registered' });
     }
 
-    console.log(`[MOCK DEPOSIT] Credited ${amount} UGX to ${formattedPhone}`);
-    return res.json({ success: true, message: 'Deposit simulated successfully! (Mock Mode)' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ phone_number, password: hashedPassword, balance: 0 });
+    await newUser.save();
 
-  } catch (error) {
-    return res.status(500).json({ success: false, message: 'Server error processing mock deposit' });
+    res.status(201).json({ message: 'Success!', user: { id: newUser._id, phone_number: newUser.phone_number } });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error during registration' });
   }
 });
-// WITHDRAWAL API ROUTES
-app.post('/api/auth/withdraw', (req, res) => {
-    const { phone_number, amount } = req.body;
-    if (!phone_number || !amount || Number(amount) <= 0) {
-        return res.status(400).json({ success: false, error: 'Invalid phone number or amount' });
-    }
-    const newWithdrawal = {
-        id: withdrawals.length + 1,
-        phone_number,
-        amount: Number(amount),
-        status: 'pending',
-        date: new Date().toISOString()
-    };
-    withdrawals.push(newWithdrawal);
-    res.status(201).json({ success: true, message: 'Withdrawal request submitted successfully!', withdrawal: newWithdrawal });
-});
 
-app.get('/api/admin/withdrawals', (req, res) => {
-    res.json({ success: true, withdrawals });
-});
-
-app.post('/api/admin/withdrawals/:id/action', (req, res) => {
-    const withdrawalId = Number(req.params.id);
-    const { action } = req.body;
-    const withdrawal = withdrawals.find(w => w.id === withdrawalId);
-    if (!withdrawal) {
-        return res.status(404).json({ success: false, error: 'Withdrawal request not found' });
-    }
-    if (action === 'approve') {
-        withdrawal.status = 'approved';
-    } else if (action === 'reject') {
-        withdrawal.status = 'rejected';
-    } else {
-        return res.status(400).json({ success: false, error: 'Invalid action' });
-    }
-    res.json({ success: true, message: `Withdrawal ${withdrawal.status}`, withdrawal });
-});
-
-
-
-app.post('/api/auth/register', (req, res) => {
-  const { phone_number, password, confirm_password } = req.body;
-  const ugandaPhoneRegex = /^\+256\d{9}$/;
-
-  if (!ugandaPhoneRegex.test(phone_number)) {
-    return res.status(400).json({ error: 'Invalid format! Use +256...' });
-  }
-
-  if (password !== confirm_password) {
-    return res.status(400).json({ error: 'Passwords do not match!' });
-  }
-
-  let existingUser = users.find(u => u.phone_number === phone_number);
-  if (existingUser) {
-    return res.status(400).json({ error: 'Phone number already registered!' });
-  }
-
-  const newUser = { id: users.length + 1, phone_number, password };
-  users.push(newUser);
-
-  res.status(201).json({ message: 'Success!', user: newUser });
-});
-// Catch-all route with absolute fallback paths
-app.get('*', (req, res) => {
-    const rootPath = path.resolve(__dirname, 'index.html');
-    const publicPath = path.resolve(__dirname, 'public', 'index.html');
+// LOGIN ROUTE (Connected to MongoDB)
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { phone_number, password } = req.body;
+    const user = await User.findOne({ phone_number });
     
-    if (require('fs').existsSync(rootPath)) {
-        res.sendFile(rootPath);
-    } else if (require('fs').existsSync(publicPath)) {
-        res.sendFile(publicPath);
-    } else {
-        res.status(404).send('index.html not found on server');
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
     }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Invalid password' });
+    }
+
+    res.json({ message: 'Login successful', user: { id: user._id, phone_number: user.phone_number, balance: user.balance } });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error during login' });
+  }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
-
 
