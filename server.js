@@ -111,6 +111,37 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// Admin Route: Get Pending Withdrawals
+app.get('/api/admin/withdrawals', async (req, res) => {
+  try {
+    // If you store withdrawals in a separate collection or inside the user model, fetch them here.
+    // For now, let's return an empty array safely so it stops throwing errors:
+    res.json({ withdrawals: [] });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error loading withdrawals' });
+  }
+});
+
+// Admin Route: Approve Deposit & Add Funds to User Balance
+app.post('/api/admin/approve-deposit', async (req, res) => {
+  try {
+    const { phone_number, amount } = req.body;
+    
+    // Find user and add the deposit amount to their balance
+    const user = await User.findOne({ phone_number });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.balance = (user.balance || 0) + Number(amount);
+    await user.save();
+
+    res.json({ message: 'Deposit approved successfully!', newBalance: user.balance });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error approving deposit' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
