@@ -534,41 +534,41 @@ function submitDepositRequest() {
     alert(`Deposit of UGX ${pendingDepositAmount.toLocaleString()} submitted successfully for verification!`);
     switchTab('home', document.querySelectorAll('.nav-item')[0]);
 }
-function approveDeposit(depositId) {
-    let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits') || '[]');
-    const index = allPendingDeposits.findIndex(d => d.id === depositId);
+async function approveDeposit(depositId) {
+  let allPendingDeposits = JSON.parse(localStorage.getItem('hut9_pending_deposits')) || [];
+  const index = allPendingDeposits.findIndex(d => d.id === depositId);
 
-    if (index !== -1) {
-        const dep = allPendingDeposits[index];
-        dep.status = 'Approved';
-        localStorage.setItem('hut9_pending_deposits', JSON.stringify(allPendingDeposits));
+  if (index !== -1) {
+    const dep = allPendingDeposits[index];
+    dep.status = 'Approved';
+    localStorage.setItem('hut9_pending_deposits', JSON.stringify(allPendingDeposits));
 
-        // Update the target user's balance in stored users list
-        let registeredUsers = JSON.parse(localStorage.getItem('hut9_users') || '[]');
-        let userIndex = registeredUsers.findIndex(u => u.phone === dep.userPhone || u.phone_number === dep.userPhone);
+    try {
+      const response = await fetch('/api/admin/approve-deposit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phone_number: dep.userPhone, 
+          amount: dep.amount 
+        })
+      });
 
-        if (userIndex !== -1) {
-            registeredUsers[userIndex].balance = (registeredUsers[userIndex].balance || 0) + dep.amount;
-            localStorage.setItem('hut9_users', JSON.stringify(registeredUsers));
-        }
+      const data = await response.json();
+      if (!response.ok) {
+        alert(data.error || 'Failed to update balance on server');
+        return;
+      }
 
-        // Only update current balance if the logged-in user IS the depositor
-        if (currentUser && (currentUser.phone === dep.userPhone || currentUser.phone_number === dep.userPhone)) {
-            currentUser.balance = (currentUser.balance || 0) + dep.amount;
-            saveUserData();
-            if (typeof updateBalanceDisplay === 'function') {
-                updateBalanceDisplay();
-            }
-        }
-
-        // Track deposit details for the home screen metric
-        let currentTotalDep = Number(localStorage.getItem('hut9_total_deposit') || 0);
-        localStorage.setItem('hut9_total_deposit', currentTotalDep + dep.amount);
-
-        alert(`Deposit of UGX ${dep.amount.toLocaleString()} for ${dep.userName} approved successfully!`);
-        loadAdminPanel();
+      alert(`Deposit of UGX ${dep.amount.toLocaleString()} for ${dep.userName} approved successfully!`);
+    } catch (err) {
+      console.error('Error approving deposit on server:', err);
+      alert('Network error while approving deposit.');
     }
+
+    loadAdminPanel();
+  }
 }
+
 
 
 async function loadAdminPanel() {
