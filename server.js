@@ -29,7 +29,33 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-let withdrawals = [];
+// Admin Route: Get All Withdrawal Requests
+app.get('/api/admin/withdrawals', async (req, res) => {
+  try {
+    const users = await User.find({ 'withdrawals.0': { $exists: true } });
+    let allWithdrawals = [];
+    
+    users.forEach(user => {
+      if (user.withdrawals && user.withdrawals.length > 0) {
+        user.withdrawals.forEach(w => {
+          allWithdrawals.push({
+            phone_number: user.phone_number,
+            amount: w.amount,
+            status: w.status,
+            date: w.date,
+            id: w._id
+          });
+        });
+      }
+    });
+
+    res.json(allWithdrawals);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error fetching withdrawals' });
+  }
+});
+
 
 // STRUCTURED MACHINE SERIES
 const MACHINE_SERIES = {
