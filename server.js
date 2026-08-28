@@ -23,8 +23,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   balance: { type: Number, default: 0 },
   rigs: { type: Array, default: [] },
-  deposits: { type: Array, default: [] }
+  deposits: { type: Array, default: [] },
+  withdrawals: { type: Array, default: [] }
 });
+
 const User = mongoose.model('User', userSchema);
 
 let withdrawals = [];
@@ -129,20 +131,17 @@ app.post('/api/withdraw', async (req, res) => {
   try {
     const { phone_number, amount } = req.body;
     const user = await User.findOne({ phone_number });
-
+    
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Ensure balance is sufficient
-    const currentBalance = user.balance || 0;
     const withdrawAmount = Number(amount);
-
-    if (currentBalance < withdrawAmount) {
+    if ((user.balance || 0) < withdrawAmount) {
       return res.status(400).json({ error: 'Insufficient account balance.' });
     }
 
-    // Bonus restriction: Must have made a deposit or purchased a machine
+    // Restriction check: Must have made a deposit and purchased a machine
     const hasPurchasedRig = user.rigs && user.rigs.length > 0;
     const hasDeposited = user.deposits && user.deposits.length > 0;
 
@@ -152,15 +151,26 @@ app.post('/api/withdraw', async (req, res) => {
       });
     }
 
-    // Deduct balance and save
-    user.balance = currentBalance - withdrawAmount;
+    // Deduct balance
+    user.balance -= withdrawAmount;
+
+    // Save withdrawal request into the user's document so the admin panel can track it
+    user.withdrawals = user.withdrawals || [];
+    user.withdrawals.push({
+      amount: withdrawAmount,
+      status: 'pending',
+      date: new Date()
+    });
+
     await user.save();
 
     res.json({ message: 'Withdrawal request submitted successfully!', newBalance: user.balance });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server error during withdrawal' });
   }
 });
+
 
 // Route: Handle Purchasing / Renting a Machine (Rigs)
 app.post('/api/rigs/purchase', async (req, res) => {
