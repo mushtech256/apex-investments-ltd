@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         adminContainer.innerHTML = list.map(w => `
-  <div data-id="${w.id || w._id}" style="background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px;">
+  <div data-phone="${w.phone_number || w.phone}" data-amount="${w.amount}" style="background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px;">
     <p><b>Phone:</b> ${w.phone_number || w.phone}</p>
     <p><b>Amount:</b> UGX ${w.amount}</p>
     <p><b>Status:</b> ${w.status || 'Pending'}</p>
