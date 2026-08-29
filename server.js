@@ -262,3 +262,25 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+
+// Admin Route: Update Withdrawal Status (Approve/Reject)
+app.post('/api/admin/withdrawals/:id/action', async (req, res) => {
+  try {
+    const { action } = req.body; // 'approve' or 'reject'
+    const withdrawalId = req.params.id;
+    
+    const user = await User.findOne({ "withdrawals._id": withdrawalId });
+    if (!user) return res.status(404).json({ error: "Withdrawal not found" });
+
+    const withdrawal = user.withdrawals.id(withdrawalId);
+    if (!withdrawal) return res.status(404).json({ error: "Withdrawal item not found" });
+
+    withdrawal.status = action === "approve" ? "Approved" : "Rejected";
+    await user.save();
+
+    res.json({ success: true, message: 'Withdrawal ' + withdrawal.status });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error processing withdrawal action" });
+  }
+});

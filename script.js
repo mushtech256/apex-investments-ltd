@@ -71,3 +71,45 @@ document.addEventListener("DOMContentLoaded", () => {
       }).catch(err => console.log('Admin withdrawals load skipped:', err));
   }
 });
+
+// Handle Admin Withdrawal Actions (Approve/Reject)
+document.addEventListener('click', async (e) => {
+  if (e.target && (e.target.matches('.approve-withdrawal') || e.target.matches('.reject-withdrawal') || e.target.textContent === 'Approve' || e.target.textContent === 'Reject')) {
+    const btn = e.target;
+    const action = btn.textContent.toLowerCase().includes('approve') ? 'approve' : 'reject';
+    
+    // Find the item ID from dataset or parent container
+    const container = btn.closest('[data-id]') || btn.parentElement;
+    const withdrawalId = container ? container.dataset.id : null;
+    
+    if (!withdrawalId) {
+      console.log('Action triggered, but missing withdrawal ID reference.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    try {
+      const res = await fetch(`/api/admin/withdrawals/${withdrawalId}/action`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      const data = await res.json();
+      if (data.success) {
+        btn.textContent = 'Done!';
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        alert(data.error || 'Failed to process action');
+        btn.disabled = false;
+        btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error');
+      btn.disabled = false;
+      btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
+    }
+  }
+});
