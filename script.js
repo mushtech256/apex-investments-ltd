@@ -26,3 +26,25 @@ function logout() {
     currentUser = null;
     checkAuth();
 }
+
+// Safe Auto-loader for Admin Withdrawals
+document.addEventListener("DOMContentLoaded", () => {
+  const adminContainer = document.getElementById('admin-withdrawals') || document.getElementById('pending-withdrawals-container') || document.querySelector('.admin-withdrawals');
+  if (adminContainer) {
+    fetch('/api/admin/withdrawals')
+      .then(res => res.json())
+      .then(data => {
+        if (!data || data.length === 0) {
+          adminContainer.innerHTML = '<p>No pending withdrawals.</p>';
+          return;
+        }
+        adminContainer.innerHTML = data.map(w => `
+          <div style="background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px;">
+            <p><b>Phone:</b> ${w.phone_number || w.phone}</p>
+            <p><b>Amount:</b> UGX ${w.amount}</p>
+            <p><b>Status:</b> ${w.status || 'Pending'}</p>
+          </div>
+        `).join('');
+      }).catch(err => console.log('Admin withdrawals load skipped:', err));
+  }
+});
