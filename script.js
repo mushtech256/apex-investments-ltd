@@ -48,3 +48,26 @@ document.addEventListener("DOMContentLoaded", () => {
       }).catch(err => console.log('Admin withdrawals load skipped:', err));
   }
 });
+
+// Corrected Admin Withdrawals Loader targeting admin-withdrawals-list
+document.addEventListener("DOMContentLoaded", () => {
+  const adminContainer = document.getElementById('admin-withdrawals-list') || document.getElementById('admin-withdrawals') || document.getElementById('pending-withdrawals-container');
+  if (adminContainer) {
+    fetch('/api/admin/withdrawals')
+      .then(res => res.json())
+      .then(data => {
+        const list = data.withdrawals || data;
+        if (!list || list.length === 0) {
+          adminContainer.innerHTML = '<p style="color:#94a3b8; font-size:12px;">No pending withdrawals.</p>';
+          return;
+        }
+        adminContainer.innerHTML = list.map(w => `
+          <div style="background:rgba(255,255,255,0.05); padding:10px; margin-bottom:8px; border-radius:8px;">
+            <p><b>Phone:</b> ${w.phone_number || w.phone}</p>
+            <p><b>Amount:</b> UGX ${w.amount}</p>
+            <p><b>Status:</b> ${w.status || 'Pending'}</p>
+          </div>
+        `).join('');
+      }).catch(err => console.log('Admin withdrawals load skipped:', err));
+  }
+});
