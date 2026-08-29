@@ -49,7 +49,7 @@ app.get('/api/admin/withdrawals', async (req, res) => {
       }
     });
 
-    res.json(allWithdrawals);
+    res.json({ withdrawals: allWithdrawals });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error fetching withdrawals' });
