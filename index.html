@@ -637,9 +637,12 @@ async function loadAdminPanel() {
 }
 
 
-
 async function rentRig(id) {
-  const rig = machines.find(m => m.id == id);
+  let rig = null;
+  for (let series in MACHINE_SERIES) {
+    const found = MACHINE_SERIES[series].find(m => m.id == id);
+    if (found) { rig = found; break; }
+  }
   if (!rig) return;
 
   if ((currentUser.balance || 0) < rig.price) {
@@ -657,7 +660,10 @@ async function rentRig(id) {
         phone_number: phone_number, 
         rigId: rig.id, 
         rigName: rig.name, 
-        price: rig.price 
+        price: rig.price,
+        daily_return: rig.daily_return,
+        payout: rig.payout || (rig.daily_return * (rig.cycle || 30)),
+        cycle: rig.cycle || 30
       })
     });
 
@@ -678,6 +684,7 @@ async function rentRig(id) {
     alert('Network error renting machine.');
   }
 }
+
 
 function logout() {
     localStorage.removeItem('hut9_active_user');
