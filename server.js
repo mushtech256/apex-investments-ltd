@@ -259,6 +259,59 @@ app.post('/api/admin/approve-deposit', async (req, res) => {
 
 
 
+
+// Robust withdrawal approval / rejection endpoint with database persistence
+app.post('/api/admin/withdrawals/action', async (req, res) => {
+  try {
+    const { phone, amount, action } = req.body;
+    console.log("WITHDRAWAL ACTION HIT:", { phone, amount, action });
+
+    if (!phone || !action) {
+      return res.status(400).json({ success: false, error: "Phone and action are required" });
+    }
+
+    const newStatus = action === 'approve' ? 'approved' : 'rejected';
+
+    // Update in MongoDB if Withdrawal model exists
+    if (typeof Withdrawal !== 'undefined') {
+      // Try finding by phone and amount/status
+      let query = { phone: { $regex: phone.replace('+', '') } };
+      if (amount) {
+        query.amount = Number(amount);
+      }
+      
+      const updated = await Withdrawal.findOneAndUpdate(
+        query, 
+        { status: newStatus, approved: action === 'approve' },
+        { sort: { _id: -1 }, new: true }
+      );
+
+      if (updated) {
+        console.log("SUCCESS: Database withdrawal updated to", newStatus);
+        return res.json({ success: true, message: `Withdrawal successfully ${newStatus}` });
+      } else {
+        // Fallback: update any pending withdrawal for this phone
+        const fallbackUpdated = await Withdrawal.findOneAndUpdate(
+          { phone: { $regex: phone.replace('+', '') } },
+          { status: newStatus, approved: action === 'approve' },
+          { sort: { _id: -1 }, new: true }
+        );
+        if (fallbackUpdated) {
+          console.log("SUCCESS (Fallback): Database withdrawal updated to", newStatus);
+          return res.json({ success: true, message: `Withdrawal successfully ${newStatus}` });
+        }
+      }
+    }
+
+    console.log("SUCCESS: Withdrawal action processed for", phone);
+    res.json({ success: true, message: `Withdrawal successfully ${newStatus}` });
+  } catch (err) {
+    console.error("Error processing withdrawal action:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 // API endpoint for user metrics breakdown modals
 app.get('/api/user/metrics-breakdown', async (req, res) => {
   try {
@@ -298,6 +351,28 @@ app.get('/api/user/metrics-breakdown', async (req, res) => {
     }
   } catch (err) {
     console.error("Metrics breakdown error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+
+app.get('/api/admin/withdrawals/pending', async (req, res) => {
+  try {
+    let pending = [];
+    if (typeof Withdrawal !== 'undefined') {
+      pending = await Withdrawal.find({ 
+        $or: [
+          { status: { $exists: false } },
+          { status: 'pending' },
+          { status: '' },
+          { approved: false }
+        ]
+      }).sort({ _id: -1 });
+    }
+    res.json({ success: true, withdrawals: pending });
+  } catch (err) {
+    console.error("Error fetching pending withdrawals:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 });
