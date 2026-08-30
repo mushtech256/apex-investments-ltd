@@ -1,4 +1,7 @@
+const fs = require('fs');
 
+// 1. Update the frontend click handler to pull data directly from button attributes
+const robustHandler = `
 document.addEventListener('click', async function(e) {
   if (e.target && (e.target.classList.contains('approve-btn') || e.target.classList.contains('reject-btn') || e.target.textContent.trim() === 'Approve' || e.target.textContent.trim() === 'Reject')) {
     const btn = e.target;
@@ -14,7 +17,7 @@ document.addEventListener('click', async function(e) {
       let text = '';
       while (parent && parent !== document.body) {
         text = parent.innerText || parent.textContent || '';
-        const match = text.match(/\+?[0-9]{10,13}/);
+        const match = text.match(/\\+?[0-9]{10,13}/);
         if (match) {
           phone = match[0];
           break;
@@ -27,7 +30,7 @@ document.addEventListener('click', async function(e) {
       let parent = card;
       while (parent && parent !== document.body) {
         const text = parent.innerText || parent.textContent || '';
-        const match = text.match(/UGX\s*([0-9,]+)/i);
+        const match = text.match(/UGX\\s*([0-9,]+)/i);
         if (match) {
           amountStr = match[1].replace(/,/g, '').trim();
           break;
@@ -44,7 +47,7 @@ document.addEventListener('click', async function(e) {
       return;
     }
 
-    if (!confirm(`Are you sure you want to ${action} UGX ${amountStr || '0'} for ${phone}?`)) {
+    if (!confirm(\`Are you sure you want to \${action} UGX \${amountStr || '0'} for \${phone}?\`)) {
       return;
     }
 
@@ -80,3 +83,22 @@ document.addEventListener('click', async function(e) {
     }
   }
 });
+`;
+
+fs.writeFileSync('admin-action.js', robustHandler);
+fs.writeFileSync('action-v3.js', robustHandler);
+console.log('Updated click handlers!');
+
+// 2. Also check if there is code rendering the pending withdrawals list in any JS file and inject data attributes if found
+let files = fs.readdirSync('.');
+for (let file of files) {
+  if (file.endsWith('.js') && file !== 'server.js') {
+    let content = fs.readFileSync(file, 'utf8');
+    if (content.includes('Approve') && content.includes('Reject') && !content.includes('data-phone')) {
+      // Inject data attributes into dynamically generated buttons if possible
+      content = content.replace(/<button([^>]+)Approve<\/button>/gi, '<button$1 data-phone="${w.phone}" data-amount="${w.amount}" class="approve-btn">Approve</button>');
+      fs.writeFileSync(file, content);
+      console.log('Injected data attributes into renderer:', file);
+    }
+  }
+}

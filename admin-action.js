@@ -1,32 +1,46 @@
 
 document.addEventListener('click', async function(e) {
   if (e.target && (e.target.classList.contains('approve-btn') || e.target.classList.contains('reject-btn') || e.target.textContent.trim() === 'Approve' || e.target.textContent.trim() === 'Reject')) {
-    const card = e.target.closest('div');
-    if (!card) return;
+    const btn = e.target;
+    const card = btn.closest('div') || btn.parentElement;
     
-    const cardText = card.innerText || card.textContent || '';
-    console.log("Card text captured:", cardText);
+    // Read directly from data attributes if available, or fall back to text parsing
+    let phone = btn.getAttribute('data-phone');
+    let amountStr = btn.getAttribute('data-amount');
 
-    // Look for phone number specifically after "Phone:" or any international/local format
-    let phone = null;
-    const phoneMatch = cardText.match(/Phone:\s*([\+0-9]+)/i) || cardText.match(/\+?[0-9]{10,13}/);
-    if (phoneMatch) {
-      phone = phoneMatch[1] || phoneMatch[0];
-      phone = phone.replace('Phone:', '').trim();
+    if (!phone) {
+      // Traverse up to find card text containing phone
+      let parent = card;
+      let text = '';
+      while (parent && parent !== document.body) {
+        text = parent.innerText || parent.textContent || '';
+        const match = text.match(/\+?[0-9]{10,13}/);
+        if (match) {
+          phone = match[0];
+          break;
+        }
+        parent = parent.parentElement;
+      }
     }
 
-    // Look for amount after "Amount:" or currency
-    let amountStr = null;
-    const amountMatch = cardText.match(/Amount:\s*UGX\s*([0-9,]+)/i) || cardText.match(/UGX\s*([0-9,]+)/i);
-    if (amountMatch) {
-      amountStr = (amountMatch[1] || '').replace(/,/g, '').trim();
+    if (!amountStr) {
+      let parent = card;
+      while (parent && parent !== document.body) {
+        const text = parent.innerText || parent.textContent || '';
+        const match = text.match(/UGX\s*([0-9,]+)/i);
+        if (match) {
+          amountStr = match[1].replace(/,/g, '').trim();
+          break;
+        }
+        parent = parent.parentElement;
+      }
     }
 
-    const actionText = e.target.textContent.trim().toLowerCase();
+    const actionText = btn.textContent.trim().toLowerCase();
     const action = actionText.includes('approve') ? 'approve' : 'reject';
 
     if (!phone) {
-      alert("Could not detect phone number. Card text was: " + cardText);
+      alert("Could not detect phone number for this withdrawal.");
       return;
     }
 
@@ -34,10 +48,10 @@ document.addEventListener('click', async function(e) {
       return;
     }
 
-    const originalText = e.target.textContent;
+    const originalText = btn.textContent;
     try {
-      e.target.disabled = true;
-      e.target.textContent = "Processing...";
+      btn.disabled = true;
+      btn.textContent = "Processing...";
 
       const response = await fetch('/api/admin/withdrawals/action', {
         method: 'POST',
@@ -48,19 +62,21 @@ document.addEventListener('click', async function(e) {
       const result = await response.json();
       if (result.success) {
         alert(result.message || "Action successful!");
-        card.style.transition = "all 0.3s ease";
-        card.style.opacity = "0";
-        setTimeout(() => card.remove(), 300);
+        // Find the outermost card container to remove
+        let outerCard = btn.closest('.withdrawal-card') || card.closest('div[style*="background"], div[class]') || card;
+        outerCard.style.transition = "all 0.3s ease";
+        outerCard.style.opacity = "0";
+        setTimeout(() => outerCard.remove(), 300);
       } else {
         alert("Error: " + (result.error || "Failed to process action"));
-        e.target.disabled = false;
-        e.target.textContent = originalText;
+        btn.disabled = false;
+        btn.textContent = originalText;
       }
     } catch (err) {
       console.error(err);
       alert("Network or server error occurred.");
-      e.target.disabled = false;
-      e.target.textContent = originalText;
+      btn.disabled = false;
+      btn.textContent = originalText;
     }
   }
 });
