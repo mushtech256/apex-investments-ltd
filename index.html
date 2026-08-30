@@ -467,7 +467,7 @@ async function handleWithdrawal(id, action) {
             alert(`Withdrawal ${action}d!`);
             loadAdminWithdrawals();
         } else {
-            alert('Action failed');
+            alert('SERVER_ACTION_FAILED');
         }
     } catch (err) {
         console.error(err);

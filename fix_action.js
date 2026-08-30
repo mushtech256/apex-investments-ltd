@@ -12,7 +12,7 @@ document.addEventListener('click', async (e) => {
     
     const container = btn.closest('[data-phone]');
     if (!container) {
-      alert('Action failed: missing container reference');
+      alert('SERVER_ACTION_FAILED: missing container reference');
       return;
     }
     
@@ -33,7 +33,7 @@ document.addEventListener('click', async (e) => {
         btn.textContent = 'Done!';
         setTimeout(() => location.reload(), 800);
       } else {
-        alert(data.error || 'Action failed');
+        alert(data.error || 'SERVER_ACTION_FAILED');
         btn.disabled = false;
         btn.textContent = action === 'approve' ? 'Approve' : 'Reject';
       }
