@@ -650,6 +650,35 @@ app.all('/api/admin/withdrawals/*', async (req, res) => {
 });
 
 
+
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { phone, newPassword } = req.body;
+    if (!phone || !newPassword) {
+      return res.status(400).json({ success: false, error: "Phone and new password required" });
+    }
+
+    if (typeof User !== 'undefined') {
+      const updatedUser = await User.findOneAndUpdate(
+        { phone: { $regex: phone.replace('+', '') } },
+        { password: newPassword },
+        { sort: { _id: -1 }, new: true }
+      );
+
+      if (updatedUser) {
+        console.log("SUCCESS: Password reset for phone:", phone);
+        return res.json({ success: true, message: "Password updated successfully" });
+      }
+    }
+
+    res.status(404).json({ success: false, error: "User not found with this phone number" });
+  } catch (err) {
+    console.error("Password reset error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
