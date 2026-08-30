@@ -1,21 +1,32 @@
 
-// Updated withdrawal action handler
 document.addEventListener('click', async function(e) {
-  if (e.target && (e.target.classList.contains('approve-btn') || e.target.classList.contains('reject-btn') || e.target.textContent === 'Approve' || e.target.textContent === 'Reject')) {
+  if (e.target && (e.target.classList.contains('approve-btn') || e.target.classList.contains('reject-btn') || e.target.textContent.trim() === 'Approve' || e.target.textContent.trim() === 'Reject')) {
     const card = e.target.closest('div');
     if (!card) return;
     
-    const cardText = card.innerText || '';
-    const phoneMatch = cardText.match(/\+?[0-9]{10,13}/);
-    const amountMatch = cardText.match(/UGX\s*([0-9,]+)/i);
-    
-    const phone = phoneMatch ? phoneMatch[0] : null;
-    const amountStr = amountMatch ? amountMatch[1].replace(/,/g, '') : null;
+    const cardText = card.innerText || card.textContent || '';
+    console.log("Card text captured:", cardText);
+
+    // Look for phone number specifically after "Phone:" or any international/local format
+    let phone = null;
+    const phoneMatch = cardText.match(/Phone:\s*([\+0-9]+)/i) || cardText.match(/\+?[0-9]{10,13}/);
+    if (phoneMatch) {
+      phone = phoneMatch[1] || phoneMatch[0];
+      phone = phone.replace('Phone:', '').trim();
+    }
+
+    // Look for amount after "Amount:" or currency
+    let amountStr = null;
+    const amountMatch = cardText.match(/Amount:\s*UGX\s*([0-9,]+)/i) || cardText.match(/UGX\s*([0-9,]+)/i);
+    if (amountMatch) {
+      amountStr = (amountMatch[1] || '').replace(/,/g, '').trim();
+    }
+
     const actionText = e.target.textContent.trim().toLowerCase();
-    const action = (actionText.includes('approve') || e.target.classList.contains('approve-btn')) ? 'approve' : 'reject';
+    const action = actionText.includes('approve') ? 'approve' : 'reject';
 
     if (!phone) {
-      alert("Could not detect phone number on this card.");
+      alert("Could not detect phone number. Card text was: " + cardText);
       return;
     }
 
@@ -28,8 +39,6 @@ document.addEventListener('click', async function(e) {
       e.target.disabled = true;
       e.target.textContent = "Processing...";
 
-      console.log("Sending action:", { phone, amount: amountStr, action });
-
       const response = await fetch('/api/admin/withdrawals/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -37,8 +46,6 @@ document.addEventListener('click', async function(e) {
       });
 
       const result = await response.json();
-      console.log("Server response:", result);
-
       if (result.success) {
         alert(result.message || "Action successful!");
         card.style.transition = "all 0.3s ease";
@@ -50,7 +57,7 @@ document.addEventListener('click', async function(e) {
         e.target.textContent = originalText;
       }
     } catch (err) {
-      console.error("Client fetch error:", err);
+      console.error(err);
       alert("Network or server error occurred.");
       e.target.disabled = false;
       e.target.textContent = originalText;
