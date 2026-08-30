@@ -286,19 +286,7 @@ app.post('/api/admin/withdrawals/:id/action', async (req, res) => {
 });
 
 // Admin Route: Update Withdrawal Status by Phone and Amount
-app.post('/api/admin/withdrawals/action', async (req, res) => {
-  try {
-    const { phone, amount, action } = req.body;
-    
-    // Find user by phone number
-    const user = await User.findOne({ 
-      $or: [
-        { phone_number: phone },
-        { phone: phone }
-      ]
-    });
-
-    if (!user || !user.withdrawals) {
+if (!user || !user.withdrawals) {
       return res.status(404).json({ error: "User or withdrawals not found." });
     }
 
@@ -327,12 +315,7 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
 });
 
 // Admin Route: Update Withdrawal Status (Bulletproof)
-app.post('/api/admin/withdrawals/action', async (req, res) => {
-  try {
-    const { phone, amount, action } = req.body;
-    if (!phone) return res.status(400).json({ error: "Phone number is missing" });
-
-    const cleanPhone = String(phone).trim();
+const cleanPhone = String(phone).trim();
     const user = await User.findOne({ 
       $or: [
         { phone_number: cleanPhone },
@@ -366,12 +349,7 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
 });
 
 // Admin Route: Update Withdrawal Status (Clean & Unified)
-app.post('/api/admin/withdrawals/action', async (req, res) => {
-  try {
-    const { phone, amount, action } = req.body;
-    if (!phone) {
-      return res.status(400).json({ success: false, error: "Phone number is required." });
-    }
+}
 
     const cleanPhone = String(phone).trim();
     const user = await User.findOne({ 
@@ -405,6 +383,51 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
     return res.json({ success: true, message: "Withdrawal successfully " + withdrawal.status });
   } catch (err) {
     console.error("Server error in withdrawal action:", err);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/admin/withdrawals/action', async (req, res) => {
+  try {
+    console.log("RECEIVED WITHDRAWAL ACTION:", req.body);
+    const { phone, amount, action } = req.body;
+    
+    if (!phone) {
+      return res.status(400).json({ success: false, error: "Phone number missing" });
+    }
+
+    const cleanPhone = String(phone).trim();
+    const user = await User.findOne({
+      $or: [
+        { phone_number: cleanPhone },
+        { phone: cleanPhone },
+        { phone_number: { $regex: cleanPhone.replace('+', '') } }
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found for " + cleanPhone });
+    }
+
+    if (!user.withdrawals || user.withdrawals.length === 0) {
+      return res.status(404).json({ success: false, error: "No withdrawals for user" });
+    }
+
+    let withdrawal = null;
+    if (amount) {
+      withdrawal = user.withdrawals.find(w => String(w.amount) === String(amount));
+    }
+    if (!withdrawal) {
+      withdrawal = user.withdrawals[0];
+    }
+
+    withdrawal.status = action === 'approve' ? 'Approved' : 'Rejected';
+    await user.save();
+
+    console.log("SUCCESSFULLY UPDATED WITHDRAWAL:", cleanPhone, withdrawal.status);
+    return res.json({ success: true, message: "Withdrawal set to " + withdrawal.status });
+  } catch (err) {
+    console.error("WITHDRAWAL ERROR:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
