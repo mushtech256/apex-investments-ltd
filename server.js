@@ -325,3 +325,42 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
     res.status(500).json({ error: "Server error processing withdrawal action" });
   }
 });
+
+// Admin Route: Update Withdrawal Status (Bulletproof)
+app.post('/api/admin/withdrawals/action', async (req, res) => {
+  try {
+    const { phone, amount, action } = req.body;
+    if (!phone) return res.status(400).json({ error: "Phone number is missing" });
+
+    const cleanPhone = String(phone).trim();
+    const user = await User.findOne({ 
+      $or: [
+        { phone_number: cleanPhone },
+        { phone: cleanPhone },
+        { phone_number: { $regex: cleanPhone.replace('+', '') } }
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found for " + cleanPhone });
+    }
+
+    if (!user.withdrawals || user.withdrawals.length === 0) {
+      return res.status(404).json({ error: "User has no withdrawal records" });
+    }
+
+    // Find matching withdrawal by amount or take the first pending one
+    let withdrawal = user.withdrawals.find(w => String(w.amount) === String(amount));
+    if (!withdrawal) {
+      withdrawal = user.withdrawals[0];
+    }
+
+    withdrawal.status = action === 'approve' ? 'Approved' : 'Rejected';
+    await user.save();
+
+    return res.json({ success: true, message: "Withdrawal " + withdrawal.status });
+  } catch (err) {
+    console.error("Withdrawal action error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
