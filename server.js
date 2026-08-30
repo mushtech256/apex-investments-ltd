@@ -264,136 +264,14 @@ app.listen(PORT, () => {
 
 
 // Admin Route: Update Withdrawal Status (Approve/Reject)
-app.post('/api/admin/withdrawals/:id/action', async (req, res) => {
-  try {
-    const { action } = req.body; // 'approve' or 'reject'
-    const withdrawalId = req.params.id;
-    
-    const user = await User.findOne({ "withdrawals._id": withdrawalId });
-    if (!user) return res.status(404).json({ error: "Withdrawal not found" });
-
-    const withdrawal = user.withdrawals.id(withdrawalId);
-    if (!withdrawal) return res.status(404).json({ error: "Withdrawal item not found" });
-
-    withdrawal.status = action === "approve" ? "Approved" : "Rejected";
-    await user.save();
-
-    res.json({ success: true, message: 'Withdrawal ' + withdrawal.status });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error processing withdrawal action" });
-  }
-});
-
-// Admin Route: Update Withdrawal Status by Phone and Amount
-if (!user || !user.withdrawals) {
-      return res.status(404).json({ error: "User or withdrawals not found." });
-    }
-
-    // Find the pending withdrawal matching the amount
-    const withdrawal = user.withdrawals.find(w => String(w.amount) === String(amount) && (!w.status || w.status === 'Pending'));
-
-    if (!withdrawal) {
-      // Fallback: just grab the first pending one if exact amount match is tricky
-      const fallback = user.withdrawals.find(w => !w.status || w.status === 'Pending');
-      if (!fallback) {
-        return res.status(404).json({ error: "No pending withdrawal found for this user." });
-      }
-      fallback.status = action === "approve" ? "Approved" : "Rejected";
-      await user.save();
-      return res.json({ success: true, message: "Withdrawal " + fallback.status });
-    }
-
-    withdrawal.status = action === "approve" ? "Approved" : "Rejected";
-    await user.save();
-
-    res.json({ success: true, message: "Withdrawal " + withdrawal.status });
-  } catch (err) {
-    console.error("Error processing withdrawal action:", err);
-    res.status(500).json({ error: "Server error processing withdrawal action" });
-  }
-});
-
-// Admin Route: Update Withdrawal Status (Bulletproof)
-const cleanPhone = String(phone).trim();
-    const user = await User.findOne({ 
-      $or: [
-        { phone_number: cleanPhone },
-        { phone: cleanPhone },
-        { phone_number: { $regex: cleanPhone.replace('+', '') } }
-      ]
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found for " + cleanPhone });
-    }
-
-    if (!user.withdrawals || user.withdrawals.length === 0) {
-      return res.status(404).json({ error: "User has no withdrawal records" });
-    }
-
-    // Find matching withdrawal by amount or take the first pending one
-    let withdrawal = user.withdrawals.find(w => String(w.amount) === String(amount));
-    if (!withdrawal) {
-      withdrawal = user.withdrawals[0];
-    }
-
-    withdrawal.status = action === 'approve' ? 'Approved' : 'Rejected';
-    await user.save();
-
-    return res.json({ success: true, message: "Withdrawal " + withdrawal.status });
-  } catch (err) {
-    console.error("Withdrawal action error:", err);
-    return res.status(500).json({ error: err.message });
-  }
-});
-
-// Admin Route: Update Withdrawal Status (Clean & Unified)
-}
-
-    const cleanPhone = String(phone).trim();
-    const user = await User.findOne({ 
-      $or: [
-        { phone_number: cleanPhone },
-        { phone: cleanPhone },
-        { phone_number: { $regex: cleanPhone.replace('+', '') } }
-      ]
-    });
-
-    if (!user) {
-      return res.status(404).json({ success: false, error: "User not found for phone: " + cleanPhone });
-    }
-
-    if (!user.withdrawals || user.withdrawals.length === 0) {
-      return res.status(404).json({ success: false, error: "User has no withdrawal records." });
-    }
-
-    // Find matching withdrawal by amount or fallback to the first pending one
-    let withdrawal = null;
-    if (amount) {
-      withdrawal = user.withdrawals.find(w => String(w.amount) === String(amount) && (!w.status || w.status === 'Pending'));
-    }
-    if (!withdrawal) {
-      withdrawal = user.withdrawals.find(w => !w.status || w.status === 'Pending') || user.withdrawals[0];
-    }
-
-    withdrawal.status = action === 'approve' ? 'Approved' : 'Rejected';
-    await user.save();
-
-    return res.json({ success: true, message: "Withdrawal successfully " + withdrawal.status });
-  } catch (err) {
-    console.error("Server error in withdrawal action:", err);
-    return res.status(500).json({ success: false, error: err.message });
-  }
-});
 
 app.post('/api/admin/withdrawals/action', async (req, res) => {
   try {
-    console.log("RECEIVED WITHDRAWAL ACTION:", req.body);
+    console.log("WITHDRAWAL ACTION HIT:", req.body);
     const { phone, amount, action } = req.body;
     
     if (!phone) {
-      return res.status(400).json({ success: false, error: "Phone number missing" });
+      return res.status(400).json({ success: false, error: "Phone number is missing." });
     }
 
     const cleanPhone = String(phone).trim();
@@ -406,11 +284,11 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ success: false, error: "User not found for " + cleanPhone });
+      return res.status(404).json({ success: false, error: "User not found for phone: " + cleanPhone });
     }
 
     if (!user.withdrawals || user.withdrawals.length === 0) {
-      return res.status(404).json({ success: false, error: "No withdrawals for user" });
+      return res.status(404).json({ success: false, error: "No withdrawal records found." });
     }
 
     let withdrawal = null;
@@ -424,10 +302,10 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
     withdrawal.status = action === 'approve' ? 'Approved' : 'Rejected';
     await user.save();
 
-    console.log("SUCCESSFULLY UPDATED WITHDRAWAL:", cleanPhone, withdrawal.status);
-    return res.json({ success: true, message: "Withdrawal set to " + withdrawal.status });
+    console.log("SUCCESS: Withdrawal updated to", withdrawal.status);
+    return res.json({ success: true, message: "Withdrawal successfully " + withdrawal.status });
   } catch (err) {
-    console.error("WITHDRAWAL ERROR:", err);
+    console.error("SERVER ERROR:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
