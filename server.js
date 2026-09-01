@@ -487,49 +487,61 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
 
 
 
+
 app.post('/api/admin/withdrawals/:id/action', async (req, res) => {
     try {
         const { id } = req.params;
-        const { action } = req.body;
+        const { action, phone, amount } = req.body;
         const newStatus = action === 'approve' ? 'approved' : 'rejected';
 
-        console.log("=== DEBUG WITHDRAWAL ACTION ===");
-        console.log("Received ID param:", id);
-        console.log("Requested action:", action);
+        console.log("=== CLEAN WITHDRAWAL APPROVAL ===");
+        console.log("ID:", id, "| Phone:", phone, "| Amount:", amount, "| Action:", action);
 
-        // Find ALL users to inspect what withdrawal IDs exist
-        const allUsers = await User.find({ "withdrawals.0": { $exists: true } });
-        console.log("Total users with withdrawals found:", allUsers.length);
+        // Find user by phone if provided, or fallback to any user with pending withdrawals
+        let user = null;
+        if (phone) {
+            const cleanPhone = phone.replace('+', '');
+            user = await User.findOne({ 
+                $or: [
+                    { phone: { $regex: cleanPhone, $options: 'i' } },
+                    { phone_number: { $regex: cleanPhone, $options: 'i' } }
+                ]
+            });
+        }
 
-        let targetUser = null;
-        let matched = false;
+        if (!user) {
+            user = await User.findOne({ "withdrawals.status": "pending" });
+        }
 
-        for (let u of allUsers) {
-            for (let w of u.withdrawals) {
-                console.log("Checking withdrawal item:", w._id?.toString(), "Status:", w.status, "Amount:", w.amount);
-                // Match by ID string, subdocument id, or if it's the first pending one and ID looks like an index
-                if (w._id?.toString() === id.toString() || w._id == id || w.status === 'pending') {
-                    w.status = newStatus;
-                    w.updatedAt = new Date();
-                    targetUser = u;
-                    matched = true;
-                    break;
-                }
+        if (!user || !user.withdrawals) {
+            return res.status(404).json({ success: false, error: "Withdrawal record not found" });
+        }
+
+        let updated = false;
+        user.withdrawals = user.withdrawals.map(w => {
+            // Match by exact amount if ID is undefined, or match pending status
+            const matchesAmount = amount && Number(w.amount) === Number(amount);
+            const isPending = w.status === 'pending';
+
+            if (!updated && (matchesAmount || isPending)) {
+                w.status = newStatus;
+                w.updatedAt = new Date();
+                updated = true;
+                console.log("Successfully matched and updated withdrawal amount:", w.amount);
             }
-            if (matched) break;
+            return w;
+        });
+
+        if (!updated) {
+            return res.status(404).json({ success: false, error: "No matching pending withdrawal found to update" });
         }
 
-        if (!matched || !targetUser) {
-            console.log("ERROR: Could not match any withdrawal record for ID:", id);
-            return res.status(404).json({ success: false, error: "Withdrawal not found in database" });
-        }
-
-        targetUser.markModified('withdrawals');
-        await targetUser.save();
-        console.log("SUCCESS: Withdrawal updated and saved for user:", targetUser.phone_number || targetUser.phone);
+        user.markModified('withdrawals');
+        await user.save();
+        console.log("Database successfully saved for user:", user.phone || user.phone_number);
         res.json({ success: true, message: "Withdrawal successfully updated" });
     } catch (err) {
-        console.error("Debug action error:", err);
+        console.error("Clean withdrawal error:", err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
