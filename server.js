@@ -623,3 +623,52 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
+
+app.post('/api/user/rent', async (req, res) => {
+    try {
+        const { machineId, name, price, daily, cycle } = req.body;
+        // Assuming user ID or phone is passed, or we pick the active/first user for testing
+        const userId = req.body.userId || req.session?.userId;
+
+        console.log("RENT REQUEST RECEIVED:", { machineId, name, price, daily, cycle });
+
+        // Find user (fallback to first user if session isn't strict yet)
+        let user = userId ? await User.findById(userId) : await User.findOne();
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: "User not found" });
+        }
+
+        const machinePrice = Number(price);
+        const userBalance = Number(user.balance || user.wallet || 337300); // fallback to current display balance if needed
+
+        if (userBalance < machinePrice) {
+            return res.status(400).json({ success: false, error: "Insufficient balance to rent this unit" });
+        }
+
+        // Deduct balance & add machine to user's machines array
+        user.balance = userBalance - machinePrice;
+        
+        if (!user.machines) user.machines = [];
+        user.machines.push({
+            machineId: machineId || name,
+            name: name || "Mining Unit",
+            price: machinePrice,
+            dailyIncome: Number(daily),
+            cycleDays: Number(cycle),
+            startDate: new Date(),
+            status: 'active'
+        });
+
+        user.markModified('machines');
+        user.markModified('balance');
+        await user.save();
+
+        console.log("Machine successfully rented and saved for user:", user.phone || user.phone_number);
+        res.json({ success: true, message: "Machine rented successfully!", newBalance: user.balance });
+    } catch (err) {
+        console.error("Rental error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
