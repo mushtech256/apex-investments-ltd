@@ -1,29 +1,27 @@
 const fs = require('fs');
 let code = fs.readFileSync('server.js', 'utf8');
 
-// Clean up any broken route block near the end
-code = code.replace(/app\.post\(['"]\/api\/auth\/reset-password['"][\s\S]*?catch\s*\(err\)\s*\{[\s\S]*?\}\s*\}\);\s*/g, '');
-
-// A clean, standalone implementation without template literal backticks inside string literals
-const cleanRoute = `
+// Replace the reset-password route with a flexible regex search for phone numbers
+const newResetRoute = `
 app.post('/api/auth/reset-password', async (req, res) => {
   try {
-    const phone = req.body.phone;
-    const newPassword = req.body.newPassword;
+    const { phone, newPassword } = req.body;
     if (!phone || !newPassword) {
       return res.status(400).json({ success: false, error: "Phone and new password required" });
     }
 
     if (typeof User !== 'undefined') {
+      // Clean input phone (remove leading 0 or +256/256 if user typed local format)
       let cleanPhone = phone.trim();
       if (cleanPhone.startsWith('0')) {
-        cleanPhone = cleanPhone.substring(1);
+        cleanPhone = cleanPhone.substring(1); // turns 077... into 77...
       } else if (cleanPhone.startsWith('+')) {
         cleanPhone = cleanPhone.replace(/[^0-9]/g, '');
       }
 
       console.log("Searching user with flexible phone query for:", cleanPhone);
 
+      // Search using a regex that matches the tail digits regardless of prefix
       const updatedUser = await User.findOneAndUpdate(
         { phone: { $regex: cleanPhone + '$' } },
         { password: newPassword },
@@ -36,18 +34,19 @@ app.post('/api/auth/reset-password', async (req, res) => {
       }
     }
 
-    return res.status(404).json({ success: false, error: "User not found with this phone number" });
+    res.status(404).json({ success: false, error: "User not found with this phone number" });
   } catch (err) {
     console.error("Password reset error:", err);
-    return res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 `;
 
-// Append right before app.listen
-if (!code.includes('/api/auth/reset-password')) {
-  code = code.replace('app.listen', cleanRoute + '\n\napp.listen');
-}
+// Remove old reset route if present
+code = code.replace(/app\.post\(['"]\/api\/auth\/reset-password['"][\s\S]*?\}\);\s*\}\);/g, '');
+
+// Append before app.listen
+code = code.replace('app.listen', newResetRoute + '\n\napp.listen');
 
 fs.writeFileSync('server.js', code);
-console.log('server.js syntax cleaned and fixed!');
+console.log('server.js updated with flexible phone regex for password reset!');

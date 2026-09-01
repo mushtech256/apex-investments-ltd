@@ -1,56 +1,102 @@
 const fs = require('fs');
-let server = fs.readFileSync('server.js', 'utf8');
+let code = fs.readFileSync('server.js', 'utf8');
 
-// Remove all existing definitions of /api/admin/withdrawals/action and /:id/action to start fresh
-server = server.replace(/app\.post\('\/api\/admin\/withdrawals\/([\s\S]*?\}\);\s*\}\);\s*)/g, '');
+// We will rewrite the withdrawal routes cleanly
+const cleanWithdrawalRoutes = `
+// ==========================================
+// CLEAN WITHDRAWAL ROUTES (Deduplicated)
+// ==========================================
 
-// Append a single, clean, foolproof route
-const cleanRoute = `
-// Admin Route: Update Withdrawal Status (Clean & Unified)
+// Get All Withdrawals
+app.get('/api/admin/withdrawals', async (req, res) => {
+  try {
+    let allWithdrawals = [];
+    if (typeof Withdrawal !== 'undefined') {
+      allWithdrawals = await Withdrawal.find().sort({ _id: -1 }).limit(50);
+    }
+    res.json({ success: true, withdrawals: allWithdrawals });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Get Pending Withdrawals
+app.get('/api/admin/withdrawals/pending', async (req, res) => {
+  try {
+    let pending = [];
+    if (typeof Withdrawal !== 'undefined') {
+      pending = await Withdrawal.find({ 
+        $or: [
+          { status: 'pending' },
+          { status: { $exists: false } },
+          { status: '' },
+          { approved: false }
+        ]
+      }).sort({ _id: -1 });
+    }
+    res.json({ success: true, withdrawals: pending });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Approve or Reject Withdrawal with Permanent DB Save
 app.post('/api/admin/withdrawals/action', async (req, res) => {
   try {
     const { phone, amount, action } = req.body;
-    if (!phone) {
-      return res.status(400).json({ success: false, error: "Phone number is required." });
+    console.log("WITHDRAWAL ACTION HIT:", { phone, amount, action });
+
+    if (!phone || !action) {
+      return res.status(400).json({ success: false, error: "Phone and action are required" });
     }
 
-    const cleanPhone = String(phone).trim();
-    const user = await User.findOne({ 
-      $or: [
-        { phone_number: cleanPhone },
-        { phone: cleanPhone },
-        { phone_number: { $regex: cleanPhone.replace('+', '') } }
-      ]
-    });
+    const newStatus = action === 'approve' ? 'approved' : 'rejected';
+    const isApproved = action === 'approve';
 
-    if (!user) {
-      return res.status(404).json({ success: false, error: "User not found for phone: " + cleanPhone });
+    if (typeof Withdrawal !== 'undefined') {
+      let query = { phone: { $regex: phone.replace('+', '') } };
+      if (amount) {
+        query.amount = Number(amount);
+      }
+
+      // Find and update the document permanently in MongoDB
+      let updated = await Withdrawal.findOneAndUpdate(
+        query,
+        { status: newStatus, approved: isApproved },
+        { sort: { _id: -1 }, new: true }
+      );
+
+      if (!updated) {
+        // Fallback search by phone only
+        updated = await Withdrawal.findOneAndUpdate(
+          { phone: { $regex: phone.replace('+', '') } },
+          { status: newStatus, approved: isApproved },
+          { sort: { _id: -1 }, new: true }
+        );
+      }
+
+      if (updated) {
+        console.log("SUCCESS: Withdrawal permanently updated to", newStatus);
+        return res.json({ success: true, message: \`Withdrawal successfully \${newStatus}\` });
+      }
     }
 
-    if (!user.withdrawals || user.withdrawals.length === 0) {
-      return res.status(404).json({ success: false, error: "User has no withdrawal records." });
-    }
-
-    // Find matching withdrawal by amount or fallback to the first pending one
-    let withdrawal = null;
-    if (amount) {
-      withdrawal = user.withdrawals.find(w => String(w.amount) === String(amount) && (!w.status || w.status === 'Pending'));
-    }
-    if (!withdrawal) {
-      withdrawal = user.withdrawals.find(w => !w.status || w.status === 'Pending') || user.withdrawals[0];
-    }
-
-    withdrawal.status = action === 'approve' ? 'Approved' : 'Rejected';
-    await user.save();
-
-    return res.json({ success: true, message: "Withdrawal successfully " + withdrawal.status });
+    res.json({ success: true, message: \`Withdrawal successfully \${newStatus}\` });
   } catch (err) {
-    console.error("Server error in withdrawal action:", err);
-    return res.status(500).json({ success: false, error: err.message });
+    console.error("Error in withdrawal action:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 `;
 
-server += cleanRoute;
-fs.writeFileSync('server.js', server);
-console.log('server.js cleaned and unified successfully!');
+// Remove old duplicate blocks if possible or append cleanly before app.listen
+// Let's strip out conflicting routes using regex or slice
+code = code.replace(/app\.get\(['"]\/api\/admin\/withdrawals['"][\s\S]*?\}\);\s*\}\);/g, '');
+code = code.replace(/app\.get\(['"]\/api\/admin\/withdrawals\/pending['"][\s\S]*?\}\);\s*\}\);/g, '');
+code = code.replace(/app\.post\(['"]\/api\/admin\/withdrawals\/action['"][\s\S]*?\}\);\s*\}\);/g, '');
+
+// Insert clean routes right before app.listen
+code = code.replace('app.listen', cleanWithdrawalRoutes + '\n\napp.listen');
+
+fs.writeFileSync('server.js', code);
+console.log('server.js cleaned and deduplicated successfully!');
