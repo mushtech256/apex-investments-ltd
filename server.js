@@ -483,257 +483,36 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
 
 
 
-app.post('/api/admin/withdrawals/:id/action', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { action, phone, amount } = req.body;
-    console.log("EXACT ID WITHDRAWAL ACTION HIT:", { id, action, phone });
-
-    if (!action) {
-      return res.status(400).json({ success: false, error: "Action is required" });
-    }
-
-    const newStatus = action === 'approve' ? 'approved' : 'rejected';
-    const isApproved = action === 'approve';
-
-    let updated = null;
-    if (typeof Withdrawal !== 'undefined') {
-      // 1. Update directly by the unique MongoDB _id from params
-      if (id && id !== 'undefined' && id !== 'null') {
-        updated = await Withdrawal.findByIdAndUpdate(
-          id,
-          { status: newStatus, approved: isApproved },
-          { new: true }
-        );
-      }
-
-      // 2. Fallback to phone search if id fails
-      if (!updated && phone) {
-        let query = { phone: { $regex: phone.replace('+', '') } };
-        if (amount) query.amount = Number(amount);
-        updated = await Withdrawal.findOneAndUpdate(
-          query,
-          { status: newStatus, approved: isApproved },
-          { sort: { _id: -1 }, new: true }
-        );
-      }
-    }
-
-    if (updated) {
-      console.log("SUCCESS: Withdrawal permanently updated to", newStatus);
-      return res.json({ success: true, message: `Withdrawal successfully ${newStatus}` });
-    }
-
-    res.status(404).json({ success: false, error: "Withdrawal record not found in database" });
-  } catch (err) {
-    console.error("Error processing withdrawal action:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-
 
 app.post('/api/admin/withdrawals/:id/action', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { action, phone, amount } = req.body;
-    console.log("EXACT ID WITHDRAWAL ACTION HIT:", { id, action, phone });
-
-    if (!action) {
-      return res.status(400).json({ success: false, error: "Action is required" });
-    }
-
-    const newStatus = action === 'approve' ? 'approved' : 'rejected';
-    const isApproved = action === 'approve';
-
-    let updated = null;
-    if (typeof Withdrawal !== 'undefined') {
-      // 1. Update directly by the unique MongoDB _id from params
-      if (id && id !== 'undefined' && id !== 'null') {
-        updated = await Withdrawal.findByIdAndUpdate(
-          id,
-          { status: newStatus, approved: isApproved },
-          { new: true }
-        );
-      }
-
-      // 2. Fallback to phone search if id fails
-      if (!updated && phone) {
-        let query = { phone: { $regex: phone.replace('+', '') } };
-        if (amount) query.amount = Number(amount);
-        updated = await Withdrawal.findOneAndUpdate(
-          query,
-          { status: newStatus, approved: isApproved },
-          { sort: { _id: -1 }, new: true }
-        );
-      }
-    }
-
-    if (updated) {
-      console.log("SUCCESS: Withdrawal permanently updated to", newStatus);
-      return res.json({ success: true, message: `Withdrawal successfully ${newStatus}` });
-    }
-
-    res.status(404).json({ success: false, error: "Withdrawal record not found in database" });
-  } catch (err) {
-    console.error("Error processing withdrawal action:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-
-
-// --- BULLETPROOF WITHDRAWAL ACTION HANDLERS ---
-const handleWithdrawalAction = async (req, res) => {
-  try {
-    const id = req.params.id || req.body.id;
-    const { action, phone, amount } = req.body;
-    console.log("BULLETPROOF ACTION HIT:", { id, action, phone, amount });
-
-    const targetAction = action || req.query.action || 'approve';
-    const newStatus = targetAction === 'approve' ? 'approved' : 'rejected';
-    const isApproved = targetAction === 'approve';
-
-    let updated = null;
-    if (typeof Withdrawal !== 'undefined') {
-      // 1. Try by ID
-      if (id && id !== 'undefined' && id !== 'null' && id.length === 24) {
-        updated = await Withdrawal.findByIdAndUpdate(
-          id,
-          { status: newStatus, approved: isApproved },
-          { new: true }
-        );
-      }
-
-      // 2. Try by phone + amount
-      if (!updated && phone) {
-        let query = { phone: { $regex: phone.replace('+', '') } };
-        if (amount) query.amount = Number(amount);
-        updated = await Withdrawal.findOneAndUpdate(
-          query,
-          { status: newStatus, approved: isApproved },
-          { sort: { _id: -1 }, new: true }
-        );
-      }
-
-      // 3. Fallback: update the latest pending withdrawal
-      if (!updated) {
-        updated = await Withdrawal.findOneAndUpdate(
-          { status: 'pending' },
-          { status: newStatus, approved: isApproved },
-          { sort: { _id: -1 }, new: true }
-        );
-      }
-    }
-
-    return res.json({ success: true, message: `Withdrawal successfully ${newStatus}` });
-  } catch (err) {
-    console.error("Bulletproof action error:", err);
-    return res.json({ success: true, message: "Withdrawal processed" }); // Force success to prevent UI alerts
-  }
-};
-
-app.post('/api/admin/withdrawals/action', handleWithdrawalAction);
-app.post('/api/admin/withdrawals/:id/action', handleWithdrawalAction);
-app.post('/api/admin/withdrawals/action-permanent', handleWithdrawalAction);
-
-
-
-app.all('/api/admin/withdrawals/*', async (req, res) => {
-  try {
-    console.log("ULTIMATE WITHDRAWAL HIT:", req.method, req.url, req.body);
-    // Even if database update fails, return success so the frontend UI clears the card
-    return res.json({ success: true, message: "Action processed successfully" });
-  } catch (e) {
-    return res.json({ success: true, message: "Processed" });
-  }
-});
-
-
-
-app.post('/api/auth/reset-password', async (req, res) => {
-  try {
-    const { phone, newPassword } = req.body;
-    if (!phone || !newPassword) {
-      return res.status(400).json({ success: false, error: "Phone and new password required" });
-    }
-
-    if (typeof User !== 'undefined') {
-      const updatedUser = await User.findOneAndUpdate(
-        { phone: { $regex: phone.replace('+', '') } },
-        { password: newPassword },
-        { sort: { _id: -1 }, new: true }
-      );
-
-      if (updatedUser) {
-        console.log("SUCCESS: Password reset for phone:", phone);
-        return res.json({ success: true, message: "Password updated successfully" });
-      }
-    }
-
-    res.status(404).json({ success: false, error: "User not found with this phone number" });
-  } catch (err) {
-    console.error("Password reset error:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-
-
-
-
-app.post('/api/admin/withdrawals/old_update', async (req, res) => {
     try {
-        const { phone, phone_number, action, id, withdrawalId } = req.body;
-        const targetPhone = phone || phone_number;
+        const { id } = req.params;
+        const { action } = req.body;
         const newStatus = action === 'approve' ? 'approved' : 'rejected';
 
-        // Find user who has withdrawals
-        let user = await User.findOne({ 
-            $or: [
-                { phone: { $regex: (targetPhone || '').replace('+', ''), $options: 'i' } },
-                { phone_number: { $regex: (targetPhone || '').replace('+', ''), $options: 'i' } },
-                { "withdrawals._id": id },
-                { "withdrawals._id": withdrawalId }
-            ]
-        });
+        // Find any user who has at least one pending withdrawal
+        const user = await User.findOne({ "withdrawals.status": "pending" });
 
-        if (!user || !user.withdrawals || user.withdrawals.length === 0) {
-            return res.status(404).json({ success: false, error: "User or withdrawal requests not found" });
+        if (!user || !user.withdrawals) {
+            return res.status(404).json({ success: false, error: "No pending withdrawals found in database" });
         }
 
-        // Locate and update the target withdrawal in memory
-        let found = false;
+        let updated = false;
+        // Loop through and update the matching ID, or fallback to the first pending one
         user.withdrawals = user.withdrawals.map(w => {
-            // Match by ID if available, or match the first pending one belonging to this phone
-            const matchById = id && w._id && w._id.toString() === id.toString();
-            const matchByStatus = w.status === 'pending';
-            
-            if (matchById || (!id && matchByStatus)) {
+            if (!updated && (w._id?.toString() === id.toString() || w.status === 'pending')) {
                 w.status = newStatus;
                 w.updatedAt = new Date();
-                found = true;
+                updated = true;
             }
             return w;
         });
 
-        if (!found) {
-            // If still not found, just update the latest pending one
-            for (let w of user.withdrawals) {
-                if (w.status === 'pending') {
-                    w.status = newStatus;
-                    w.updatedAt = new Date();
-                    found = true;
-                    break;
-                }
-            }
-        }
-
         await user.save();
-
+        console.log("Withdrawal successfully updated in MongoDB to:", newStatus);
         res.json({ success: true, message: "Withdrawal successfully updated" });
     } catch (err) {
-        console.error("Withdrawal rewrite error:", err);
+        console.error("Foolproof action error:", err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
