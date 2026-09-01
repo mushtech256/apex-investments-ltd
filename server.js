@@ -710,6 +710,47 @@ app.post('/api/admin/withdrawals/update', async (req, res) => {
 });
 
 
+
+app.get('/api/user/machines', async (req, res) => {
+    try {
+        const userId = req.query.userId || req.headers['user-id'];
+        let query = {};
+        if (userId) {
+            query = { $or: [{ userId: userId }, { phone: userId }] };
+        }
+        const machines = await Machine.find(query).sort({ _id: -1 });
+        res.json({ success: true, machines: machines || [] });
+    } catch (err) {
+        console.error("Fetch machines error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get('/api/metrics/ai_income', async (req, res) => {
+    try {
+        const userId = req.query.userId || req.headers['user-id'];
+        let query = {};
+        if (userId) {
+            query = { $or: [{ userId: userId }, { phone: userId }] };
+        }
+        const machines = await Machine.find(query);
+        const totalEarnings = machines.reduce((sum, m) => sum + (m.earnings || m.dailyReturn || 0), 0);
+        
+        res.json({
+            success: true,
+            breakdown: {
+                machines: totalEarnings,
+                count: machines.length,
+                items: machines
+            }
+        });
+    } catch (err) {
+        console.error("AI income metrics error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
