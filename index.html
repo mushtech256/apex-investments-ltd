@@ -965,65 +965,81 @@ async function submitPasswordReset() {
     
     
 
+    
+    
+
     <script>
-    document.addEventListener("click", async function(e) {
-        const btn = e.target.closest("button");
-        if (!btn || btn.innerText.trim() !== "Rent") return;
-        
-        e.preventDefault();
-        e.stopPropagation();
+    document.addEventListener("DOMContentLoaded", function() {
+        const units = [
+            { id: 'k1', name: 'K1 Mining Unit', price: 35000, payout: 3000, cycle: 18 },
+            { id: 'k2', name: 'K2 Mining Unit', price: 65000, payout: 5500, cycle: 18 },
+            { id: 'k3', name: 'K3 Mining Unit', price: 100000, payout: 11000, cycle: 18 },
+            { id: 'k4', name: 'K4 Mining Unit', price: 200000, payout: 20000, cycle: 18 },
+            { id: 'd1', name: 'D1 Mining Unit', price: 100000, payout: 20000, cycle: 15 },
+            { id: 'd2', name: 'D2 Mining Unit', price: 300000, payout: 35000, cycle: 15 },
+            { id: 'd3', name: 'D3 Mining Unit', price: 500000, payout: 50000, cycle: 15 },
+            { id: 'd4', name: 'D4 Mining Unit', price: 1000000, payout: 95000, cycle: 15 },
+            { id: 'g1', name: 'G1 Power Rig', price: 180000, payout: 10000, cycle: 30 },
+            { id: 'g2', name: 'G2 Power Rig', price: 300000, payout: 28000, cycle: 30 },
+            { id: 'g3', name: 'G3 Power Rig', price: 500000, payout: 35000, cycle: 30 },
+            { id: 'g4', name: 'G4 Power Rig', price: 850000, payout: 50000, cycle: 30 },
+            { id: 'z1', name: 'Z1 Quantum Rig', price: 200000, payout: 20000, cycle: 20 },
+            { id: 'z2', name: 'Z2 Quantum Rig', price: 350000, payout: 34000, cycle: 20 },
+            { id: 'z3', name: 'Z3 Quantum Rig', price: 500000, payout: 41000, cycle: 20 },
+            { id: 'z4', name: 'Z4 Quantum Rig', price: 850000, payout: 60000, cycle: 20 },
+            { id: 'v1', name: 'VIP 1 Miner', price: 500000, payout: 140000, cycle: 7 },
+            { id: 'v2', name: 'VIP 2 Miner', price: 890000, payout: 180000, cycle: 7 },
+            { id: 'v3', name: 'VIP 3 Miner', price: 1200000, payout: 245000, cycle: 7 }
+        ];
 
-        // Find the card container enclosing this button
-        const card = btn.closest('div');
-        let cardText = card ? card.innerText : "";
-        let parentCard = card ? card.parentElement : null;
-        if (parentCard) cardText += " " + parentCard.innerText;
+        document.querySelectorAll("button").forEach(btn => {
+            if (btn.innerText.trim() === "Rent") {
+                // Find the card container text to match the exact machine name
+                const card = btn.closest('div') ? btn.closest('div').parentElement : btn.parentElement;
+                const cardText = card ? card.innerText : "";
 
-        let name = "Mining Unit";
-        let price = 35000;
-        let daily = 3000;
-        let cycle = 18;
+                // Find matching unit from our master list based on text inclusion
+                let matchedUnit = units[0];
+                for (let u of units) {
+                    if (cardText.includes(u.name) || cardText.includes(u.id.toUpperCase())) {
+                        matchedUnit = u;
+                        break;
+                    }
+                }
 
-        // Detect machine series and exact price from the card text
-        if (cardText.includes("K1")) { name = "K1 Mining Unit"; price = 35000; daily = 3000; cycle = 18; }
-        else if (cardText.includes("K2")) { name = "K2 Mining Unit"; price = 65000; daily = 5500; cycle = 18; }
-        else if (cardText.includes("K3")) { name = "K3 Mining Unit"; price = 100000; daily = 11000; cycle = 18; }
-        else if (cardText.includes("K4")) { name = "K4 Mining Unit"; price = 200000; daily = 20000; cycle = 18; }
-        else if (cardText.includes("D1")) { name = "D1 Mining Unit"; price = 100000; daily = 20000; cycle = 15; }
-        else if (cardText.includes("D2")) { name = "D2 Mining Unit"; price = 300000; daily = 35000; cycle = 15; }
-        else if (cardText.includes("G1")) { name = "G1 Power Rig"; price = 180000; daily = 10000; cycle = 30; }
-        else if (cardText.includes("G2")) { name = "G2 Power Rig"; price = 300000; daily = 28000; cycle = 30; }
-        else if (cardText.includes("G3")) { name = "G3 Power Rig"; price = 500000; daily = 48000; cycle = 30; }
-        else if (cardText.includes("Z1")) { name = "Z1 Quantum Rig"; price = 200000; daily = 20000; cycle = 20; }
-        else if (cardText.includes("Z2")) { name = "Z2 Quantum Rig"; price = 350000; daily = 34000; cycle = 20; }
-        else if (cardText.includes("Z3")) { name = "Z3 Quantum Rig"; price = 550000; daily = 56000; cycle = 20; }
+                btn.onclick = async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
 
-        if (!confirm("Are you sure you want to rent " + name + " for UGX " + price.toLocaleString() + "?")) return;
+                    if (!confirm("Are you sure you want to rent " + matchedUnit.name + " for UGX " + matchedUnit.price.toLocaleString() + "?")) return;
 
-        try {
-            const res = await fetch('/api/user/rent', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    machineId: name.toLowerCase().replace(/\s+/g, '_'), 
-                    name: name, 
-                    price: price, 
-                    daily: daily, 
-                    cycle: cycle 
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                alert('Successfully rented ' + name + '!');
-                window.location.reload();
-            } else {
-                alert('Error: ' + (data.error || 'Failed to rent'));
+                    try {
+                        const res = await fetch('/api/user/rent', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                machineId: matchedUnit.id, 
+                                name: matchedUnit.name, 
+                                price: matchedUnit.price, 
+                                daily: matchedUnit.payout, 
+                                cycle: matchedUnit.cycle 
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            alert('Successfully rented ' + matchedUnit.name + '!');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + (data.error || 'Failed to rent'));
+                        }
+                    } catch(err) {
+                        console.error(err);
+                        alert('Rental request failed.');
+                    }
+                };
             }
-        } catch(err) {
-            console.error(err);
-            alert('Rental request failed.');
-        }
-    }, true);
+        });
+    });
     </script>
     
 </body>
