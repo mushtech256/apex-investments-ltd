@@ -237,7 +237,7 @@
                                 <p style="font-size:11px;color:#cbd5e1;">Cycle: ${m.cycle} Days</p>
                                 <p style="font-size:11px;color:#34d399;">Daily: UGX ${m.payout.toLocaleString()}</p>
                                 <p style="font-size:11px;color:#38bdf8;font-weight:bold;">Total: UGX ${totalIncome.toLocaleString()}</p>
-                                <button class="btn" onclick="rentRig('${m.id}')">Rent</button>
+                                <button onclick="rentMachine('mining_unit', 'Mining Unit', 35000, 3000, 18)" class="rent-btn">Rent</button>
                             </div>`;
                     });
                     htmlContent += `</div>`;
@@ -926,6 +926,32 @@ async function submitPasswordReset() {
 }
 </script>
 
+
+    <script>
+    async function rentMachine(machineId, name, price, daily, cycle) {
+        if (!confirm(`Are you sure you want to rent ${name} for UGX ${price.toLocaleString()}?`)) return;
+        
+        try {
+            const response = await fetch('/api/user/rent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ machineId, name, price, daily, cycle })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Successfully rented ' + name + '!');
+                window.location.reload();
+            } else {
+                alert('Rental failed: ' + (data.error || 'Unknown error'));
+            }
+        } catch (err) {
+            console.error('Rent error:', err);
+            alert('Network error while renting machine.');
+        }
+    }
+    </script>
+    
 </body>
 
 </html>
