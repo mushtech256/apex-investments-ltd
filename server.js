@@ -681,37 +681,59 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 
 
+
 app.post('/api/admin/withdrawals/update', async (req, res) => {
     try {
-        const { phone, phone_number, action, amount } = req.body;
+        const { phone, phone_number, action, id, withdrawalId } = req.body;
         const targetPhone = phone || phone_number;
         const newStatus = action === 'approve' ? 'approved' : 'rejected';
 
-        if (!targetPhone) {
-            return res.status(400).json({ success: false, error: "Phone number required" });
+        // Find user who has withdrawals
+        let user = await User.findOne({ 
+            $or: [
+                { phone: { $regex: (targetPhone || '').replace('+', ''), $options: 'i' } },
+                { phone_number: { $regex: (targetPhone || '').replace('+', ''), $options: 'i' } },
+                { "withdrawals._id": id },
+                { "withdrawals._id": withdrawalId }
+            ]
+        });
+
+        if (!user || !user.withdrawals || user.withdrawals.length === 0) {
+            return res.status(404).json({ success: false, error: "User or withdrawal requests not found" });
         }
 
-        const updatedUser = await User.findOneAndUpdate(
-            { 
-                $or: [
-                    { phone: { $regex: targetPhone.replace('+', ''), $options: 'i' } },
-                    { phone_number: { $regex: targetPhone.replace('+', ''), $options: 'i' } }
-                ],
-                "withdrawals.status": "pending"
-            },
-            { 
-                $set: { "withdrawals.$.status": newStatus } 
-            },
-            { new: true }
-        );
+        // Locate and update the target withdrawal in memory
+        let found = false;
+        user.withdrawals = user.withdrawals.map(w => {
+            // Match by ID if available, or match the first pending one belonging to this phone
+            const matchById = id && w._id && w._id.toString() === id.toString();
+            const matchByStatus = w.status === 'pending';
+            
+            if (matchById || (!id && matchByStatus)) {
+                w.status = newStatus;
+                w.updatedAt = new Date();
+                found = true;
+            }
+            return w;
+        });
 
-        if (!updatedUser) {
-            return res.status(404).json({ success: false, error: "Pending withdrawal not found" });
+        if (!found) {
+            // If still not found, just update the latest pending one
+            for (let w of user.withdrawals) {
+                if (w.status === 'pending') {
+                    w.status = newStatus;
+                    w.updatedAt = new Date();
+                    found = true;
+                    break;
+                }
+            }
         }
+
+        await user.save();
 
         res.json({ success: true, message: "Withdrawal successfully updated" });
     } catch (err) {
-        console.error("Withdrawal update error:", err);
+        console.error("Withdrawal rewrite error:", err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
