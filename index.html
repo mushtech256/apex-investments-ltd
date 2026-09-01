@@ -935,7 +935,7 @@ async function submitPasswordReset() {
             const response = await fetch('/api/user/rent', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ machineId, name, price, daily, cycle })
+                body: JSON.stringify({ machineId, name, price, daily, cycle, phone: currentUser?.phone || currentUser?.phone_number })
             });
             const data = await response.json();
             

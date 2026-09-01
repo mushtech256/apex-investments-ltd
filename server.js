@@ -634,7 +634,8 @@ app.post('/api/user/rent', async (req, res) => {
         console.log("RENT REQUEST RECEIVED:", { machineId, name, price, daily, cycle });
 
         // Find user (fallback to first user if session isn't strict yet)
-        let user = userId ? await User.findById(userId) : await User.findOne();
+        let phone = req.body.phone || req.body.phoneNumber;
+    let user = phone ? await User.findOne({ phone_number: phone }) : (userId ? await User.findById(userId) : await User.findOne());
 
         if (!user) {
             return res.status(404).json({ success: false, error: "User not found" });
