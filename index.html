@@ -952,6 +952,67 @@ async function submitPasswordReset() {
     }
     </script>
     
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll("button").forEach(btn => {
+            if (btn.innerText.trim() === "Rent") {
+                btn.onclick = async function(e) {
+                    e.preventDefault();
+                    
+                    // Find the card container
+                    const card = this.closest('div') ? this.closest('div').parentElement : null;
+                    const text = card ? card.innerText : this.parentElement.innerText || "";
+
+                    let name = "Mining Unit";
+                    let price = 35000;
+                    let daily = 3000;
+                    let cycle = 18;
+
+                    // Detect specific machine series from text
+                    if (text.includes('K1')) { name = 'K1 Mining Unit'; price = 35000; daily = 3000; }
+                    else if (text.includes('K2')) { name = 'K2 Mining Unit'; price = 65000; daily = 5500; }
+                    else if (text.includes('K3')) { name = 'K3 Mining Unit'; price = 100000; daily = 9000; }
+                    else if (text.includes('D1')) { name = 'D1 Mining Unit'; price = 100000; daily = 9000; }
+                    else if (text.includes('D2')) { name = 'D2 Mining Unit'; price = 150000; daily = 14000; }
+                    else if (text.includes('G1')) { name = 'G1 Power Rig'; price = 180000; daily = 10000; cycle = 30; }
+                    else if (text.includes('G2')) { name = 'G2 Power Rig'; price = 300000; daily = 28000; cycle = 30; }
+                    else if (text.includes('G3')) { name = 'G3 Power Rig'; price = 500000; daily = 48000; cycle = 30; }
+                    else if (text.includes('Z1')) { name = 'Z1 Quantum Rig'; price = 200000; daily = 20000; cycle = 20; }
+                    else if (text.includes('Z2')) { name = 'Z2 Quantum Rig'; price = 350000; daily = 34000; cycle = 20; }
+                    else if (text.includes('Z3')) { name = 'Z3 Quantum Rig'; price = 550000; daily = 56000; cycle = 20; }
+
+                    if (!confirm("Are you sure you want to rent " + name + " for UGX " + price.toLocaleString() + "?")) return;
+
+                    try {
+                        const res = await fetch('/api/user/rent', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                machineId: name.toLowerCase().replace(/\s+/g, '_'), 
+                                name: name, 
+                                price: price, 
+                                daily: daily, 
+                                cycle: cycle 
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            alert('Successfully rented ' + name + '!');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + (data.error || 'Failed to rent'));
+                        }
+                    } catch(err) {
+                        console.error(err);
+                        alert('Rental request failed.');
+                    }
+                };
+            }
+        });
+    });
+    </script>
+    
 </body>
 
 </html>
