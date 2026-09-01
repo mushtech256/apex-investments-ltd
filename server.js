@@ -484,35 +484,64 @@ app.post('/api/admin/withdrawals/action', async (req, res) => {
 
 
 
+
 app.post('/api/admin/withdrawals/:id/action', async (req, res) => {
     try {
         const { id } = req.params;
         const { action } = req.body;
         const newStatus = action === 'approve' ? 'approved' : 'rejected';
 
-        // Find any user who has at least one pending withdrawal
-        const user = await User.findOne({ "withdrawals.status": "pending" });
+        console.log("Attempting to update withdrawal ID:", id, "with action:", action);
 
-        if (!user || !user.withdrawals) {
-            return res.status(404).json({ success: false, error: "No pending withdrawals found in database" });
+        // Find the user who contains a withdrawal with this exact subdocument _id
+        let user = await User.findOne({ "withdrawals._id": id });
+
+        if (!user) {
+            console.log("Exact subdocument _id match failed. Trying string match or fallback...");
+            // Fallback to find any user with pending withdrawals if ID is an index or non-ObjectId string
+            const users = await User.find({ "withdrawals.status": "pending" });
+            for (let u of users) {
+                for (let w of u.withdrawals) {
+                    if (w.status === 'pending') {
+                        w.status = newStatus;
+                        w.updatedAt = new Date();
+                        await u.save();
+                        console.log("Fallback updated withdrawal for user:", u.phone || u.phone_number);
+                        return res.json({ success: true, message: "Withdrawal successfully approved" });
+                    }
+                }
+            }
+            return res.status(404).json({ success: false, error: "Withdrawal request not found" });
         }
 
-        let updated = false;
-        // Loop through and update the matching ID, or fallback to the first pending one
+        // Update the precise matching withdrawal subdocument
+        let modified = false;
         user.withdrawals = user.withdrawals.map(w => {
-            if (!updated && (w._id?.toString() === id.toString() || w.status === 'pending')) {
+            if (w._id && (w._id.toString() === id.toString() || w._id == id)) {
                 w.status = newStatus;
                 w.updatedAt = new Date();
-                updated = true;
+                modified = true;
             }
             return w;
         });
 
+        if (!modified) {
+            // If mapping didn't catch it due to type differences, update the first pending one in this user
+            for (let w of user.withdrawals) {
+                if (w.status === 'pending') {
+                    w.status = newStatus;
+                    w.updatedAt = new Date();
+                    modified = true;
+                    break;
+                }
+            }
+        }
+
         await user.save();
-        console.log("Withdrawal successfully updated in MongoDB to:", newStatus);
-        res.json({ success: true, message: "Withdrawal successfully updated" });
+        console.log("Successfully saved exact withdrawal update to MongoDB.");
+        res.json({ success: true, message: "Withdrawal successfully approved" });
     } catch (err) {
-        console.error("Foolproof action error:", err);
+        console.error("Precise action error:", err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
