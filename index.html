@@ -237,7 +237,7 @@
                                 <p style="font-size:11px;color:#cbd5e1;">Cycle: ${m.cycle} Days</p>
                                 <p style="font-size:11px;color:#34d399;">Daily: UGX ${m.payout.toLocaleString()}</p>
                                 <p style="font-size:11px;color:#38bdf8;font-weight:bold;">Total: UGX ${totalIncome.toLocaleString()}</p>
-                                <button onclick="rentMachine('mining_unit', 'Mining Unit', 35000, 3000, 18)" class="rent-btn">Rent</button>
+                                <button onclick="rentMachine('${m.id}', '${m.name}', ${m.price}, ${m.payout}, ${m.cycle})" class="rent-btn">Rent</button>
                             </div>`;
                     });
                     htmlContent += `</div>`;
