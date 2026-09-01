@@ -680,35 +680,41 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 
 
+
 app.post('/api/admin/withdrawals/update', async (req, res) => {
     try {
-        const { id, action, phone } = req.body;
+        const { phone, phone_number, action, amount } = req.body;
+        const targetPhone = phone || phone_number;
         const newStatus = action === 'approve' ? 'approved' : 'rejected';
-        
-        let query = {};
-        if (id) {
-            query = { $or: [{ _id: id }, { id: id }] };
-        } else if (phone) {
-            query = { phone: { $regex: phone.replace('+', ''), $options: 'i' } };
+
+        if (!targetPhone) {
+            return res.status(400).json({ success: false, error: "Phone number required" });
         }
 
-        const updatedWithdrawal = await Withdrawal.findOneAndUpdate(
-            query, 
-            { $set: { status: newStatus, updatedAt: new Date() } }, 
+        const updatedUser = await User.findOneAndUpdate(
+            { 
+                $or: [
+                    { phone: { $regex: targetPhone.replace('+', ''), $options: 'i' } },
+                    { phone_number: { $regex: targetPhone.replace('+', ''), $options: 'i' } }
+                ],
+                "withdrawals.status": "pending"
+            },
+            { 
+                $set: { "withdrawals.$.status": newStatus } 
+            },
             { new: true }
         );
 
-        if (!updatedWithdrawal) {
-            return res.status(404).json({ success: false, error: "Withdrawal request not found" });
+        if (!updatedUser) {
+            return res.status(404).json({ success: false, error: "Pending withdrawal not found" });
         }
 
-        res.json({ success: true, message: "Withdrawal successfully updated", data: updatedWithdrawal });
+        res.json({ success: true, message: "Withdrawal successfully updated" });
     } catch (err) {
         console.error("Withdrawal update error:", err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
-
 
 
 app.get('/api/user/machines', async (req, res) => {
