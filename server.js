@@ -682,7 +682,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 
 
-app.post('/api/admin/withdrawals/update', async (req, res) => {
+app.post('/api/admin/withdrawals/old_update', async (req, res) => {
     try {
         const { phone, phone_number, action, id, withdrawalId } = req.body;
         const targetPhone = phone || phone_number;
