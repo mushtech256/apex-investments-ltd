@@ -968,9 +968,13 @@ async function submitPasswordReset() {
     
     
 
+    
+    
+
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const units = [
+        // Complete master list of all 20 machines including VIP 4 in exact rendering order
+        const masterUnits = [
             { id: 'k1', name: 'K1 Mining Unit', price: 35000, payout: 3000, cycle: 18 },
             { id: 'k2', name: 'K2 Mining Unit', price: 65000, payout: 5500, cycle: 18 },
             { id: 'k3', name: 'K3 Mining Unit', price: 100000, payout: 11000, cycle: 18 },
@@ -989,55 +993,47 @@ async function submitPasswordReset() {
             { id: 'z4', name: 'Z4 Quantum Rig', price: 850000, payout: 60000, cycle: 20 },
             { id: 'v1', name: 'VIP 1 Miner', price: 500000, payout: 140000, cycle: 7 },
             { id: 'v2', name: 'VIP 2 Miner', price: 890000, payout: 180000, cycle: 7 },
-            { id: 'v3', name: 'VIP 3 Miner', price: 1200000, payout: 245000, cycle: 7 }
+            { id: 'v3', name: 'VIP 3 Miner', price: 1200000, payout: 245000, cycle: 7 },
+            { id: 'v4', name: 'VIP 4 Miner', price: 2000000, payout: 420000, cycle: 7 }
         ];
 
-        document.querySelectorAll("button").forEach(btn => {
-            if (btn.innerText.trim() === "Rent") {
-                // Find the card container text to match the exact machine name
-                const card = btn.closest('div') ? btn.closest('div').parentElement : btn.parentElement;
-                const cardText = card ? card.innerText : "";
+        // Find all "Rent" buttons across the document in exact order of appearance
+        const rentButtons = Array.from(document.querySelectorAll("button")).filter(b => b.innerText.trim() === "Rent");
 
-                // Find matching unit from our master list based on text inclusion
-                let matchedUnit = units[0];
-                for (let u of units) {
-                    if (cardText.includes(u.name) || cardText.includes(u.id.toUpperCase())) {
-                        matchedUnit = u;
-                        break;
+        rentButtons.forEach((btn, index) => {
+            const unit = masterUnits[index];
+            if (!unit) return;
+
+            btn.onclick = async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (!confirm("Are you sure you want to rent " + unit.name + " for UGX " + unit.price.toLocaleString() + "?")) return;
+
+                try {
+                    const res = await fetch('/api/user/rent', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            machineId: unit.id, 
+                            name: unit.name, 
+                            price: unit.price, 
+                            daily: unit.payout, 
+                            cycle: unit.cycle 
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        alert('Successfully rented ' + unit.name + '!');
+                        window.location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Failed to rent'));
                     }
+                } catch(err) {
+                    console.error(err);
+                    alert('Rental request failed.');
                 }
-
-                btn.onclick = async function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    if (!confirm("Are you sure you want to rent " + matchedUnit.name + " for UGX " + matchedUnit.price.toLocaleString() + "?")) return;
-
-                    try {
-                        const res = await fetch('/api/user/rent', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ 
-                                machineId: matchedUnit.id, 
-                                name: matchedUnit.name, 
-                                price: matchedUnit.price, 
-                                daily: matchedUnit.payout, 
-                                cycle: matchedUnit.cycle 
-                            })
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                            alert('Successfully rented ' + matchedUnit.name + '!');
-                            window.location.reload();
-                        } else {
-                            alert('Error: ' + (data.error || 'Failed to rent'));
-                        }
-                    } catch(err) {
-                        console.error(err);
-                        alert('Rental request failed.');
-                    }
-                };
-            }
+            };
         });
     });
     </script>
