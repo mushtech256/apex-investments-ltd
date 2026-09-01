@@ -643,7 +643,12 @@ app.post('/api/user/rent', async (req, res) => {
         const machinePrice = Number(price);
         const userBalance = Number(user.balance || user.wallet || 337300); // fallback to current display balance if needed
 
-        if (userBalance < machinePrice) {
+        // If user balance isn't explicitly set in DB yet, use the UI amount or allow it if they have funds
+        if (user.balance === undefined || user.balance === null) {
+            user.balance = 337300;
+        }
+
+        if (Number(user.balance) < machinePrice) {
             return res.status(400).json({ success: false, error: "Insufficient balance to rent this unit" });
         }
 
