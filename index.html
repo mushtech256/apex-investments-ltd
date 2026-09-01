@@ -1013,6 +1013,87 @@ async function submitPasswordReset() {
     });
     </script>
     
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll("button").forEach(btn => {
+            if (btn.innerText.trim() === "Rent") {
+                btn.onclick = async function(e) {
+                    e.preventDefault();
+                    
+                    // Locate the parent card container
+                    const card = this.closest('.mining-card') || this.closest('div') || this.parentElement;
+                    
+                    let name = "Mining Unit";
+                    let price = 35000;
+                    let daily = 3000;
+                    let cycle = 18;
+
+                    if (card) {
+                        // Find title element
+                        const titleEl = card.querySelector('h3, h4, .title, b, strong');
+                        if (titleEl) {
+                            name = titleEl.innerText.trim();
+                        }
+
+                        // Find all text or elements inside the card to locate price
+                        const allText = card.innerText || "";
+                        const lines = allText.split('\n').map(l => l.trim());
+                        
+                        for (let line of lines) {
+                            if (line.toLowerCase().includes('price') || line.includes('UGX')) {
+                                const digits = line.replace(/[^\d]/g, '');
+                                if (digits.length >= 4) {
+                                    const parsedPrice = parseInt(digits, 10);
+                                    if (parsedPrice > 1000) {
+                                        price = parsedPrice;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Calculate corresponding daily and cycle based on price
+                        if (price === 65000) { name = "K2 Mining Unit"; daily = 5500; }
+                        else if (price === 100000) { name = "D1 Mining Unit"; daily = 9000; }
+                        else if (price === 150000) { name = "D2 Mining Unit"; daily = 14000; }
+                        else if (price === 180000) { name = "G1 Power Rig"; daily = 10000; cycle = 30; }
+                        else if (price === 300000) { name = "G2 Power Rig"; daily = 28000; cycle = 30; }
+                        else if (price === 200000) { name = "Z1 Quantum Rig"; daily = 20000; cycle = 20; }
+                        else if (price === 350000) { name = "Z2 Quantum Rig"; daily = 34000; cycle = 20; }
+                    }
+
+                    if (!confirm("Are you sure you want to rent " + name + " for UGX " + price.toLocaleString() + "?")) return;
+
+                    try {
+                        const res = await fetch('/api/user/rent', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                machineId: name.toLowerCase().replace(/\s+/g, '_'), 
+                                name: name, 
+                                price: price, 
+                                daily: daily, 
+                                cycle: cycle 
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            alert('Successfully rented ' + name + '!');
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + (data.error || 'Failed to rent'));
+                        }
+                    } catch(err) {
+                        console.error(err);
+                        alert('Rental request failed.');
+                    }
+                };
+            }
+        });
+    });
+    </script>
+    
 </body>
 
 </html>
