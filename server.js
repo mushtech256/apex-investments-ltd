@@ -134,7 +134,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Invalid password' });
     }
 
-    res.json({ message: 'Login successful', user: { id: user._id, phone_number: user.phone_number, balance: user.balance, machines: user.machines || [] } });
+    res.json({ message: 'Login successful', user: { id: user._id, phone_number: user.phone_number, balance: user.balance, machines: user.machines || [], rigs: user.rigs || [] } });
   } catch (err) {
     res.status(500).json({ error: 'Server error during login' });
   }
