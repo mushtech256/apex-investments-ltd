@@ -223,6 +223,7 @@ app.post('/api/rigs/purchase', async (req, res) => {
       cycle: Number(cycle), 
       rentedAt: new Date() 
     });
+    user.markModified('rigs');
 
     await user.save();
     res.json({ balance: user.balance, rigs: user.rigs });
