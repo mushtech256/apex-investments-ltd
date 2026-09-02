@@ -1074,6 +1074,8 @@ async function submitPasswordReset() {
         const now = new Date().getTime();
 
         currentUser.rigs.forEach((r, index) => {
+    r.cycle = r.cycle || 30;
+    r.payout = r.payout || r.daily_payout || 5000;
             const rentedTime = new Date(r.rentedAt || now).getTime();
             let daysActive = 0;
             let curr = new Date(rentedTime);
