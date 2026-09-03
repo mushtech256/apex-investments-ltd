@@ -586,6 +586,43 @@ app.get('/api/metrics/ai_income', async (req, res) => {
 });
 
 
+
+// Manual trigger endpoint to clean duplicate rigs
+app.get('/api/admin/clean-rigs', async (req, res) => {
+    try {
+        const User = mongoose.model('User');
+        const users = await User.find({});
+        let totalRemoved = 0;
+        
+        for (let user of users) {
+            if (user.rigs && Array.isArray(user.rigs)) {
+                const seen = new Set();
+                const cleaned = [];
+                for (let r of user.rigs) {
+                    // Use a unique signature based on name, payout, and progress
+                    const sig = `${r.rigId || r.name || 'rig'}_${r.payout || r.daily_return || 0}_${r.progress || r.days_elapsed || 0}`;
+                    if (!seen.has(sig)) {
+                        seen.add(sig);
+                        cleaned.push(r);
+                    }
+                }
+                
+                if (cleaned.length !== user.rigs.length) {
+                    const diff = user.rigs.length - cleaned.length;
+                    totalRemoved += diff;
+                    user.rigs = cleaned;
+                    user.markModified('rigs');
+                    await user.save();
+                }
+            }
+        }
+        res.json({ success: true, message: - successfully removed ${totalRemoved} duplicate rigs! });
+    } catch (err) {
+        console.error('Cleanup error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
