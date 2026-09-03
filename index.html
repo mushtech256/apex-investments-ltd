@@ -1074,7 +1074,16 @@ async function submitPasswordReset() {
         let htmlContent = `<div class="card"><h3 style="color:#38bdf8; margin-bottom:10px;">Active Rigs & Progress</h3>`;
         const now = new Date().getTime();
 
-        currentUser.rigs.forEach((r, index) => {
+        // Deduplicate rigs on render to prevent visual stacking
+    const seenRigs = new Set();
+    const uniqueActiveRigs = currentUser.rigs.filter(r => {
+        const sig = `${r.rigId || r.name}_${r.payout || 5000}_${r.rentedAt || 'def'}`;
+        if (seenRigs.has(sig)) return false;
+        seenRigs.add(sig);
+        return true;
+    });
+    
+    uniqueActiveRigs.forEach((r, index) => {
     r.cycle = r.cycle || r.duration || 30;
     r.payout = r.payout || r.daily_payout || 5000;
             const rentedTime = new Date(r.rentedAt || now).getTime();
