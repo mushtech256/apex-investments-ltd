@@ -675,7 +675,8 @@ async function rentRig(id) {
     }
 
     currentUser.balance = data.balance;
-    currentUser.rigs = data.rigs;
+    currentUser.rigs = data.rigs || [];
+    currentUser.machines = data.machines || data.rigs || [];
     saveUserData();
 
     alert(`Successfully rented ${rig.name}!`);
