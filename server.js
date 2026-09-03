@@ -222,15 +222,20 @@ app.post('/api/rigs/purchase', async (req, res) => {
 
     user.balance = Number(user.balance) - Number(price);
     user.rigs = user.rigs || [];
-    user.rigs.push({ 
-      rigId, 
-      name: rigName, 
-      price: Number(price), 
-      daily_return: Number(daily_return), 
-      payout: Number(payout), 
-      cycle: Number(cycle), 
-      rentedAt: new Date() 
-    });
+    
+    const existingRig = user.rigs.find(r => r.rigId === rigId && (new Date() - new Date(r.rentedAt || 0) < 60000));
+    if (!existingRig) {
+        user.rigs.push({
+            rigId,
+            name: rigName,
+            price: Number(price),
+            daily_return: Number(daily_return),
+            payout: Number(payout),
+            cycle: Number(cycle) || 30,
+            rentedAt: new Date()
+        });
+    }
+    
     user.markModified('rigs');
 
     await user.save();
