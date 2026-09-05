@@ -684,7 +684,7 @@ async function rentRig(id) {
       body: JSON.stringify({ 
         phone_number: phone_number, 
         rigId: rig.id, 
-        rigName: rig.name, 
+        rigName: rig.rigName || rig.name, 
         price: rig.price,
         daily_return: rig.daily_return,
         payout: rig.payout || (rig.daily_return * (rig.cycle || 30)),
