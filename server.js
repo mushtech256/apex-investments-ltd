@@ -724,7 +724,7 @@ app.post('/api/user/rent', async (req, res) => {
         await user.save();
 
         console.log("Machine successfully rented and saved for user:", user.phone || user.phone_number);
-        res.json({ success: true, message: "Machine rented successfully!", newBalance: user.balance });
+        res.json({ success: true, message: "Machine rented successfully!", newBalance: user.balance, machines: user.machines });
     } catch (err) {
         console.error("Rental error:", err);
         res.status(500).json({ success: false, error: err.message });

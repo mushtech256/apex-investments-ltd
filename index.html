@@ -966,6 +966,10 @@ async function submitPasswordReset() {
             
             if (data.success) {
                 alert('Successfully rented ' + name + '!');
+        if (data.machines) {
+          currentUser.machines = data.machines;
+          saveUserData();
+        }
                 window.location.reload();
             } else {
                 alert('Rental failed: ' + (data.error || 'Unknown error'));
