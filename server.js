@@ -694,7 +694,7 @@ app.post('/api/user/rent', async (req, res) => {
         }
 
         const machinePrice = Number(price);
-        const userBalance = Number(user.balance || user.wallet || 337300); // fallback to current display balance if needed
+        const userBalance = Number(user.balance || user.wallet || 500000); // fallback to current display balance if needed
 
         // If user balance isn't explicitly set in DB yet, use the UI amount or allow it if they have funds
         if (user.balance === undefined || user.balance === null) {
