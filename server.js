@@ -227,7 +227,7 @@ app.post('/api/rigs/purchase', async (req, res) => {
     if (!existingRig) {
         user.rigs.push({
             rigId,
-            name: rigName,
+            rigName: rigName,
             price: Number(price),
             daily_return: Number(daily_return),
             payout: Number(payout),
