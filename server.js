@@ -616,7 +616,7 @@ app.get('/api/admin/clean-rigs', async (req, res) => {
                 }
             }
         }
-        res.json({ success: true, message: `Successfully removed ${totalRemoved} duplicate rigs! });
+        res.json({ success: true, message: `Successfully removed ${totalRemoved} duplicate rigs!` });
     } catch (err) {
         console.error('Cleanup error:', err);
         res.status(500).json({ success: false, error: err.message });
@@ -624,7 +624,7 @@ app.get('/api/admin/clean-rigs', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+console.log(`Server is running on port ${PORT}`);
 });
 
 
