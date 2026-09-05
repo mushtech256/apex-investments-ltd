@@ -616,7 +616,7 @@ app.get('/api/admin/clean-rigs', async (req, res) => {
                 }
             }
         }
-        res.json({ success: true, message: - successfully removed ${totalRemoved} duplicate rigs! });
+        res.json({ success: true, message: `Successfully removed ${totalRemoved} duplicate rigs! });
     } catch (err) {
         console.error('Cleanup error:', err);
         res.status(500).json({ success: false, error: err.message });
