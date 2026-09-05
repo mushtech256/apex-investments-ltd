@@ -623,6 +623,7 @@ app.get('/api/admin/clean-rigs', async (req, res) => {
     }
 });
 
+app.get('/api/admin/reset-rigs', async (req, res) => { await User.updateMany({}, { $set: { rigs: [] } }); res.json({ success: true, message: "All user rigs cleared!" }); });
 app.listen(PORT, () => {
 console.log(`Server is running on port ${PORT}`);
 });
