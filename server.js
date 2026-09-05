@@ -223,7 +223,7 @@ app.post('/api/rigs/purchase', async (req, res) => {
     user.balance = Number(user.balance) - Number(price);
     user.rigs = user.rigs || [];
     
-    const existingRig = user.rigs.find(r => r.rigId === rigId && (new Date() - new Date(r.rentedAt || 0) < 60000));
+    const existingRig = user.rigs.find(r => r.rigId === rigId );
     if (!existingRig) {
         user.rigs.push({
             rigId,
