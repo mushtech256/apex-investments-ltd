@@ -1185,3 +1185,20 @@ async function submitPasswordReset() {
 // cache-buster 1788372280
 
 function rentMachine(id) { fetch("/api/user/rent", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ machineId: id, userId: currentUser._id }) }).then(res => res.json()).then(data => { if (data.success) { alert("Rented successfully"); location.reload(); } else { alert(data.message || "Rental failed"); } }); }
+
+<script>
+function rentMachine(id) {
+  fetch("/api/user/rent", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ machineId: id, userId: currentUser._id })
+  }).then(res => res.json()).then(data => {
+    if (data.success) {
+      alert("Rented successfully");
+      location.reload();
+    } else {
+      alert(data.message || "Rental failed");
+    }
+  });
+}
+</script>
