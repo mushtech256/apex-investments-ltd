@@ -968,6 +968,10 @@ async function submitPasswordReset() {
                 alert('Successfully rented ' + name + '!');
         if (data.machines) {
           currentUser.machines = data.machines;
+          localStorage.setItem("hut9_active_user", JSON.stringify(currentUser));
+          if (typeof renderIncome === "function") renderIncome();
+        }
+          currentUser.machines = data.machines;
           saveUserData();
         }
                 window.location.reload();
