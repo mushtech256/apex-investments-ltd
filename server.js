@@ -757,3 +757,18 @@ setTimeout(async () => {
         }
     } catch(e) { console.error('Startup rig cleanup error:', e); }
 }, 3000);
+
+app.post('/api/user/rent', async (req, res) => {
+  try {
+    const { machineId, userId } = req.body;
+    const user = await User.findById(userId) || await User.findOne();
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (!user.machines) user.machines = [];
+    user.machines.push({ machineId, rentedAt: new Date() });
+    await user.save();
+    return res.json({ success: true, message: "Rented successfully", machines: user.machines });
+  } catch (err) {
+    console.error("RENT ERROR:", err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
