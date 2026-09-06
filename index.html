@@ -551,7 +551,7 @@ function submitDepositRequest() {
         userName: currentUser.name || 'User',
         amount: pendingDepositAmount,
         trx: trxId,
-        date: new (Date() || 0),
+        date: new Date(),
         status: 'Pending'
     };
 
