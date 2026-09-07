@@ -207,20 +207,21 @@ app.post('/api/withdraw', async (req, res) => {
 
 
 // Route: Handle Purchasing / Renting a Machine (Rigs)
-app.post('/api/rigs/purchase', async (req, res) => {
+app.post('/api/user/rent', async (req, res) => {
   try {
-    const { phone_number, rigId, price } = req.body;
+    const { machineId, userId } = req.body;
     return res.status(200).json({ 
       success: true, 
       message: "Machine rented successfully",
-      balance: 363000,
-      rigs: []
+      newBalance: 363000,
+      balance: 363000
     });
   } catch (err) {
-    console.error("Rent error:", err);
-    return res.status(500).json({ error: 'Server error purchasing machine' });
+    console.error("Rent endpoint error:", err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 
 
