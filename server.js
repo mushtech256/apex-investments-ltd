@@ -209,18 +209,34 @@ app.post('/api/withdraw', async (req, res) => {
 // Route: Handle Purchasing / Renting a Machine (Rigs)
 app.post('/api/user/rent', async (req, res) => {
   try {
-    const { machineId, userId } = req.body;
+    const { phone_number, machineId, price } = req.body;
+    const user = await User.findOne({ phone_number });
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    const cost = Number(price) || 0;
+    if ((user.balance || 0) < cost) {
+      return res.status(400).json({ success: false, error: 'Insufficient balance' });
+    }
+
+    user.balance -= cost;
+    user.rigs = user.rigs || [];
+    user.rigs.push({ machineId, price: cost, date: new Date() });
+    await user.save();
+
     return res.status(200).json({ 
       success: true, 
-      message: "Machine rented successfully",
-      newBalance: 363000,
-      balance: 363000
+      message: "Rented successfully",
+      balance: user.balance,
+      rigs: user.rigs
     });
   } catch (err) {
     console.error("Rent endpoint error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 
 
