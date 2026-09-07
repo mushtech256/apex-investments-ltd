@@ -207,9 +207,9 @@ app.post('/api/withdraw', async (req, res) => {
 
 
 // Route: Handle Purchasing / Renting a Machine (Rigs)
-app.post('/api/user/rent', async (req, res) => {
+app.post(['/api/user/rent', '/api/rigs/purchase'], async (req, res) => {
   try {
-    const { phone_number, machineId, price } = req.body;
+    const { phone_number, machineId, price, rigName, daily_return } = req.body;
     const user = await User.findOne({ phone_number });
     if (!user) {
       return res.status(404).json({ success: false, error: 'User not found' });
@@ -222,7 +222,15 @@ app.post('/api/user/rent', async (req, res) => {
 
     user.balance -= cost;
     user.rigs = user.rigs || [];
-    user.rigs.push({ machineId, price: cost, date: new Date() });
+    user.rigs.push({ 
+      machineId: machineId || 'rig', 
+      rigName: rigName || 'Mining Unit', 
+      price: cost, 
+      daily_return: Number(daily_return) || 0,
+      date: new Date() 
+    });
+    
+    user.markModified('rigs');
     await user.save();
 
     return res.status(200).json({ 
@@ -232,10 +240,11 @@ app.post('/api/user/rent', async (req, res) => {
       rigs: user.rigs
     });
   } catch (err) {
-    console.error("Rent endpoint error:", err);
+    console.error("Rent error:", err);
     return res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 
 
